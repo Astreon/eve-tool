@@ -7,7 +7,7 @@ export const errorHandler = (
   err: AppError,
   req: Request,
   res: Response<ApiResponse<null>>,
-  next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
+  _next: NextFunction
 ) => {
   console.error(`[ERROR] ${err.message}`)
 
