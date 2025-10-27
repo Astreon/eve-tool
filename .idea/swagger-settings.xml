@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SwaggerSettings">
+    <remoteSpecificationUrls>
+      <UrlInfo>
+        <option name="urlString" value="https://esi.evetech.net/meta/openapi.json?compatibility_date=2025-09-30" />
+      </UrlInfo>
+    </remoteSpecificationUrls>
+  </component>
+</project>
