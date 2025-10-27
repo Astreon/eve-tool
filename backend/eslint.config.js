@@ -1,4 +1,6 @@
 // @ts-check
+// noinspection JSCheckFunctionSignatures,SpellCheckingInspection
+
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 
