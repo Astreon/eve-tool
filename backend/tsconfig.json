@@ -9,8 +9,8 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node16"
+    "moduleResolution": "node16",
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist"]
+  "include": ["**/*.ts"],
+  "exclude": ["dist", "prisma/generated"]
 }

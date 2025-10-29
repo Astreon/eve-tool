@@ -11,13 +11,17 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:push": "npx prisma db push",
+    "sde:seed": "npx tsx --env-file .env prisma\\seed.ts"
   },
   "keywords": [],
   "author": "Astreon",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^6.18.0",
     "axios": "^1.13.0",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0"
   },
   "devDependencies": {
@@ -25,6 +29,7 @@
     "@types/express": "^5.0.4",
     "@types/node": "^24.9.1",
     "eslint": "^9.38.0",
+    "prisma": "^6.18.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2"
