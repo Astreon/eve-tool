@@ -1,68 +1,86 @@
 import {Request, Response, NextFunction} from 'express'
 import {getCharacterInfo} from '../services/esi/index.js'
 import {ApiResponse} from '../types/apiResponse.js'
-import {EveCharacterExtended} from '../types/eve.types.js'
-import {BadRequestError} from '../types/appError.js'
+import {BadRequestError, NotFoundError} from '../types/appError.js'
 import {prisma} from "../lib/prisma.js";
 import {z} from "zod";
+import {redis} from "../lib/redis.js";
+import {CharacterApiResponse} from "../types/api.types.js";
+import {mapCharacterToApiResponse} from "../mappers/character.mapper.js";
 
 export const getCharacter = async (
     req: Request,
-    res: Response<ApiResponse<EveCharacterExtended>>,
+    res: Response<ApiResponse<CharacterApiResponse>>,
     next: NextFunction,
 ) => {
     // Validation
     const characterIdSchema = z.coerce.number().int().min(90_000_000).max(2_129_999_999)
     const parseResult = characterIdSchema.safeParse(req.params.id)
-
-    if (!parseResult.success) {
-        return next(new BadRequestError('Invalid character ID'))
-    }
+    if (!parseResult.success) return next(new BadRequestError('Invalid character ID'))
 
     const id = parseResult.data
 
     try {
-        // Check if character exist in db
-        let character = await prisma.character.findUnique({
-            where: {id},
-            include: {
-                race: true,
-                bloodline: true,
-            },
-        })
-
-        // Get character info from ESI and save
-        if (!character) {
-            const esiData = await getCharacterInfo(id)
-
-            character = await prisma.character.create({
-                data: {
-                    id,
-                    name: esiData.name,
-                    bloodlineId: esiData.bloodline_id,
-                    corporationId: esiData.corporation_id,
-                    raceId: esiData.race_id,
-                    securityStatus: Math.round(esiData.security_status)
-                },
-                include: {
-                    race: true,
-                    bloodline: true,
-                }
-            })
+        // Check Redis-Cache
+        const chached = await redis.get(`character:${id}`)
+        if (chached) {
+            const parsed: CharacterApiResponse = JSON.parse(chached)
+            return res.json({success: true, data: parsed})
         }
 
-        // Response with linked data
-        res.json({
-            success: true,
-            data: {
-                id: character.id,
-                name: character.name,
-                bloodline: character.bloodline?.name,
-                corporation_id: character.corporationId,
-                race: character.race?.name,
-                security_status: character.securityStatus
-            } as any,
+        // Get ETag from Redis
+        const etag = await redis.get(`etag:character:${id}`)
+
+        // Call ESI with ETag
+        const esi = await getCharacterInfo(id, etag)
+
+        // If 304 then go to DB
+        if (!esi.data) {
+            const character = await prisma.character.findUnique({
+                where: {id},
+                include: {
+                    race: true,
+                    bloodline: true
+                },
+            })
+
+            if (!character) return next(new NotFoundError(`Character not found`))
+
+            const response = mapCharacterToApiResponse(character)
+            await redis.set(`character:${id}`, JSON.stringify(response), 'EX', 60 * 60 * 24) //24h fallback TTL
+            return res.json({success: true, data: response})
+        }
+
+        // Save ESI data to DB
+        const character = await prisma.character.upsert({
+            where: {id},
+            update: {
+                name: esi.data.name,
+                bloodlineId: esi.data.bloodline_id,
+                corporationId: esi.data.corporation_id,
+                raceId: esi.data.race_id,
+                securityStatus: Math.round(esi.data?.security_status ?? 0),
+                lastUpdated: new Date(),
+            },
+            create: {
+                id,
+                name: esi.data.name,
+                bloodlineId: esi.data.bloodline_id,
+                corporationId: esi.data.corporation_id,
+                raceId: esi.data.race_id,
+                securityStatus: Math.round(esi.data?.security_status ?? 0),
+            },
+            include: {race: true, bloodline: true},
         })
+
+        const response = mapCharacterToApiResponse(character)
+
+        // Refresh Redis
+        const ttl = esi.ttl ?? 60 * 60 * 24 // fallback TTL
+        await redis.set(`character:${id}`, JSON.stringify(response), 'EX', ttl)
+        if (esi.etag) await redis.set(`etag:character:${id}`, esi.etag)
+
+        return res.json({success: true, data: response})
     } catch (err) {
         next(err)
     }
