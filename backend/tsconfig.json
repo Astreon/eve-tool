@@ -11,6 +11,6 @@
     "skipLibCheck": true,
     "moduleResolution": "node16",
   },
-  "include": ["**/*.ts"],
-  "exclude": ["dist", "prisma/generated"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "prisma"]
 }

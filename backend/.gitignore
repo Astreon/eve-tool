@@ -15,3 +15,6 @@
 
 # Exclude fckn Prisma generated...
 generated/
+
+# Exclude local OpenAPI ESI Definition
+EVE Stable Infrastructure.json
