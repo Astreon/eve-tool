@@ -11,8 +11,11 @@ export const errorHandler = (
 ) => {
   console.error(`[ERROR] ${err.message}`)
 
-  res.status(err.statusCode || 500).json({
+  const status = err.statusCode || 500
+  const message = err.isOperational ? err.message : 'Internal Server Error'
+
+  res.status(status).json({
     success: false,
-    message: err.message || 'Internal Server Error',
+    message
   })
 }

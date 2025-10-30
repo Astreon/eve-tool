@@ -22,14 +22,19 @@ model Character {
   raceId         Int
   securityStatus Int
   lastUpdated    DateTime @default(now())
+
+  bloodline BloodLine @relation(fields: [bloodlineId], references: [id])
+  race      Race      @relation(fields: [raceId], references: [id])
 }
 
 model BloodLine {
-  id   Int    @id
-  name String
+  id        Int         @id
+  name      String
+  Character Character[]
 }
 
 model Race {
-  id   Int    @id
-  name String
+  id        Int         @id
+  name      String
+  Character Character[]
 }

@@ -11,3 +11,8 @@ export interface EveCharacter {
   security_status: number
   title: string
 }
+
+export interface EveCharacterExtended extends EveCharacter {
+  race?: string
+  bloodline?: string
+}
