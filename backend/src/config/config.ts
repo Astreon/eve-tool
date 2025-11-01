@@ -6,6 +6,7 @@ const Validator = z.object({
     ESI_BASE_URL: z.url('https://esi.evetech.net'),
     ESI_COMPATIBILITY_DATE: z.string().default('2025-09-30'),
     ESI_ACCEPT_LANGUAGE: z.string().default('en'),
+    ESI_FALLBACK_TTL_SECONDS: z.coerce.number().default(86400),
     REDIS_HOST: z.string().default('localhost'),
     REDIS_PORT: z.coerce.number().default(6379),
     REDIS_PASSWORD: z.string().default(''),
@@ -20,6 +21,7 @@ interface Config {
     esiBaseUrl: string
     esiCompatibilityDate: string
     esiAcceptLanguage: string
+    esiFallbackTtlSeconds: number
     redisHost: string
     redisPort: number
     redisPassword: string
@@ -32,6 +34,7 @@ const config: Config = {
     esiBaseUrl: env.ESI_BASE_URL,
     esiCompatibilityDate: env.ESI_COMPATIBILITY_DATE,
     esiAcceptLanguage: env.ESI_ACCEPT_LANGUAGE,
+    esiFallbackTtlSeconds: env.ESI_FALLBACK_TTL_SECONDS,
     redisHost: env.REDIS_HOST,
     redisPort: env.REDIS_PORT,
     redisPassword: env.REDIS_PASSWORD,
