@@ -21,7 +21,7 @@ const key = (id: number) => {
         lock: `lock:character:${id}`,
     }
 }
-const DEFAULT_TTL = 60 * 60 * 24 // 24h
+const DEFAULT_TTL = config.esiFallbackTtlSeconds
 
 export const getCharacter = async (
     req: Request,
@@ -41,7 +41,7 @@ export const getCharacter = async (
         // --- 1) Redis Fast-Path
         const cachedStr = await redis.get(k.data)
         if (cachedStr) {
-            const isFresh = (await redis.exists(k.fresh)) === 1
+            const isFresh = (await redis.exists(k.fresh)) === 1 // -2 = non existent, -1 = no TTL, >=0 = sec remaining
             if (isFresh) {
                 const cached: CharacterApiResponse = JSON.parse(cachedStr)
                 const ttlNow = await redis.ttl(k.data)
