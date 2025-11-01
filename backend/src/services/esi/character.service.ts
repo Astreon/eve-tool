@@ -1,9 +1,9 @@
 import {esiApi} from '../../lib/axios.js'
-import {EsiCharacterResponse, EveCharacter} from "../../types/esi.types.js";
+import {EsiCharacterResponse, EsiCharacter} from "../../types/esi.types.js";
 import {buildConditionalHeaders, computeTtlFromHeaders, extractCachingHeaders} from "../../utils/cacheControl.js";
 
 export const getCharacterInfo = async (characterId: number, etag?: string): Promise<EsiCharacterResponse> => {
-    const response = await esiApi.get<EveCharacter>(`/characters/${characterId}/`, {
+    const response = await esiApi.get<EsiCharacter>(`/characters/${characterId}/`, {
         headers: buildConditionalHeaders({etag}),
         validateStatus: s => s === 200 || s === 304,
     })

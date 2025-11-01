@@ -1,21 +1,22 @@
+// src/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from 'express'
-import { AppError } from '../types/appError.js'
 import { ApiResponse } from '../types/apiResponse.js'
+import { AppError } from '../types/appError.js'
+import config from '../config/config.js'
 
-
-export const errorHandler = (
-  err: AppError,
-  req: Request,
-  res: Response<ApiResponse<null>>,
+export function errorHandler(
+  err: any,
+  _req: Request,
+  res: Response<ApiResponse<never>>,
   _next: NextFunction
-) => {
-  console.error(`[ERROR] ${err.message}`)
-
-  const status = err.statusCode || 500
-  const message = err.isOperational ? err.message : 'Internal Server Error'
-
-  res.status(status).json({
+) {
+  const appErr = AppError.fromUnknown(err)
+  const status = appErr.statusCode
+  const body: ApiResponse<never> = {
     success: false,
-    message
-  })
+    message: appErr.message || 'Internal Server Error',
+    code: appErr.code,
+    meta: config.nodeEnv === 'development' ? { details: appErr.details } : undefined
+  } as any
+  res.status(status).json(body)
 }
