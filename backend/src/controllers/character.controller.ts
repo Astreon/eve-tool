@@ -41,8 +41,8 @@ export const getCharacter = makeCachedController<
         id: Number(id),
         name: payload.name,
         corporationId: payload.corporation_id,
-        raceId: payload.race_id,            // required
-        bloodlineId: payload.bloodline_id,  // required
+        raceId: payload.race_id,
+        bloodlineId: payload.bloodline_id,
         securityStatus: payload.security_status ?? null,
         etag: meta.etag ?? null,
         lastModified: meta.lastModified ?? null,

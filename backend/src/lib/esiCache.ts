@@ -1,13 +1,17 @@
-import { Request, Response, NextFunction } from 'express'
+// src/lib/cache/withEsiCache.ts
+import { Response, NextFunction, Request as ExpressRequest } from 'express'
 import { z } from 'zod'
 import { redis } from './redis.js'
 import config from '../config/config.js'
 import { logger } from './logger.js'
 import { ApiResponse } from '../types/apiResponse.js'
-import { WithEsiCacheConfig} from "../types/cache.types.js";
-import {BadRequestError, NotFoundError} from "../types/appError.js";
+import { BadRequestError, NotFoundError } from '../types/appError.js'
+import type { EsiResult, WithEsiCacheConfig } from '../types/cache.types.js'
 
-export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TDb, TApi, TEsi>) {
+
+export function makeCachedController<TDb, TApi, TEsi>(
+  cfg: WithEsiCacheConfig<TDb, TApi, TEsi>
+) {
   const fallbackTtl = cfg.fallbackTtlSec ?? config.esiFallbackTtlSeconds
 
   function keys(id: number | string) {
@@ -23,7 +27,7 @@ export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TD
   }
 
   return async function handler(
-    req: Request,
+    req: ExpressRequest,
     res: Response<ApiResponse<TApi>>,
     next: NextFunction
   ) {
@@ -31,10 +35,11 @@ export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TD
     let lockHeld = false
 
     try {
+      // --- 0) ID parsing ( 400 if error)
       const id = cfg.parseId(req)
       const k = keys(id)
 
-      // 1) Redis Fast-Path
+      // --- 1) Redis Fast-Path (only if "fresh"-Key exist)
       const cachedStr = await redis.get(k.data)
       if (cachedStr) {
         const isFresh = (await redis.exists(k.fresh)) === 1
@@ -42,11 +47,12 @@ export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TD
           const ttlNow = await redis.ttl(k.data)
           const cached: TApi = JSON.parse(cachedStr)
           logger.entityFromRedis(cfg.kind, id, { ttl: ttlNow, durationMs: Date.now() - started })
-          return res.json({ success: true, data: cached, meta: { source: 'redis', ttl: ttlNow } })
+          return res.json({ success: true, data: cached })
         }
+        // stale-ish → revalidate downstream
       }
 
-      // 2) DB-Window
+      // --- 2) DB-Window (if not expired, deliver DB & refresh Redis)
       const dbRow = await cfg.fetchDb(id)
       const dbMeta = cfg.getDbMeta(dbRow)
       if (dbRow && dbMeta.expiresAt && dbMeta.expiresAt.getTime() > Date.now()) {
@@ -61,28 +67,33 @@ export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TD
           lastUpdated: dbMeta.lastUpdated?.toISOString() ?? null,
           durationMs: Date.now() - started,
         })
-        return res.json({ success: true, data: api, meta: { source: 'db', ttl: ttlFromDb } })
+        return res.json({ success: true, data: api })
       }
 
-      // 3) ESI + Lock
+      // --- 3) ESI Refresh with Lock (against thundering herd)
       const lockOk = await redis.set(k.lock, '1', 'EX', 15, 'NX')
       lockHeld = lockOk === 'OK'
       if (!lockHeld) {
         if (cachedStr) {
           const stale: TApi = JSON.parse(cachedStr)
           logger.info(cfg.kind, `lock busy -> serving stale from Redis for ID=${id}`)
-          return res.json({ success: true, data: stale, meta: { source: 'redis', stale: true } })
+          return res.json({ success: true, data: stale })
         }
         logger.info(cfg.kind, `lock busy & no cache -> continue without lock for ID=${id}`)
       }
 
       try {
-        const etag = dbMeta.etag ?? (await redis.get(k.etag)) ?? undefined
-        const esi = await cfg.fetchEsi(id, etag)
+        // ETag aus DB oder Redis (null → undefined normalize)
+        const etagRaw: string | null | undefined =
+          dbMeta.etag ?? (await redis.get(k.etag)) ?? undefined
+        const etag: string | undefined = etagRaw ?? undefined
 
-        // 304
+        const esi: EsiResult<TEsi> = await cfg.fetchEsi(id, etag)
+
+        // --- 304: unchanged → DB must exist
         if (esi.data === null) {
           if (!dbRow) return next(new NotFoundError(`${cfg.kind} ${String(id)} not found`))
+
           const api = cfg.mapToApi(dbRow)
           const ttl = (esi.ttl ?? fallbackTtl) | 0
 
@@ -90,52 +101,69 @@ export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TD
           if (esi.etag) await redis.set(k.etag, esi.etag, 'EX', Math.max(ttl, 60))
           await redis.set(k.fresh, '1', 'EX', cfg.freshThresholdSec)
 
+          // bump DB-meta data (optional)
           if (cfg.bumpDbMetaOn304) {
             await cfg.bumpDbMetaOn304(id, {
-              etag: esi.etag ?? dbMeta.etag,
-              lastModified: esi.lastModified ? new Date(esi.lastModified) : dbMeta.lastModified,
-              expiresAt: esi.expires ? new Date(esi.expires) : dbMeta.expiresAt,
+              etag: esi.etag ?? dbMeta.etag ?? null,
+              lastModified: esi.lastModified
+                ? new Date(esi.lastModified)
+                : dbMeta.lastModified ?? null,
+              expiresAt: esi.expires ? new Date(esi.expires) : dbMeta.expiresAt ?? null,
               lastUpdated: new Date(),
             })
           }
 
-          logger.entityFromEsi(cfg.kind, id, { etag: esi.etag ?? null, ttl, durationMs: Date.now() - started })
-          return res.json({ success: true, data: api, meta: { source: 'esi', etag: esi.etag ?? null, ttl } })
+          logger.entityFromEsi(cfg.kind, id, {
+            etag: esi.etag ?? null,
+            ttl,
+            durationMs: Date.now() - started,
+          })
+          return res.json({ success: true, data: api })
         }
 
-        // 200
+        // --- 200: fresh data → upsert DB, create Redis
         const payload = esi.data!
         const ttl = (esi.ttl ?? fallbackTtl) | 0
         const expiresAt = esi.expires ? new Date(esi.expires) : new Date(Date.now() + ttl * 1000)
+
         const upserted = await cfg.upsertDbOn200(id, payload, {
           etag: esi.etag ?? null,
           lastModified: esi.lastModified ? new Date(esi.lastModified) : null,
           expiresAt,
         })
+
         const api = cfg.mapToApi(upserted)
 
         await redis.set(k.data, JSON.stringify(api), 'EX', ttl)
         if (esi.etag) await redis.set(k.etag, esi.etag, 'EX', Math.max(ttl, 60))
         await redis.set(k.fresh, '1', 'EX', cfg.freshThresholdSec)
 
-        logger.entityFromEsi(cfg.kind, id, { etag: esi.etag ?? null, ttl, durationMs: Date.now() - started })
-        return res.json({ success: true, data: api, meta: { source: 'esi', etag: esi.etag ?? null, ttl } })
+        logger.entityFromEsi(cfg.kind, id, {
+          etag: esi.etag ?? null,
+          ttl,
+          durationMs: Date.now() - started,
+        })
+        return res.json({ success: true, data: api })
       } catch (err) {
-        // stale-if-error
+        // --- stale-if-error: Redis > DB > error
         if (cachedStr) {
           const stale: TApi = JSON.parse(cachedStr)
           logger.info('ESI', `stale-if-error -> served from Redis for ${cfg.kind} ${String(id)}`)
-          return res.json({ success: true, data: stale, meta: { source: 'redis', stale: true } })
+          return res.json({ success: true, data: stale })
         }
         if (dbRow) {
           const api = cfg.mapToApi(dbRow)
           logger.info('ESI', `stale-if-error -> served from DB for ${cfg.kind} ${String(id)}`)
-          return res.json({ success: true, data: api, meta: { source: 'db', stale: true } })
+          return res.json({ success: true, data: api })
         }
         return next(err as any)
       } finally {
         if (lockHeld) {
-          try { await redis.del(k.lock) } catch {}
+          try {
+            await redis.del(k.lock)
+          } catch {
+            // ignore
+          }
         }
       }
     } catch (e) {
@@ -144,12 +172,13 @@ export function makeCachedController<TDb, TApi, TEsi>(cfg: WithEsiCacheConfig<TD
   }
 }
 
-export const parseNumericIdFromParams = (paramName = 'id') =>
-  (req: Request) => {
+export const parseNumericIdFromParams =
+  (paramName = 'id') =>
+  (req: ExpressRequest) => {
     const schema = z.object({ [paramName]: z.coerce.number().int().positive() })
-    const result = schema.safeParse(req.params)
-    if (!result.success) {
-      throw new BadRequestError('Invalid path parameter', z.treeifyError(result.error))
+    const r = schema.safeParse(req.params)
+    if (!r.success) {
+      throw new BadRequestError('Invalid path parameter', z.treeifyError(r.error))
     }
-    return result.data[paramName]
+    return r.data[paramName]
   }

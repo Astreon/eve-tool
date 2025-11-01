@@ -3,7 +3,7 @@ import {EsiCharacterResponse, EsiCharacter} from "../../types/esi.types.js";
 import {buildConditionalHeaders, computeTtlFromHeaders, extractCachingHeaders} from "../../utils/cacheControl.js";
 import {toEsiAppError} from "../../lib/axiosErrors.js";
 
-export const getCharacterInfo = async (characterId: number, etag?: string): Promise<EsiCharacterResponse> => {
+export const getCharacterInfo = async (characterId: number, etag?: string | null): Promise<EsiCharacterResponse> => {
     try {
         const response = await esiApi.get<EsiCharacter>(`/characters/${characterId}/`, {
             headers: buildConditionalHeaders({etag}),

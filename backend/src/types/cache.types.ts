@@ -1,3 +1,6 @@
+// src/types/cache.types.ts
+import type {Request as ExpressRequest} from 'express'
+
 export type EsiResult<T> = {
     data: T | null
     etag?: string | null
@@ -18,12 +21,13 @@ export interface WithEsiCacheConfig<TDb, TApi, TEsi> {
     keyBase: string
     freshThresholdSec: number
     fallbackTtlSec?: number
-    parseId: (req: Request) => number | string
+    parseId: (req: ExpressRequest) => number | string
 
     fetchDb: (id: number | string) => Promise<TDb | null>
     getDbMeta: (db: TDb | null) => DbMeta
 
     fetchEsi: (id: number | string, etag?: string) => Promise<EsiResult<TEsi>>
+
     upsertDbOn200: (
         id: number | string,
         payload: TEsi,
