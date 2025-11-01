@@ -23,11 +23,11 @@ model Character {
   securityStatus Int
   lastUpdated    DateTime @default(now())
 
-  bloodline BloodLine @relation(fields: [bloodlineId], references: [id])
+  bloodline Bloodline @relation(fields: [bloodlineId], references: [id])
   race      Race      @relation(fields: [raceId], references: [id])
 }
 
-model BloodLine {
+model Bloodline {
   id        Int         @id
   name      String
   Character Character[]
