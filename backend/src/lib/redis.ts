@@ -7,3 +7,12 @@ export const redis = new Redis({
     password: config.redisPassword,
     db: 0,
 })
+
+
+redis.on('ready', async () => {
+  console.log(`[REDIS] connected to ${config.redisHost}`)
+})
+
+redis.on('error', (err) => {
+  console.error('[REDIS] error', err?.message ?? err)
+})

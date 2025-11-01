@@ -31,7 +31,7 @@ export const importBloodlines = async (dryRun = false): Promise<ImportResult> =>
 
       if (batch.length >= BATCH_SIZE) {
         if (!dryRun)
-          await prisma.bloodLine.createMany({ data: batch, skipDuplicates: true })
+          await prisma.bloodline.createMany({ data: batch, skipDuplicates: true })
         success += batch.length
         batch.length = 0
       }
@@ -43,7 +43,7 @@ export const importBloodlines = async (dryRun = false): Promise<ImportResult> =>
 
   if (batch.length > 0) {
     if (!dryRun)
-      await prisma.bloodLine.createMany({ data: batch, skipDuplicates: true })
+      await prisma.bloodline.createMany({ data: batch, skipDuplicates: true })
     success += batch.length
   }
 
