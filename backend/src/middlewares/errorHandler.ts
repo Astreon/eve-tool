@@ -1,22 +1,28 @@
-// src/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from 'express'
 import { ApiResponse } from '../types/apiResponse.js'
-import { AppError } from '../types/appError.js'
-import config from '../config/config.js'
+import { AppError, BadRequestError } from '../types/appError.js'
+import {z, ZodError} from 'zod'
 
 export function errorHandler(
-  err: any,
+  err: unknown,
   _req: Request,
   res: Response<ApiResponse<never>>,
   _next: NextFunction
 ) {
+  // Zod → 400 mit Details
+  if (err instanceof ZodError) {
+    const appErr = new BadRequestError('Validation failed', z.treeifyError(err))
+    return res.status(appErr.statusCode).json({
+      success: false,
+      message: appErr.message,
+      code: appErr.code,
+    })
+  }
+
   const appErr = AppError.fromUnknown(err)
-  const status = appErr.statusCode
-  const body: ApiResponse<never> = {
+  return res.status(appErr.statusCode).json({
     success: false,
     message: appErr.message || 'Internal Server Error',
     code: appErr.code,
-    meta: config.nodeEnv === 'development' ? { details: appErr.details } : undefined
-  } as any
-  res.status(status).json(body)
+  })
 }
