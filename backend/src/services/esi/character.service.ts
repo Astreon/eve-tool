@@ -1,42 +1,31 @@
-import { esiApi } from '../../lib/axios.js'
+import {esiApi} from '../../lib/axios.js'
 import {EsiCharacterResponse, EveCharacter} from "../../types/esi.types.js";
+import {buildConditionalHeaders, computeTtlFromHeaders, extractCachingHeaders} from "../../utils/cacheControl.js";
 
 export const getCharacterInfo = async (characterId: number, etag?: string): Promise<EsiCharacterResponse> => {
-  try {
     const response = await esiApi.get<EveCharacter>(`/characters/${characterId}/`, {
-      headers: {
-        'X-Compatibility-Date': '2025-09-30',
-        'Accept-Language': 'en',
-        ...(etag ? { 'If-None-Match': etag } : {}),
-      },
-      validateStatus: status => status === 200 || status === 304,
+        headers: buildConditionalHeaders({etag}),
+        validateStatus: s => s === 200 || s === 304,
     })
 
-    // 304 -> no refresh
+    const meta = extractCachingHeaders(response.headers)
+    const ttl = computeTtlFromHeaders(response.headers)
+
     if (response.status === 304) {
-      return {
-        data: null,
-        etag,
-      }
-    }
-
-    const headers = response.headers
-
-    // Calculate TTL out of expires
-    let ttl: number | undefined
-    if (headers.expires) {
-      const expiresDate = new Date(headers.expires)
-      ttl = Math.max(Math.floor((expiresDate.getTime() - Date.now()) / 1000), 0)
+        return {
+            data: null,
+            etag: meta.etag,
+            expires: meta.expires,
+            lastModified: meta.lastModified,
+            ttl,
+        }
     }
 
     return {
-      data: response.data,
-      etag: headers.etag,
-      expires: headers.expires,
-      lastModified: headers['last-modified'],
-      ttl,
+        data: response.data,
+        etag: meta.etag,
+        expires: meta.expires,
+        lastModified: meta.lastModified,
+        ttl,
     }
-  } catch (err) {
-    throw err
-  }
 }
