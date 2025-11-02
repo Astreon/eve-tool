@@ -12,5 +12,5 @@
     "moduleResolution": "node16",
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["dist", "prisma"]
+  "exclude": ["dist", "prisma", "sde"]
 }

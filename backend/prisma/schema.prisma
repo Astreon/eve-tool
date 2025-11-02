@@ -14,6 +14,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Version {
+  key         String   @id
+  buildNumber Int      @unique
+  releaseDate DateTime
+}
+
 model Character {
   id             Int       @id
   name           String    @unique
@@ -34,12 +40,32 @@ model Character {
 
 model Bloodline {
   id        Int         @id
-  name      String
+  name      String      @unique
   Character Character[]
 }
 
 model Race {
   id        Int         @id
-  name      String
+  name      String      @unique
   Character Character[]
+}
+
+model Faction {
+  id   Int    @id
+  name String @unique
+}
+
+model SolarSystem {
+  id   Int    @id
+  name String @unique
+}
+
+model Constellation {
+  id   Int    @id
+  name String @unique
+}
+
+model Region {
+  id   Int    @id
+  name String @unique
 }

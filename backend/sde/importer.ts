@@ -1,5 +1,12 @@
-import {importBloodlines} from "./importBloodlines.js";
-import {importRaces} from "./importRaces";
+import {
+    importBloodlines,
+    importConstellations,
+    importFactions,
+    importRaces,
+    importRegions,
+    importSolarSystems
+} from "./importers";
+
 
 export interface ImportResult {
     success: number
@@ -15,7 +22,7 @@ export interface ImportStats {
     errorCount: number
 }
 
-export const importSdeFiles = async (dryRun = false): Promise<ImportStats> => {
+export const importer = async (dryRun = false): Promise<ImportStats> => {
     const stats: ImportStats = {
         datasetTotal: 0,
         datasetSuccess: 0,
@@ -26,7 +33,11 @@ export const importSdeFiles = async (dryRun = false): Promise<ImportStats> => {
 
     const imports = [
         {name: 'Bloodlines', fn: importBloodlines},
+        {name: 'Constellation', fn: importConstellations},
+        {name: 'Factions', fn: importFactions},
         {name: 'Races', fn: importRaces},
+        {name: 'Region', fn: importRegions},
+        {name: 'Solar Systems', fn: importSolarSystems},
         // import additional SDE datasets here
     ]
 

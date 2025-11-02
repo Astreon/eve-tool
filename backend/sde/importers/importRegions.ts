@@ -2,13 +2,15 @@ import * as path from "path";
 import * as readline from "readline";
 import * as fs from "fs";
 import {prisma} from "../../src/lib/prisma.js";
-import {ImportResult} from "./importSdeFiles.js";
+import {ImportResult} from "../importer.js";
+import {BATCH_SIZE, SDE_DIR} from "../config";
 
-const SDE_DIR = path.resolve('../.sde')
-const BATCH_SIZE = 100
+export const importRegions = async (dryRun = false): Promise<ImportResult> => {
+  const filePath = path.join(SDE_DIR, 'mapRegions.jsonl')
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing File: ${filePath}`)
+  }
 
-export const importRaces = async (dryRun = false): Promise<ImportResult> => {
-  const filePath = path.join(SDE_DIR, 'races.jsonl')
   const rl = readline.createInterface({
     input: fs.createReadStream(filePath),
     crlfDelay: Infinity,
@@ -25,25 +27,25 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
       const json = JSON.parse(line)
       const data = {
         id: json._key,
-        name: json.name?.de || json.name?.en || 'Unknown',
+        name: json.name?.de || 'Unknown',
       }
       batch.push(data)
 
       if (batch.length >= BATCH_SIZE) {
         if (!dryRun)
-          await prisma.race.createMany({ data: batch, skipDuplicates: true })
+          await prisma.region.createMany({ data: batch, skipDuplicates: true })
         success += batch.length
         batch.length = 0
       }
     } catch (err) {
       errors++
-      console.log(`❌ Error parsing line ${total}:`, (err as Error).message)
+      console.log(`❌ Parse/DB error @line ${total}:`, (err as Error).message)
     }
   }
 
   if (batch.length > 0) {
     if (!dryRun)
-      await prisma.race.createMany({ data: batch, skipDuplicates: true })
+      await prisma.region.createMany({ data: batch, skipDuplicates: true })
     success += batch.length
   }
 
