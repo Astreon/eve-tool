@@ -1,4 +1,4 @@
-import {EsiSearchCategories, EsiSearchResult} from "../../types/esi.types.js";
+import {EsiSearchCategories, EsiSearchResult} from "../../types/esi/search.types.js";
 import {esiApi} from "../../lib/axios.js";
 
 export async function searchEsi(

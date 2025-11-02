@@ -1,4 +1,4 @@
-import {Character} from "../generated/client.js";
+import {Character} from "../../generated/client.js";
 
 export type CharacterWithRelations = Character & {
     race: { name: string }

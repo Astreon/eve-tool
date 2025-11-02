@@ -1,5 +1,5 @@
 import {esiApi} from '../../lib/axios.js'
-import {EsiCharacterResponse, EsiCharacter} from "../../types/esi.types.js";
+import {EsiCharacterResponse, EsiCharacter} from "../../types/esi/character.types.js";
 import {buildConditionalHeaders, computeTtlFromHeaders, extractCachingHeaders} from "../../utils/cacheControl.js";
 import {toEsiAppError} from "../../lib/axiosErrors.js";
 

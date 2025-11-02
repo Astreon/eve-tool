@@ -1,5 +1,5 @@
-import {CharacterWithRelations} from "../types/db.types.js";
-import {CharacterApiResponse} from "../types/api.types.js";
+import {CharacterWithRelations} from "../types/db/character.types.js";
+import {CharacterApiResponse} from "../types/api/character.types.js";
 
 export const mapCharacterToApiResponse = (character: CharacterWithRelations): CharacterApiResponse => ({
     id: character.id,
