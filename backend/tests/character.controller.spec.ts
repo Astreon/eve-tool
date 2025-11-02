@@ -99,7 +99,7 @@ vi.mock('../src/services/esi/index.js', () => ({ getCharacterInfo: vi.fn() }))
 import * as esi from '../src/services/esi/index.js'
 const getCharacterInfo = vi.mocked(esi.getCharacterInfo)
 
-// ── Logger dämpfen ──
+// ── Logger silent ──
 vi.mock('../src/lib/logger.js', () => ({
   logger: {
     info: () => {}, error: () => {},
@@ -112,7 +112,7 @@ import { getCharacter } from '../src/controllers/character.controller.js'
 import { redis } from '../src/lib/redis.js'
 import { prisma } from '../src/lib/prisma.js'
 
-// Express-App für Tests inkl. Error-Handler (ApiError-Shape)
+// Express-App for tests incl Error-Handler (ApiError-Shape)
 function appFactory() {
   const app = express()
   app.get('/characters/:id', (req, res, next) => getCharacter(req, res, next))
@@ -143,7 +143,7 @@ describe('character.controller getCharacter', () => {
     expect(res.body.data.name).toBe('Alpha')
   })
 
-  it('B) redis fast-path (fresh-key existiert)', async () => {
+  it('B) redis fast-path (fresh-key exists)', async () => {
     await redis.set(`character:vtest:2025-09-30:${CHAR_ID}`, JSON.stringify({
       id: CHAR_ID, name: 'Beta', corporation_id: 7, race: 'Race', bloodline: 'Bloodline', security_status: 3.1
     }), 'EX', 7200)
@@ -156,7 +156,7 @@ describe('character.controller getCharacter', () => {
     expect(getCharacterInfo).toHaveBeenCalledTimes(0)
   })
 
-  it('C) DB-window valid (DB liefert, Redis stale-ish)', async () => {
+  it('C) DB-window valid (DB delivered, Redis stale-ish)', async () => {
     const future = new Date(Date.now() + 2 * 60 * 60 * 1000)
     await (prisma.character as any).upsert({
       where: { id: CHAR_ID },
@@ -178,7 +178,7 @@ describe('character.controller getCharacter', () => {
     expect(getCharacterInfo).toHaveBeenCalledTimes(0)
   })
 
-  it('D) conditional 304 (DB vorhanden, abgelaufen)', async () => {
+  it('D) conditional 304 (DB exists, expired)', async () => {
     const past = new Date(Date.now() - 1000)
     await (prisma.character as any).upsert({
       where: { id: CHAR_ID },
@@ -264,7 +264,7 @@ describe('character.controller getCharacter', () => {
     expect(getCharacterInfo).toHaveBeenCalledTimes(0)
   })
 
-  // Negativ: kein Cache, keine DB, ESI-Fehler -> 500 + ApiError-Shape
+  // negative: no Cache, no DB, ESI-Error -> 500 + ApiError-Shape
   it('I) error shape (no cache, no db, ESI error)', async () => {
     getCharacterInfo.mockRejectedValueOnce(new Error('down'))
     const app = appFactory()
