@@ -9,7 +9,8 @@ export function buildAuthUrl(state: string) {
         response_type: "code",
         redirect_uri: config.esiSso.esiSsoRedirectUri,
         client_id: config.esiSso.esiSsoClientId,
-        scope: config.esiSso.esiSsoScopes,
+        // EVE SSO expects a single space-separated string
+        scope: config.esiSso.esiSsoScopes.join(' '),
         state,
     })
     return `${AUTH_BASE}/authorize?${q}`
@@ -18,8 +19,10 @@ export function buildAuthUrl(state: string) {
 export async function exchangeCodeForToken(code: string) {
     const basic = Buffer.from(`${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`).toString('base64')
     const res = await axios.post(`${AUTH_BASE}/token`,
-        qs.stringify({ grant_type: 'authorization_code', code: code }),
-        {headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' }}
+        qs.stringify({ grant_type: 'authorization_code', code: code, redirect_uri: config.esiSso.esiSsoRedirectUri }),
+        {headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+        validateStatus: (s) => s === 200,
+        }
     )
     return res.data as {
         access_token: string
@@ -32,8 +35,10 @@ export async function exchangeCodeForToken(code: string) {
 export async function refreshToken(refresh_token: string) {
     const basic = Buffer.from(`${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`).toString('base64')
     const res = await axios.post(`${AUTH_BASE}/token`,
-        qs.stringify({ grant_type: 'refresh_token', refresh_token: refresh_token }),
-        {headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' }}
+        qs.stringify({ grant_type: 'refresh_token', refresh_token, redirect_uri: config.esiSso.esiSsoRedirectUri }),
+        {headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+        validateStatus: (s) => s === 200,
+        }
     )
     return res.data as {
         access_token: string

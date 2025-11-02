@@ -25,15 +25,15 @@ export interface EsiCharacterResponse {
 }
 
 export interface EsiSearchResult {
-    agent?: number[]
-    alliance?: number[]
+    agents?: number[]
+    alliances?: number[]
     characters?: number[]
     constellations?: number[]
     corporations?: number[]
     factions?: number[]
-    inventory_type?: number[]
-    region?: number[]
-    solar_system?: number[]
-    station?: number[]
-    structure?: number[]
+    inventory_types?: number[]
+    regions?: number[]
+    solar_systems?: number[]
+    stations?: number[]
+    structures?: number[]
 }

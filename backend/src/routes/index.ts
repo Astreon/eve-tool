@@ -7,8 +7,11 @@ import {getCharacter} from "../controllers/character.controller.js";
 const router = Router()
 
 router.use('/auth', authRoutes)
+
+// public routes
 router.use('/api/character', characterRoutes) //2123162143
 
+// authenticated routes
 router.use('/search/characters', requireAuth, getCharacter)
 
 export default router
