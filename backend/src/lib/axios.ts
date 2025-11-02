@@ -1,11 +1,14 @@
-import axios, {AxiosError} from 'axios'
+import axios, {
+    AxiosError,
+    AxiosResponse,
+    InternalAxiosRequestConfig,
+} from 'axios'
 import config from '../config/config.js'
-import {AppError, BadRequestError, NotFoundError, UnauthorizedError} from '../types/appError.js'
-import {logger} from "./logger.js";
+import {logger} from './logger.js'
 
 export const esiApi = axios.create({
     baseURL: config.esiBaseUrl,
-    timeout: 10000,
+    timeout: 10_000,
     headers: {
         Accept: 'application/json',
         'X-Compatibility-Date': config.esiCompatibilityDate,
@@ -13,45 +16,51 @@ export const esiApi = axios.create({
     },
 })
 
-esiApi.interceptors.request.use((req) => {
+function headerNumber(headers: Record<string, any>, name: string): number | undefined {
+    const entry = Object.entries(headers ?? {}).find(([k]) => k.toLowerCase() === name.toLowerCase())
+    const raw = entry?.[1]
+    const s = Array.isArray(raw) ? raw[0] : raw
+    if (typeof s !== 'string') return undefined
+    const n = parseInt(s, 10)
+    return Number.isFinite(n) ? n : undefined
+}
+
+function buildUrl(req: InternalAxiosRequestConfig) {
+    const base = req.baseURL ?? ''
+    const url = req.url ?? ''
+    return `${base}${url}`
+}
+
+esiApi.interceptors.request.use((req: InternalAxiosRequestConfig) => {
     const method = (req.method ?? 'GET').toUpperCase()
-    logger.info('ESI', `→ ${method} ${req.baseURL ?? ''}${req.url ?? ''}`)
+    logger.info('ESI', `→ ${method} ${buildUrl(req)}`)
     return req
 })
 
 esiApi.interceptors.response.use(
-    (res) => {
-        const remain = Number(res.headers['X-Esi-Error-Limit-Remain'])
-        const reset = Number(res.headers['X-Esi-Error-Limit-Reset'])
-        if (!Number.isNaN(remain) && !Number.isNaN(reset)) {
+    (res: AxiosResponse) => {
+        const remain = headerNumber(res.headers as any, 'x-esi-error-limit-remain')
+        const reset = headerNumber(res.headers as any, 'x-esi-error-limit-reset')
+        if (typeof remain === 'number' && typeof reset === 'number') {
             logger.info('ESI', `Error-Limit: remain=${remain}, reset=${reset}s`)
         }
         return res
     },
-    (error: AxiosError<any>) => {
+    (error: AxiosError) => {
         if (error.response) {
-            const {status, data, headers} = error.response
-            const msg = typeof data?.error === 'string' ? data.error : error.message
-            const remain = headers?.['X-Esi-Error-Limit-Remain']
-            const reset = headers?.['X-Esi-Error-Limit-Reset']
-            const meta = {status, remain, reset}
-
-            logger.error('ESI', `[${status}] ${msg}`, meta)
-
-            switch (status) {
-                case 400:
-                    throw new BadRequestError(msg)
-                case 401:
-                    throw new UnauthorizedError(msg)
-                case 404:
-                    throw new NotFoundError(msg)
-                default:
-                    throw new AppError(msg, status, true)
-            }
+            const {status, headers, data} = error.response
+            const remain = headerNumber(headers as any, 'x-esi-error-limit-remain')
+            const reset = headerNumber(headers as any, 'x-esi-error-limit-reset')
+            const msg = typeof (data as any)?.error === 'string' ? (data as any).error : error.message
+            logger.error('ESI', `[${status}] ${msg}`, {
+                remain,
+                reset,
+                url: error.config?.url,
+                method: error.config?.method,
+            })
+        } else {
+            logger.error('ESI', `[Network] ${error.message}`, {stack: error.stack})
         }
-
-        const networkMsg = `[ESI] Network Error: ${error.message}`
-        logger.error('ESI', networkMsg, {stack: error.stack})
-        throw new AppError(networkMsg, 502, true)
+        return Promise.reject(error)
     }
 )

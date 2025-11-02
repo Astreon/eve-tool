@@ -24,7 +24,6 @@ model Character {
   etag           String?   @db.Text
   lastModified   DateTime?
   expiresAt      DateTime?
-  lastUpdated    DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   bloodline Bloodline @relation(fields: [bloodlineId], references: [id])

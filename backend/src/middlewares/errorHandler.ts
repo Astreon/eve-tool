@@ -1,21 +1,28 @@
 import { Request, Response, NextFunction } from 'express'
-import { AppError } from '../types/appError.js'
 import { ApiResponse } from '../types/apiResponse.js'
+import { AppError, BadRequestError } from '../types/appError.js'
+import {z, ZodError} from 'zod'
 
-
-export const errorHandler = (
-  err: AppError,
-  req: Request,
-  res: Response<ApiResponse<null>>,
+export function errorHandler(
+  err: unknown,
+  _req: Request,
+  res: Response<ApiResponse<never>>,
   _next: NextFunction
-) => {
-  console.error(`[ERROR] ${err.message}`)
+) {
+  // Zod → 400 mit Details
+  if (err instanceof ZodError) {
+    const appErr = new BadRequestError('Validation failed', z.treeifyError(err))
+    return res.status(appErr.statusCode).json({
+      success: false,
+      message: appErr.message,
+      code: appErr.code,
+    })
+  }
 
-  const status = err.statusCode || 500
-  const message = err.isOperational ? err.message : 'Internal Server Error'
-
-  res.status(status).json({
+  const appErr = AppError.fromUnknown(err)
+  return res.status(appErr.statusCode).json({
     success: false,
-    message
+    message: appErr.message || 'Internal Server Error',
+    code: appErr.code,
   })
 }
