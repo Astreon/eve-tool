@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { describe, it, beforeEach, expect, vi } from 'vitest'
-import * as express from 'express'
-import * as request from 'supertest'
+import express from 'express'
+import request from 'supertest'
 
 // ── Config & Thresholds ──
 vi.mock('../src/config/config.js', () => ({
