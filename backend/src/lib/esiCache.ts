@@ -10,11 +10,11 @@ import type {EsiResult, WithEsiCacheConfig} from '../types/cache.types.js'
 export function makeCachedController<TDb, TApi, TEsi>(
     cfg: WithEsiCacheConfig<TDb, TApi, TEsi>
 ) {
-    const fallbackTtl = cfg.fallbackTtlSec ?? config.esiFallbackTtlSeconds
+    const fallbackTtl = cfg.fallbackTtlSec ?? config.esiApi.esiFallbackTtlSeconds
 
     function keys(id: number | string) {
-        const v = config.cacheVersion
-        const cd = config.esiCompatibilityDate
+        const v = config.redis.cacheVersion
+        const cd = config.esiApi.esiCompatibilityDate
         const base = `${cfg.keyBase}:${v}:${cd}:${id}`
         return {
             data: base,

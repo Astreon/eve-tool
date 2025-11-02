@@ -5,12 +5,12 @@ import {logger} from './logger.js'
 import {redis} from './redis.js'
 
 export const esiApi = axios.create({
-    baseURL: config.esiBaseUrl,
+    baseURL: config.esiApi.esiBaseUrl,
     timeout: 10000,
     headers: {
         Accept: 'application/json',
-        'X-Compatibility-Date': config.esiCompatibilityDate,
-        'Accept-Language': config.esiAcceptLanguage,
+        'X-Compatibility-Date': config.esiApi.esiCompatibilityDate,
+        'Accept-Language': config.esiApi.esiAcceptLanguage,
     },
 })
 

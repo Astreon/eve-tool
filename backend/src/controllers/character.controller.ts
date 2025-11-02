@@ -106,7 +106,7 @@ export const getCharacter = makeCachedController<CharacterWithRelations, Charact
   kind: 'CHARACTER',
   keyBase: 'character',
   freshThresholdSec: CACHE_THRESHOLDS.CHARACTER,
-  fallbackTtlSec: config.esiFallbackTtlSeconds,
+  fallbackTtlSec: config.esiApi.esiFallbackTtlSeconds,
 
   parseId: parseNumericIdFromParams('id', {
     ranges: CHARACTER_ID_RANGES,

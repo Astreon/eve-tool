@@ -1,3 +1,7 @@
+export type EsiSearchCategories =
+    | 'agent' | 'alliance' | 'character' | 'constellation' | 'corporation'
+    | 'faction' | 'inventory_type' | 'region' | 'solar_system' | 'station' | 'structure'
+
 export interface EsiCharacter {
     //alliance_id?: number
     //birthday: string
@@ -18,4 +22,18 @@ export interface EsiCharacterResponse {
     ttl?: number | null
     expires?: string | null
     lastModified?: string | null
+}
+
+export interface EsiSearchResult {
+    agent?: number[]
+    alliance?: number[]
+    characters?: number[]
+    constellations?: number[]
+    corporations?: number[]
+    factions?: number[]
+    inventory_type?: number[]
+    region?: number[]
+    solar_system?: number[]
+    station?: number[]
+    structure?: number[]
 }
