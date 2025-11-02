@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:ui": "vitest",
     "db:push": "npx prisma db push",
-    "sde:seed": "npx tsx --env-file .env prisma\\seed.ts"
+    "sde:seed": "npx tsx --env-file .env prisma\\seed\\index.ts"
   },
   "keywords": [],
   "author": "Astreon",

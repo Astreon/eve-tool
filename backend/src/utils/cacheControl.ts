@@ -1,9 +1,7 @@
 type HeadersLike = Record<string, unknown>
 
-/** Header-Namen case-insensitiv lesen und Werte zu string normalisieren */
 function getHeader(headers: HeadersLike, name: string): string | undefined {
   const lower = name.toLowerCase()
-  // Axios liefert lowercase; andere Clients evtl. gemischt
   for (const [k, v] of Object.entries(headers ?? {})) {
     if (k.toLowerCase() === lower) {
       if (typeof v === 'string') return v
@@ -15,14 +13,12 @@ function getHeader(headers: HeadersLike, name: string): string | undefined {
   return undefined
 }
 
-/** HTTP-Datum → ms seit Epoch (undefined bei Parse-Fehler) */
 function parseHttpDate(value?: string): number | undefined {
   if (!value) return undefined
   const n = Date.parse(value)
   return Number.isNaN(n) ? undefined : n
 }
 
-/** "public, max-age=123" → Map('public' => true, 'max-age' => '123') */
 function parseCacheControl(raw?: string) {
   const out = new Map<string, string | true>()
   if (!raw) return out
@@ -34,7 +30,6 @@ function parseCacheControl(raw?: string) {
   return out
 }
 
-/** TTL strikt relativ zur Serverzeit ("Date") berechnen */
 export function computeTtlFromHeaders(headers: HeadersLike): number | undefined {
   const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now()
 
@@ -62,17 +57,15 @@ export function computeTtlFromHeaders(headers: HeadersLike): number | undefined 
   return undefined
 }
 
-/** Cache-Deadline basierend auf Headers (serverseitig) bestimmen */
 export function computeCacheUntil(headers: HeadersLike): Date | undefined {
   const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now()
   const ttl = computeTtlFromHeaders(headers)
   return ttl === undefined ? undefined : new Date(serverNowMs + ttl * 1000)
 }
 
-/** ETag/LM/Expires/Date extrahieren (einheitlich) */
 export function extractCachingHeaders(headers: HeadersLike) {
   return {
-    etag: getHeader(headers, 'etag'), // inkl. Anführungszeichen belassen
+    etag: getHeader(headers, 'etag'),
     lastModified: getHeader(headers, 'last-modified'),
     expires: getHeader(headers, 'expires'),
     date: getHeader(headers, 'date'),
@@ -80,7 +73,6 @@ export function extractCachingHeaders(headers: HeadersLike) {
   }
 }
 
-/** Conditional-GET Header bauen */
 export function buildConditionalHeaders(opts: { etag?: string | null }) {
   return opts.etag ? { 'If-None-Match': opts.etag } : {}
 }

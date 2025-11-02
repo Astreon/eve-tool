@@ -11,9 +11,8 @@ export type EsiResult<T> = {
 
 export type DbMeta = {
     etag?: string | null
-    expiresAt?: Date | null
-    lastUpdated?: Date | null
     lastModified?: Date | null
+    expiresAt?: Date | null
 }
 
 export interface WithEsiCacheConfig<TDb, TApi, TEsi> {
@@ -21,6 +20,7 @@ export interface WithEsiCacheConfig<TDb, TApi, TEsi> {
     keyBase: string
     freshThresholdSec: number
     fallbackTtlSec?: number
+
     parseId: (req: ExpressRequest) => number | string
 
     fetchDb: (id: number | string) => Promise<TDb | null>

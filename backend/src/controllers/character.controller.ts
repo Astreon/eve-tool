@@ -1,75 +1,122 @@
-import {makeCachedController, parseNumericIdFromParams} from "../lib/esiCache.js";
 import { prisma } from '../lib/prisma.js'
+import { CharacterWithRelations } from '../types/db.types.js'
+import { DbMeta } from '../types/cache.types.js'
+import { CharacterApiResponse } from '../types/api.types.js'
+import { mapCharacterToApiResponse } from '../mappers/character.mapper.js'
+import { getCharacterInfo } from '../services/esi/index.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import config from '../config/config.js'
-import { getCharacterInfo } from '../services/esi/index.js'
-import { mapCharacterToApiResponse } from '../mappers/character.mapper.js'
-import { CharacterWithRelations } from '../types/db.types.js'
-import { CharacterApiResponse } from '../types/api.types.js'
-import { EsiCharacter } from '../types/esi.types.js'
+import { makeCachedController } from '../lib/esiCache.js'
+import { parseNumericIdFromParams } from '../utils/params.js'
 
-export const getCharacter = makeCachedController<
-  CharacterWithRelations,
-  CharacterApiResponse,
-  EsiCharacter
->({
+// ------- ESI: API-Ranges -------
+const CHARACTER_ID_RANGES: ReadonlyArray<{ min: number; max: number }> = [
+  { min: 90_000_000,    max: 97_999_999 },
+  { min: 100_000_000,   max: 2_099_999_999 },
+  { min: 2_100_000_000, max: 2_111_999_999 },
+  { min: 2_112_000_000, max: 2_129_999_999 },
+]
+
+// ------- Fetch: DB -------
+const fetchDb = async (id: number | string): Promise<CharacterWithRelations | null> => {
+  return await prisma.character.findUnique({
+    where: { id: Number(id) },
+    include: {
+      race: { select: { name: true } },
+      bloodline: { select: { name: true } },
+    },
+  }) as unknown as CharacterWithRelations | null
+}
+
+// ------- Extract meta from db -------
+const getDbMeta = (row: CharacterWithRelations | null): DbMeta => ({
+  etag: row?.etag ?? undefined,
+  expiresAt: row?.expiresAt ?? undefined,
+  lastModified: row?.lastModified ?? undefined,
+})
+
+// ------- ESI-Call -------
+const fetchEsi = (id: number | string, etag?: string) => getCharacterInfo(Number(id), etag)
+
+// ------- Upsert if 200 (ESI) -------
+const upsertDbOn200 = async (
+  id: number | string,
+  payload: Awaited<ReturnType<typeof fetchEsi>> extends { data: infer T } ? T : never,
+  meta: Required<Pick<DbMeta, 'etag'>> & { expiresAt: Date; lastModified?: Date | null }
+): Promise<CharacterWithRelations> => {
+  if (!payload) throw new Error('ESI payload missing')
+
+  if (payload.race_id == null || payload.bloodline_id == null) {
+    throw new Error('ESI returned null for required fields race_id/bloodline_id')
+  }
+
+  const upserted = await prisma.character.upsert({
+    where: { id: Number(id) },
+    create: {
+      id: Number(id),
+      name: payload.name,
+      corporationId: payload.corporation_id,
+      raceId: payload.race_id,
+      bloodlineId: payload.bloodline_id,
+      securityStatus: payload.security_status ?? null,
+      etag: meta.etag ?? null,
+      lastModified: meta.lastModified ?? null,
+      expiresAt: meta.expiresAt,
+    },
+    update: {
+      name: payload.name,
+      corporationId: payload.corporation_id,
+      raceId: payload.race_id,
+      bloodlineId: payload.bloodline_id,
+      securityStatus: payload.security_status ?? null,
+      etag: meta.etag ?? null,
+      lastModified: meta.lastModified ?? null,
+      expiresAt: meta.expiresAt,
+    },
+    include: {
+      race: { select: { name: true } },
+      bloodline: { select: { name: true } },
+    },
+  })
+
+  return upserted as unknown as CharacterWithRelations
+}
+
+// ------- 304 bump -------
+const bumpDbMetaOn304 = async (id: number | string, meta: DbMeta) => {
+  await prisma.character
+    .update({
+      where: { id: Number(id) },
+      data: {
+        etag: meta.etag ?? null,
+        lastModified: meta.lastModified ?? null,
+        expiresAt: meta.expiresAt ?? null,
+      },
+    })
+    .catch(() => {
+    })
+}
+
+// ------- Mapper -------
+const mapToApi = (row: CharacterWithRelations): CharacterApiResponse =>
+  mapCharacterToApiResponse(row)
+
+// ------- Wrapper-Instance for Characters -------
+export const getCharacter = makeCachedController<CharacterWithRelations, CharacterApiResponse, any>({
   kind: 'CHARACTER',
   keyBase: 'character',
   freshThresholdSec: CACHE_THRESHOLDS.CHARACTER,
   fallbackTtlSec: config.esiFallbackTtlSeconds,
-  parseId: parseNumericIdFromParams('id'),
 
-  fetchDb: async (id) =>
-    prisma.character.findUnique({
-      where: { id: Number(id) },
-      include: { race: { select: { name: true } }, bloodline: { select: { name: true } } },
-    }) as any,
-
-  getDbMeta: (row) => ({
-    etag: (row as any)?.etag ?? null,
-    expiresAt: (row as any)?.expiresAt ?? null,
-    lastUpdated: (row as any)?.updatedAt ?? null,
-    lastModified: (row as any)?.lastModified ?? null,
+  parseId: parseNumericIdFromParams('id', {
+    ranges: CHARACTER_ID_RANGES,
+    notFoundIfOutOfRange: true,
   }),
 
-  fetchEsi: (id, etag) => getCharacterInfo(Number(id), etag),
-
-  upsertDbOn200: async (id, payload, meta) => {
-    const upserted = await prisma.character.upsert({
-      where: { id: Number(id) },
-      create: {
-        id: Number(id),
-        name: payload.name,
-        corporationId: payload.corporation_id,
-        raceId: payload.race_id,
-        bloodlineId: payload.bloodline_id,
-        securityStatus: payload.security_status ?? null,
-        etag: meta.etag ?? null,
-        lastModified: meta.lastModified ?? null,
-        expiresAt: meta.expiresAt,
-      } as any,
-      update: {
-        name: payload.name,
-        corporationId: payload.corporation_id,
-        raceId: payload.race_id,
-        bloodlineId: payload.bloodline_id,
-        securityStatus: payload.security_status ?? null,
-        etag: meta.etag ?? null,
-        lastModified: meta.lastModified ?? null,
-        expiresAt: meta.expiresAt,
-      } as any,
-      include: { race: { select: { name: true } }, bloodline: { select: { name: true } } },
-    })
-    return upserted as any
-  },
-
-  bumpDbMetaOn304: async (id, meta) => {
-    const data: any = { updatedAt: new Date() }
-    if (meta.etag !== undefined) data.etag = meta.etag
-    if (meta.lastModified !== undefined) data.lastModified = meta.lastModified
-    if (meta.expiresAt !== undefined) data.expiresAt = meta.expiresAt
-    await prisma.character.update({ where: { id: Number(id) }, data }).catch(() => {})
-  },
-
-  mapToApi: (row) => mapCharacterToApiResponse(row as any),
+  fetchDb,
+  getDbMeta,
+  fetchEsi,
+  upsertDbOn200,
+  bumpDbMetaOn304,
+  mapToApi,
 })

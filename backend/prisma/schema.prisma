@@ -16,11 +16,11 @@ datasource db {
 
 model Character {
   id             Int       @id
-  name           String // maybe @unique
+  name           String    @unique
   bloodlineId    Int
   corporationId  Int
   raceId         Int
-  securityStatus Int
+  securityStatus Float?
   etag           String?   @db.Text
   lastModified   DateTime?
   expiresAt      DateTime?
@@ -28,6 +28,8 @@ model Character {
 
   bloodline Bloodline @relation(fields: [bloodlineId], references: [id])
   race      Race      @relation(fields: [raceId], references: [id])
+
+  @@index([expiresAt])
 }
 
 model Bloodline {

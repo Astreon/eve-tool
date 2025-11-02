@@ -20,9 +20,9 @@ export function errorHandler(
   }
 
   const appErr = AppError.fromUnknown(err)
-  return res.status(appErr.statusCode).json({
+  return res.status(appErr.statusCode ?? 500).json({
     success: false,
     message: appErr.message || 'Internal Server Error',
-    code: appErr.code,
+    code: appErr.code ?? 'INTERNAL',
   })
 }

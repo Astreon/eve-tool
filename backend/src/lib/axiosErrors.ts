@@ -2,8 +2,6 @@ import axios from 'axios'
 import {AppError, NotFoundError, RateLimitedError} from '../types/appError.js'
 import {EsiErrorContext} from "../types/axios.types.js";
 
-
-/** Axios/ESI-Fehler → AppError (NotFound / RateLimited / EsiError) */
 export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
     if (axios.isAxiosError(e)) {
         const status = e.response?.status ?? 502
@@ -39,12 +37,11 @@ export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
     return new EsiError('ESI request failed', {details: {original: e}})
 }
 
-/** Spezialisierter Fehler für generische ESI-Probleme */
 export class EsiError extends AppError {
     constructor(message: string, opts: { statusCode?: number; details?: unknown; cause?: unknown } = {}) {
         super(message, {
             statusCode: opts.statusCode ?? 502,
-            code: 'ESI_ERROR',
+            code: 'ESI_HTTP_ERROR',
             isOperational: true,
             details: opts.details,
             cause: opts.cause,
@@ -52,7 +49,6 @@ export class EsiError extends AppError {
     }
 }
 
-/** Header als number (case-insensitiv) */
 function headerNumber(headers: Record<string, any>, name: string): number | undefined {
     const entry = Object.entries(headers).find(([k]) => k.toLowerCase() === name.toLowerCase())
     const raw = entry?.[1]

@@ -11,6 +11,12 @@ const Validator = z.object({
     REDIS_PORT: z.coerce.number().default(6379),
     REDIS_PASSWORD: z.string().default(''),
     CACHE_VERSION: z.string().default('v1'),
+    ESI_BACKOFF_SHARE_REDIS: z.coerce.boolean().default(true),
+    ESI_BACKOFF_SOFT_REMAIN: z.coerce.number().max(100).positive().default(5),
+    ESI_BACKOFF_HARD_REMAIN: z.coerce.number().max(100).positive().default(1),
+    ESI_BACKOFF_KEY: z.string().default('esi:cooldown-until'),
+    ESI_BACKOFF_JITTER : z.coerce.number().positive().default(150),
+    ESI_BACKOFF_SKEW: z.coerce.number().positive().default(250),
 })
 
 const env = Validator.parse(process.env)
@@ -26,6 +32,14 @@ interface Config {
     redisPort: number
     redisPassword: string
     cacheVersion: string
+    esiBackoff: {
+        shareViaRedis: boolean
+        minRemainSoft: number
+        minRemainHard: number
+        key: string
+        jitter: number
+        clockSkew: number
+    }
 }
 
 const config: Config = {
@@ -39,6 +53,14 @@ const config: Config = {
     redisPort: env.REDIS_PORT,
     redisPassword: env.REDIS_PASSWORD,
     cacheVersion: env.CACHE_VERSION,
+    esiBackoff: {
+        shareViaRedis: env.ESI_BACKOFF_SHARE_REDIS,
+        minRemainSoft: env.ESI_BACKOFF_SOFT_REMAIN,
+        minRemainHard: env.ESI_BACKOFF_HARD_REMAIN,
+        key: env.ESI_BACKOFF_KEY,
+        jitter: env.ESI_BACKOFF_JITTER,
+        clockSkew: env.ESI_BACKOFF_SKEW,
+    }
 }
 
 export default config
