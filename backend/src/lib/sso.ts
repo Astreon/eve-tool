@@ -19,9 +19,10 @@ export function buildAuthUrl(state: string) {
 export async function exchangeCodeForToken(code: string) {
     const basic = Buffer.from(`${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`).toString('base64')
     const res = await axios.post(`${AUTH_BASE}/token`,
-        qs.stringify({ grant_type: 'authorization_code', code: code, redirect_uri: config.esiSso.esiSsoRedirectUri }),
-        {headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-        validateStatus: (s) => s === 200,
+        qs.stringify({grant_type: 'authorization_code', code: code, redirect_uri: config.esiSso.esiSsoRedirectUri}),
+        {
+            headers: {'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded'},
+            validateStatus: (s) => s === 200,
         }
     )
     return res.data as {
@@ -35,9 +36,10 @@ export async function exchangeCodeForToken(code: string) {
 export async function refreshToken(refresh_token: string) {
     const basic = Buffer.from(`${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`).toString('base64')
     const res = await axios.post(`${AUTH_BASE}/token`,
-        qs.stringify({ grant_type: 'refresh_token', refresh_token, redirect_uri: config.esiSso.esiSsoRedirectUri }),
-        {headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-        validateStatus: (s) => s === 200,
+        qs.stringify({grant_type: 'refresh_token', refresh_token, redirect_uri: config.esiSso.esiSsoRedirectUri}),
+        {
+            headers: {'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded'},
+            validateStatus: (s) => s === 200,
         }
     )
     return res.data as {
@@ -45,5 +47,22 @@ export async function refreshToken(refresh_token: string) {
         refresh_token?: string
         expires_in: number
         token_type: 'Bearer'
+    }
+}
+
+export async function verifyToken(accessToken: string) {
+    const res = await axios.get('https://login.eveonline.com/oauth/verify', {
+        headers: {Authorization: `Bearer ${accessToken}`},
+        validateStatus: s => s === 200,
+    })
+    // Typen lt. ESI SSO verify
+    return res.data as {
+        CharacterID: number
+        CharacterName: string
+        ExpiresOn: string
+        Scopes: string
+        TokenType: 'Bearer'
+        CharacterOwnerHash: string
+        IntellectualProperty: string
     }
 }

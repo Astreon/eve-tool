@@ -7,10 +7,14 @@ import request from 'supertest'
 vi.mock('../src/config/config.js', () => ({
     default: {
         nodeEnv: 'test',
-        cacheVersion: 'vtest',
-        esiCompatibilityDate: '2025-09-30',
-        esiFallbackTtlSeconds: 86400,
-        esiBaseUrl: 'http://localhost:3100',
+        redis: {
+            cacheVersion: 'vtest',
+        },
+        esiApi: {
+            esiBaseUrl: 'http://localhost:3100',
+            esiCompatibilityDate: '2025-09-30',
+            esiFallbackTtlSeconds: 86400,
+        },
     }
 }))
 vi.mock('../src/config/cacheThresholds.js', () => ({
