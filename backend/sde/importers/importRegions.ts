@@ -4,6 +4,7 @@ import * as fs from "fs";
 import {prisma} from "../../src/lib/prisma.js";
 import {ImportResult} from "../importer.js";
 import {BATCH_SIZE, SDE_DIR} from "../config";
+import { Prisma } from "../../src/generated/client.js";
 
 export const importRegions = async (dryRun = false): Promise<ImportResult> => {
   const filePath = path.join(SDE_DIR, 'mapRegions.jsonl')
@@ -16,7 +17,7 @@ export const importRegions = async (dryRun = false): Promise<ImportResult> => {
     crlfDelay: Infinity,
   })
 
-  const batch: { id: number; name: string }[] = []
+  const batch: Prisma.RegionCreateManyInput[] = [];
   let success = 0
   let total = 0
   let errors = 0
@@ -28,6 +29,10 @@ export const importRegions = async (dryRun = false): Promise<ImportResult> => {
       const data = {
         id: json._key,
         name: json.name?.de || 'Unknown',
+        factionId: json.factionID ?? null,
+        x: json.position.x,
+        y: json.position.y,
+        z: json.position.z,
       }
       batch.push(data)
 

@@ -51,8 +51,9 @@ model Race {
 }
 
 model Faction {
-  id   Int    @id
-  name String @unique
+  id     Int      @id
+  name   String   @unique
+  Region Region[]
 }
 
 model SolarSystem {
@@ -66,6 +67,12 @@ model Constellation {
 }
 
 model Region {
-  id   Int    @id
-  name String @unique
+  id        Int    @id
+  name      String @unique
+  factionId Int?
+  x         Float
+  y         Float
+  z         Float
+
+  faction Faction? @relation(fields: [factionId], references: [id])
 }
