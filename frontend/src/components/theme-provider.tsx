@@ -12,3 +12,5 @@ export const AppThemeProvider: React.FC<AppThemeProviderProps> = ({
 }) => {
   return <BaseThemeProvider {...props}>{children}</BaseThemeProvider>
 }
+
+export { useTheme } from "tanstack-theme-kit"
