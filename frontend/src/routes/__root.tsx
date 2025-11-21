@@ -12,14 +12,16 @@ import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
 import {AppThemeProvider as ThemeProvider} from "@/components/theme-provider";
 import {cn} from "@/lib/utils.ts";
 import appCss from '../styles/globals.css?url'
+import {DEFAULT_THEME, type ThemeType} from "@/lib/themes";
 
-import {DEFAULT_THEME} from "@/lib/themes";
 import {ActiveThemeProvider} from "@/components/active-theme.tsx";
 import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar.tsx";
 import {AppSidebar} from "@/components/layout/sidebar/app-sidebar.tsx";
 import {SiteHeader} from "@/components/layout/header";
 import {Button} from "@/components/ui/button.tsx";
 import {ArrowRight} from "lucide-react";
+import {Toaster} from "@/components/ui/sonner.tsx";
+import { RouterTopLoadingBar } from "@/components/router-top-loading-bar";
 
 export const Route = createRootRoute({
     head: () => ({
@@ -67,18 +69,14 @@ function RootComponent() {
 }
 
 function RootDocument({children}: Readonly<{ children: ReactNode }>) {
-    const themeSettings = {
-        preset: ('ocean-breeze') as any,
-        scale: (DEFAULT_THEME.scale) as any,
-        radius: (DEFAULT_THEME.radius) as any,
-        contentLayout: ('full') as any
-    };
+    const themeSettings: ThemeType = DEFAULT_THEME;
 
-    const bodyAttributes = Object.fromEntries(
-        Object.entries(themeSettings)
-            .filter(([_, value]) => value)
-            .map(([key, value]) => [`data-theme-preset-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`, value])
-    );
+    const bodyAttributes = {
+        'data-theme-preset': themeSettings.preset,
+        'data-theme-scale': themeSettings.scale,
+        'data-theme-radius': themeSettings.radius,
+        'data-theme-content-layout': themeSettings.contentLayout,
+    } satisfies Record<string, string | number>
 
     return (
         <html suppressHydrationWarning>
@@ -88,7 +86,8 @@ function RootDocument({children}: Readonly<{ children: ReactNode }>) {
         <body suppressHydrationWarning className={cn("bg-background group/layout font-sans")} {...bodyAttributes}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <ActiveThemeProvider initialTheme={themeSettings}>
-                <SidebarProvider defaultOpen={false} style={{
+                <RouterTopLoadingBar />
+                <SidebarProvider defaultOpen={true} style={{
                     "--sidebar-width": "calc(var(--spacing) * 64)",
                     "--header-height": "calc(var(--spacing) * 14)"
                 } as React.CSSProperties}>
@@ -99,6 +98,7 @@ function RootDocument({children}: Readonly<{ children: ReactNode }>) {
                             <div
                                 className="@container/main p-4 xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
                                 {children}
+                                <Toaster position="top-center" richColors/>
                             </div>
                         </div>
                     </SidebarInset>
@@ -124,7 +124,8 @@ function RootDocument({children}: Readonly<{ children: ReactNode }>) {
 
 function NotFoundPage() {
     return (
-        <div className="bg-background grid min-h-[calc(90vh-var(--header-height))] items-center pb-8 lg:grid-cols-2 lg:pb-0">
+        <div
+            className="bg-background grid h-[calc(100vh-var(--header-height)-3rem)] items-center justify-center pb-8 lg:grid-cols-2 lg:pb-0">
             <div className="text-center">
                 <p className="text-muted-foreground text-base font-semibold">404</p>
                 <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl lg:text-7xl">

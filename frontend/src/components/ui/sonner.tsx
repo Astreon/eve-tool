@@ -1,4 +1,4 @@
-import { useTheme } from "next-themes"
+import { useTheme } from "tanstack-theme-kit"
 import { Toaster as Sonner, ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
