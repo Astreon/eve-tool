@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useEffect} from "react";
-import {useLocation} from "@tanstack/react-router";
+import {Link, useLocation} from "@tanstack/react-router";
 import {useIsTablet} from "@/hooks/use-mobile";
 
 import {
@@ -36,10 +36,12 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            className="hover:text-foreground h-10 group-data-[collapsible=icon]:px-0! hover:bg-[var(--primary)]/5">
-                            <Logo/>
-                            <span className="font-semibold">EVE Tool</span>
+                        <SidebarMenuButton asChild
+                                           className="hover:text-foreground h-10 group-data-[collapsible=icon]:px-0! hover:bg-[var(--primary)]/5">
+                            <Link to="/" preload="intent" className="flex w-full items-center gap-2">
+                                <Logo/>
+                                <span className="font-semibold">EVE Tool</span>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
