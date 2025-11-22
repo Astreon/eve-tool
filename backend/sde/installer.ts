@@ -1,10 +1,10 @@
-import {importer} from "./importer.js";
-import {prisma} from "../src/lib/prisma.js";
-import {assertSdeDirOnThrow} from "./config";
-import {getDbVersion, readSdeVersionFromFile, upsertDbVersion} from "./version";
-import {purgeSdeTables} from "./resetDatabase";
+import {importer} from "./importer.js"
+import {prisma} from "../src/lib/prisma.js"
+import {assertSdeDirOnThrow} from "./config"
+import {getDbVersion, readSdeVersionFromFile, upsertDbVersion} from "./version"
+import {ensureLatestSdeOnDisk} from "./remote"
 
-console.log('🚀 Starting Static Data import from "local"...')
+console.log('🚀 Starting Static Data import (remote-aware)…')
 
 const DRY_RUN = process.argv.includes('--dry-run')
 if (DRY_RUN) console.log('🧪 Running in dry-run mode (no DB writes)')
@@ -12,24 +12,35 @@ if (DRY_RUN) console.log('🧪 Running in dry-run mode (no DB writes)')
 const start = performance.now()
 
 ;(async () => {
-    // 1) .sde available
+    // 0) Remote check & download (only if not Dry-Run)
+    if (!DRY_RUN) {
+        console.log('🔎 Checking for latest SDE version…')
+        await ensureLatestSdeOnDisk()
+    } else {
+        console.log('🌵 Dry-run: skipping remote version check and download.')
+    }
+
+    // 1) .sde available?
     assertSdeDirOnThrow()
 
-    // 2) Version from file and DB
+    // 2) Version from File and DB (now with update .sde)
     const fileVersion = await readSdeVersionFromFile()
     const dbVersion = await getDbVersion()
 
     if (dbVersion && dbVersion.buildNumber === fileVersion.buildNumber) {
         console.log(
-            `🆗 SDE already up to date (build ${dbVersion.buildNumber}, release ${dbVersion.releaseDate.toISOString()}). Import skipped.`
+            `🆗 SDE already up to date (build ${dbVersion.buildNumber}, release ${dbVersion.releaseDate.toISOString()}). Import skipped.`,
         )
         return
     }
 
-    // 3) Clean re-import if version is new/different
+    // 3) Clean re-import if version new/different
     if (!DRY_RUN) {
-        console.log('🧹 Performing clean re-import: purge old SDE tables...')
-        await purgeSdeTables()
+        console.log(
+            `🧨 Detected version change (DB: ${dbVersion?.buildNumber ?? 'none'} -> File: ${
+                fileVersion.buildNumber
+            }). Purging SDE tables…`,
+        )
     } else {
         console.log('🌵 Dry-run: Skipping db purge.')
     }
@@ -39,15 +50,17 @@ const start = performance.now()
     const totalTime = ((performance.now() - start) / 1000).toFixed(1)
 
     console.log(
-        `✅ Imported ${stats.lineSuccess}/${stats.lineTotal} lines in ${stats.datasetSuccess}/${stats.datasetTotal} SDE datasets in ${totalTime}s (${stats.errorCount} total errors)`
+        `✅ Imported ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} SDE datasets in ${totalTime}s (${stats.errorCount} total errors)`,
     )
 
-    // 5) Save version (only if not Dry-Run)
+    // 5) Safe version (only if not Dry-Run)
     if (!DRY_RUN) {
         await upsertDbVersion(fileVersion)
-        console.log(`📝 SDE Version updated -> build ${fileVersion.buildNumber} (${fileVersion.releaseDate}).`)
+        console.log(
+            `📝 SDE Version updated -> build ${fileVersion.buildNumber} (${fileVersion.releaseDate.toISOString()}).`,
+        )
     } else {
-        console.log(`🌵 Dry-run: Version not modified.`)
+        console.log('🌵 Dry-run: Version not modified.')
     }
 })()
     .catch((e) => {
