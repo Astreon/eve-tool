@@ -5,7 +5,7 @@
   "description": "Frontend for Eve Tool",
   "main": "index.js",
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev --port 3005",
     "build": "vite build"
   },
   "keywords": [],
