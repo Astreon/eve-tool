@@ -3,6 +3,8 @@ import {prisma} from "../src/lib/prisma.js"
 import {assertSdeDirOnThrow} from "./config"
 import {getDbVersion, readSdeVersionFromFile, upsertDbVersion} from "./version"
 import {ensureLatestSdeOnDisk} from "./remote"
+import {invalidateSdeCaches} from "./cache.js"
+import {redis} from "../src/lib/redis";
 
 console.log('🚀 Starting Static Data import (remote-aware)…')
 
@@ -53,7 +55,15 @@ const start = performance.now()
         `✅ Imported ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} SDE datasets in ${totalTime}s (${stats.errorCount} total errors)`,
     )
 
-    // 5) Safe version (only if not Dry-Run)
+    // 5) Redis-Caches invalidieren (nur wenn wir wirklich geschrieben haben)
+    if (!DRY_RUN) {
+        await invalidateSdeCaches()
+        console.log("🧹 Redis SDE caches invalidated.")
+    } else {
+        console.log("🌵 Dry-run: Redis caches not modified.")
+    }
+
+    // 6) Safe version (only if not Dry-Run)
     if (!DRY_RUN) {
         await upsertDbVersion(fileVersion)
         console.log(
@@ -69,4 +79,9 @@ const start = performance.now()
     })
     .finally(async () => {
         await prisma.$disconnect()
+
+        try {
+            await redis.quit()
+        } catch {
+        }
     })
