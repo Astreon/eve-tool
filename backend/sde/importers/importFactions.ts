@@ -4,6 +4,7 @@ import * as fs from "fs";
 import {prisma} from "../../src/lib/prisma.js";
 import {ImportResult} from "../importer.js";
 import {BATCH_SIZE, SDE_DIR} from "../config";
+import config from "../../src/config/config";
 
 export const importFactions = async (dryRun = false): Promise<ImportResult> => {
     const filePath = path.join(SDE_DIR, 'factions.jsonl')
@@ -27,7 +28,7 @@ export const importFactions = async (dryRun = false): Promise<ImportResult> => {
             const json = JSON.parse(line)
             const data = {
                 id: json._key,
-                name: json.name?.de || 'Unknown',
+                name: json.name?.en || 'Unknown',
             }
             batch.push(data)
 

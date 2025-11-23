@@ -27,7 +27,7 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
             const json = JSON.parse(line)
             const data = {
                 id: json._key,
-                name: json.name?.de || 'Unknown',
+                name: json.name?.en || 'Unknown',
             }
             batch.push(data)
 

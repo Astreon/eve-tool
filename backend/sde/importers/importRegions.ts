@@ -28,7 +28,7 @@ export const importRegions = async (dryRun = false): Promise<ImportResult> => {
             const json = JSON.parse(line)
             const data: Prisma.RegionCreateManyInput = {
                 id: json._key,
-                name: json.name?.de || 'Unknown',
+                name: json.name?.en || 'Unknown',
                 factionId: json.factionID ?? null,
                 x: json.position.x,
                 y: json.position.y,
