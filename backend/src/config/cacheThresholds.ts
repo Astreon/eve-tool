@@ -4,4 +4,6 @@
 
 export const CACHE_THRESHOLDS = {
     CHARACTER: 60 * 10, // 10 min
+    ESI_STATUS: 30_000, // 30 sec
+    ESI_META: 60_000, // 1 min
 } as const

@@ -40,7 +40,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                                            className="hover:text-foreground h-10 group-data-[collapsible=icon]:px-0! hover:bg-[var(--primary)]/5">
                             <Link to="/" preload="intent" className="flex w-full items-center gap-2">
                                 <Logo/>
-                                <span className="font-semibold">EVE Tool</span>
+                                <span className="font-semibold">EVE Toolkit</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

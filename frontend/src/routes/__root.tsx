@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-router'
 import {TanStackDevtools} from "@tanstack/react-devtools";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
+import {ReactQueryDevtoolsPanel} from '@tanstack/react-query-devtools';
 import {AppThemeProvider as ThemeProvider} from "@/components/theme-provider";
 import {cn} from "@/lib/utils.ts";
 import appCss from '../styles/globals.css?url'
@@ -21,7 +22,10 @@ import {SiteHeader} from "@/components/layout/header";
 import {Button} from "@/components/ui/button.tsx";
 import {ArrowRight} from "lucide-react";
 import {Toaster} from "@/components/ui/sonner.tsx";
-import { RouterTopLoadingBar } from "@/components/router-top-loading-bar";
+import {RouterTopLoadingBar} from "@/components/router-top-loading-bar";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+
+const queryClient = new QueryClient()
 
 export const Route = createRootRoute({
     head: () => ({
@@ -34,7 +38,7 @@ export const Route = createRootRoute({
                 content: 'width=device-width, initial-scale=1',
             },
             {
-                title: 'TanStack Start Starter',
+                title: 'EVE Toolkit',
             },
         ],
         links: [
@@ -84,39 +88,47 @@ function RootDocument({children}: Readonly<{ children: ReactNode }>) {
             <HeadContent/>
         </head>
         <body suppressHydrationWarning className={cn("bg-background group/layout font-sans")} {...bodyAttributes}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <ActiveThemeProvider initialTheme={themeSettings}>
-                <RouterTopLoadingBar />
-                <SidebarProvider defaultOpen={true} style={{
-                    "--sidebar-width": "calc(var(--spacing) * 64)",
-                    "--header-height": "calc(var(--spacing) * 14)"
-                } as React.CSSProperties}>
-                    <AppSidebar variant="inset"/>
-                    <SidebarInset>
-                        <SiteHeader/>
-                        <div className="flex flex-1 flex-col">
-                            <div
-                                className="@container/main p-4 xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
-                                {children}
-                                <Toaster position="top-center" richColors/>
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                <ActiveThemeProvider initialTheme={themeSettings}>
+                    <RouterTopLoadingBar/>
+                    <SidebarProvider defaultOpen={true} style={{
+                        "--sidebar-width": "calc(var(--spacing) * 64)",
+                        "--header-height": "calc(var(--spacing) * 14)"
+                    } as React.CSSProperties}>
+                        <AppSidebar variant="inset"/>
+                        <SidebarInset>
+                            <SiteHeader/>
+                            <div className="flex flex-1 flex-col">
+                                <div
+                                    className="@container/main p-4 xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
+                                    {children}
+                                    <Toaster position="top-center" richColors/>
+                                </div>
                             </div>
-                        </div>
-                    </SidebarInset>
-                </SidebarProvider>
-            </ActiveThemeProvider>
-        </ThemeProvider>
-        <TanStackDevtools
-            config={{
-                position: 'bottom-right',
-            }}
-            plugins={[
-                {
-                    name: 'TS Router',
-                    render: <TanStackRouterDevtoolsPanel/>,
-                },
-            ]}
-        />
-        <Scripts/>
+                        </SidebarInset>
+                    </SidebarProvider>
+                </ActiveThemeProvider>
+            </ThemeProvider>
+
+            <TanStackDevtools
+                config={{
+                    position: 'bottom-right',
+                }}
+                plugins={[
+                    {
+                        name: 'TS Query',
+                        render: <ReactQueryDevtoolsPanel/>,
+                        defaultOpen: true
+                    },
+                    {
+                        name: 'TS Router',
+                        render: <TanStackRouterDevtoolsPanel/>,
+                    },
+                ]}
+            />
+            <Scripts/>
+        </QueryClientProvider>
         </body>
         </html>
     )
