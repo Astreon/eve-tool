@@ -171,7 +171,7 @@ const makePayload = (name = 'John') => ({
     name, corporation_id: 7, race_id: 1, bloodline_id: 2, security_status: 3.1
 })
 
-describe('regions.controller getCharacter', () => {
+describe('character.controller getCharacter', () => {
     beforeEach(() => {
         ;(redis as any).__flushAll?.()
         ;(prisma.character as any).__reset?.()

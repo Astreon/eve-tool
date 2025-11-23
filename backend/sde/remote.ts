@@ -95,8 +95,11 @@ async function copyJsonlFromExtractedTmp(tmpDir: string): Promise<void> {
         'bloodlines.jsonl',
         'factions.jsonl',
         'mapConstellations.jsonl',
+        'mapMoons.jsonl',
+        'mapPlanets.jsonl',
         'mapRegions.jsonl',
         'mapSolarSystems.jsonl',
+        'mapStargates.jsonl',
         'races.jsonl',
     ]
 
