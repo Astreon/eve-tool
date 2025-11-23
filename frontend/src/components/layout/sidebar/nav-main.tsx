@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
     ChevronRight,
-    UserRoundSearch,
+    Globe,
     type LucideIcon,
 } from "lucide-react";
 import {Link} from "@tanstack/react-router";
@@ -48,9 +48,9 @@ export const navItems: NavGroup[] = [
         title: "Tools",
         items: [
             {
-                title: "Character Info",
-                href: "/character/info",
-                icon: UserRoundSearch
+                title: "Regions",
+                href: "/regions",
+                icon: Globe
             },
         ]
     },
