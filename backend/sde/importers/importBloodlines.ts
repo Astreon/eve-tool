@@ -6,48 +6,66 @@ import {ImportResult} from "../importer.js";
 import {BATCH_SIZE, SDE_DIR} from "../config";
 
 export const importBloodlines = async (dryRun = false): Promise<ImportResult> => {
-  const filePath = path.join(SDE_DIR, 'bloodlines.jsonl')
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Missing File: ${filePath}`)
-  }
-
-  const rl = readline.createInterface({
-    input: fs.createReadStream(filePath),
-    crlfDelay: Infinity,
-  })
-
-  const batch: { id: number; name: string }[] = []
-  let success = 0
-  let total = 0
-  let errors = 0
-
-  for await (const line of rl) {
-    total++
-    try {
-      const json = JSON.parse(line)
-      const data = {
-        id: json._key,
-        name: json.name?.de || 'Unknown',
-      }
-      batch.push(data)
-
-      if (batch.length >= BATCH_SIZE) {
-        if (!dryRun)
-          await prisma.bloodline.createMany({ data: batch, skipDuplicates: true })
-        success += batch.length
-        batch.length = 0
-      }
-    } catch (err) {
-      errors++
-      console.log(`❌ Parse/DB error @line ${total}:`, (err as Error).message)
+    const filePath = path.join(SDE_DIR, 'bloodlines.jsonl')
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing File: ${filePath}`)
     }
-  }
 
-  if (batch.length > 0) {
-    if (!dryRun)
-      await prisma.bloodline.createMany({ data: batch, skipDuplicates: true })
-    success += batch.length
-  }
+    const rl = readline.createInterface({
+        input: fs.createReadStream(filePath),
+        crlfDelay: Infinity,
+    })
 
-  return { success, total, errors }
+    const batch: { id: number; name: string }[] = []
+    let success = 0
+    let total = 0
+    let errors = 0
+
+    for await (const line of rl) {
+        total++
+        try {
+            const json = JSON.parse(line)
+            const data = {
+                id: json._key,
+                name: json.name?.de || 'Unknown',
+            }
+            batch.push(data)
+
+            if (batch.length >= BATCH_SIZE) {
+                if (!dryRun) {
+                    await Promise.all(
+                        batch.map(row =>
+                            prisma.bloodline.upsert({
+                                where: {id: row.id},
+                                create: row,
+                                update: row,
+                            }),
+                        ),
+                    )
+                }
+                success += batch.length
+                batch.length = 0
+            }
+        } catch (err) {
+            errors++
+            console.log(`❌ Parse/DB error @line ${total}:`, (err as Error).message)
+        }
+    }
+
+    if (batch.length > 0) {
+        if (!dryRun) {
+            await Promise.all(
+                batch.map(row =>
+                    prisma.bloodline.upsert({
+                        where: {id: row.id},
+                        create: row,
+                        update: row,
+                    }),
+                ),
+            )
+        }
+        success += batch.length
+    }
+
+    return {success, total, errors}
 }
