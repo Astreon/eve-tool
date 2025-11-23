@@ -1,10 +1,13 @@
 import {
     importBloodlines,
-    importConstellations,
-    importFactions,
     importRaces,
+    importFactions,
     importRegions,
-    importSolarSystems
+    importConstellations,
+    importSolarSystems,
+    importStargates,
+    importPlanets,
+    importMoons,
 } from "./importers";
 
 
@@ -33,11 +36,14 @@ export const importer = async (dryRun = false): Promise<ImportStats> => {
 
     const imports = [
         {name: 'Bloodlines', fn: importBloodlines},
-        {name: 'Constellation', fn: importConstellations},
-        {name: 'Factions', fn: importFactions},
         {name: 'Races', fn: importRaces},
+        {name: 'Factions', fn: importFactions},
         {name: 'Region', fn: importRegions},
+        {name: 'Constellation', fn: importConstellations},
         {name: 'Solar Systems', fn: importSolarSystems},
+        {name: 'Stargates', fn: importStargates},
+        {name: 'Planets', fn: importPlanets},
+        {name: 'Moons', fn: importMoons},
         // import additional SDE datasets here
     ]
 

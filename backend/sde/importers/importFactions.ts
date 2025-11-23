@@ -4,7 +4,7 @@ import * as fs from "fs";
 import {prisma} from "../../src/lib/prisma.js";
 import {ImportResult} from "../importer.js";
 import {BATCH_SIZE, SDE_DIR} from "../config";
-import config from "../../src/config/config";
+import {Prisma} from "../../src/generated/client.js";
 
 export const importFactions = async (dryRun = false): Promise<ImportResult> => {
     const filePath = path.join(SDE_DIR, 'factions.jsonl')
@@ -17,7 +17,7 @@ export const importFactions = async (dryRun = false): Promise<ImportResult> => {
         crlfDelay: Infinity,
     })
 
-    const batch: { id: number; name: string }[] = []
+    const batch: Prisma.FactionCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -26,9 +26,12 @@ export const importFactions = async (dryRun = false): Promise<ImportResult> => {
         total++
         try {
             const json = JSON.parse(line)
-            const data = {
+            const data: Prisma.FactionCreateManyInput = {
                 id: json._key,
-                name: json.name?.en || 'Unknown',
+                name: json.name?.en ?? 'Unknown',
+                description: json.description.en,
+                corporationId: json.corporationID ?? null,
+                solarSystemId: json.solarSystemID,
             }
             batch.push(data)
 

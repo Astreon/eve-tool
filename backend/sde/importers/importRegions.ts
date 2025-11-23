@@ -28,7 +28,8 @@ export const importRegions = async (dryRun = false): Promise<ImportResult> => {
             const json = JSON.parse(line)
             const data: Prisma.RegionCreateManyInput = {
                 id: json._key,
-                name: json.name?.en || 'Unknown',
+                name: json.name?.en ?? 'Unknown',
+                description: json.description?.en ?? null,
                 factionId: json.factionID ?? null,
                 x: json.position.x,
                 y: json.position.y,
@@ -43,13 +44,7 @@ export const importRegions = async (dryRun = false): Promise<ImportResult> => {
                             prisma.region.upsert({
                                 where: {id: row.id},
                                 create: row,
-                                update: {
-                                    name: row.name,
-                                    factionId: row.factionId ?? null,
-                                    x: row.x,
-                                    y: row.y,
-                                    z: row.z,
-                                },
+                                update: row,
                             }),
                         ),
                     )
@@ -70,13 +65,7 @@ export const importRegions = async (dryRun = false): Promise<ImportResult> => {
                     prisma.region.upsert({
                         where: {id: row.id},
                         create: row,
-                        update: {
-                            name: row.name,
-                            factionId: row.factionId ?? null,
-                            x: row.x,
-                            y: row.y,
-                            z: row.z,
-                        },
+                        update: row,
                     }),
                 ),
             )

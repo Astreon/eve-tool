@@ -6,8 +6,8 @@ import {ImportResult} from "../importer.js";
 import {BATCH_SIZE, SDE_DIR} from "../config";
 import {Prisma} from "../../src/generated/client.js";
 
-export const importSolarSystems = async (dryRun = false): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
+export const importStargates = async (dryRun = false): Promise<ImportResult> => {
+    const filePath = path.join(SDE_DIR, 'mapStargates.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -17,7 +17,7 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.SolarSystemCreateManyInput[] = []
+    const batch: Prisma.StargateCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -26,14 +26,12 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         total++
         try {
             const json = JSON.parse(line)
-            const data: Prisma.SolarSystemCreateManyInput = {
+            const data: Prisma.StargateCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
-                securityStatus: json.securityStatus,
-                constellationId: json.constellationID,
-                regionId: json.regionID,
-                factionId: json.factionID ?? null,
-                starId: json.starID ?? null,
+                solarSystemId: json.solarSystemID,
+                destSolarSystemId: json.destination.solarSystemID,
+                destStargateId: json.destination.stargateID,
+                typeId: json.typeID,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -44,7 +42,7 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
                 if (!dryRun) {
                     await Promise.all(
                         batch.map(row =>
-                            prisma.solarSystem.upsert({
+                            prisma.stargate.upsert({
                                 where: {id: row.id},
                                 create: row,
                                 update: row,
@@ -65,7 +63,7 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         if (!dryRun) {
             await Promise.all(
                 batch.map(row =>
-                    prisma.solarSystem.upsert({
+                    prisma.stargate.upsert({
                         where: {id: row.id},
                         create: row,
                         update: row,

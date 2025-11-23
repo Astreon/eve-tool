@@ -6,8 +6,8 @@ import {ImportResult} from "../importer.js";
 import {BATCH_SIZE, SDE_DIR} from "../config";
 import {Prisma} from "../../src/generated/client.js";
 
-export const importSolarSystems = async (dryRun = false): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
+export const importPlanets = async (dryRun = false): Promise<ImportResult> => {
+    const filePath = path.join(SDE_DIR, 'mapPlanets.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -17,7 +17,7 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.SolarSystemCreateManyInput[] = []
+    const batch: Prisma.PlanetCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -26,14 +26,26 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         total++
         try {
             const json = JSON.parse(line)
-            const data: Prisma.SolarSystemCreateManyInput = {
+            const data: Prisma.PlanetCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
-                securityStatus: json.securityStatus,
-                constellationId: json.constellationID,
-                regionId: json.regionID,
-                factionId: json.factionID ?? null,
-                starId: json.starID ?? null,
+                solarSystemId: json.solarSystemID,
+                typeId: json.typeID,
+                celestialIndex: json.celestialIndex,
+                orbitId: json.orbitID,
+                radius: json.radius,
+                density: json.statistics.density,
+                eccentricity: json.statistics.eccentricity,
+                escapeVelocity: json.statistics.escapeVelocity,
+                locked: json.statistics.locked,
+                massDust: json.statistics.massDust ?? null,
+                massGas: json.statistics.massGas ?? null,
+                orbitPeriod: json.statistics.orbitPeriod ?? null,
+                orbitRadius: json.statistics.orbitRadius ?? null,
+                pressure: json.statistics.pressure,
+                rotationRate: json.statistics.rotationRate,
+                spectralClass: json.statistics.spectralClass,
+                surfaceGravity: json.statistics.surfaceGravity ?? null,
+                temperature: json.statistics.temperature,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -44,7 +56,7 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
                 if (!dryRun) {
                     await Promise.all(
                         batch.map(row =>
-                            prisma.solarSystem.upsert({
+                            prisma.planet.upsert({
                                 where: {id: row.id},
                                 create: row,
                                 update: row,
@@ -65,7 +77,7 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         if (!dryRun) {
             await Promise.all(
                 batch.map(row =>
-                    prisma.solarSystem.upsert({
+                    prisma.planet.upsert({
                         where: {id: row.id},
                         create: row,
                         update: row,

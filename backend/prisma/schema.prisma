@@ -14,12 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Version {
-  key         String   @id
-  buildNumber Int      @unique
-  releaseDate DateTime
-}
-
 model Character {
   id             Int       @id
   name           String    @unique
@@ -38,41 +32,155 @@ model Character {
   @@index([expiresAt])
 }
 
+/**
+ * SDE Export from CCP
+ */
+model Version {
+  key         String   @id
+  buildNumber Int      @unique
+  releaseDate DateTime
+}
+
 model Bloodline {
-  id        Int         @id
-  name      String      @unique
-  Character Character[]
+  id          Int     @id
+  name        String  @unique
+  description String?
+
+  character Character[]
 }
 
 model Race {
-  id        Int         @id
-  name      String      @unique
-  Character Character[]
+  id          Int     @id
+  name        String  @unique
+  description String?
+
+  character Character[]
 }
 
 model Faction {
-  id     Int      @id
-  name   String   @unique
-  Region Region[]
+  id            Int    @id
+  name          String @unique
+  description   String
+  corporationId Int?
+  solarSystemId Int
+
+  regions        Region[]
+  constellations Constellation[]
+  solarSystems   SolarSystem[]
 }
 
 model SolarSystem {
-  id   Int    @id
-  name String @unique
+  id              Int    @id
+  name            String @unique
+  securityStatus  Float
+  constellationId Int
+  regionId        Int
+  factionId       Int?
+  starId          Int?
+  x               Float
+  y               Float
+  z               Float
+
+  stargates     Stargate[]
+  planets       Planet[]
+  moons         Moon[]
+  region        Region        @relation(fields: [regionId], references: [id])
+  faction       Faction?      @relation(fields: [factionId], references: [id])
+  constellation Constellation @relation(fields: [constellationId], references: [id])
 }
 
 model Constellation {
-  id   Int    @id
-  name String @unique
-}
-
-model Region {
   id        Int    @id
   name      String @unique
   factionId Int?
+  regionId  Int
   x         Float
   y         Float
   z         Float
 
-  faction Faction? @relation(fields: [factionId], references: [id])
+  solarSystems SolarSystem[]
+  faction      Faction?      @relation(fields: [factionId], references: [id])
+  region       Region        @relation(fields: [regionId], references: [id])
+}
+
+model Region {
+  id          Int     @id
+  name        String  @unique
+  description String?
+  factionId   Int?
+  x           Float
+  y           Float
+  z           Float
+
+  constellations Constellation[]
+  solarSystems   SolarSystem[]
+  faction        Faction?        @relation(fields: [factionId], references: [id])
+}
+
+model Stargate {
+  id                Int   @id
+  solarSystemId     Int
+  destSolarSystemId Int
+  destStargateId    Int
+  typeId            Int
+  x                 Float
+  y                 Float
+  z                 Float
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+}
+
+model Planet {
+  id             Int     @id
+  solarSystemId  Int
+  typeId         Int
+  celestialIndex Int
+  orbitId        Int
+  radius         Int
+  density        Float
+  eccentricity   Float
+  escapeVelocity Float
+  locked         Boolean
+  massDust       Float?
+  massGas        Float?
+  orbitPeriod    Float?
+  orbitRadius    BigInt?
+  pressure       Float
+  rotationRate   Float
+  spectralClass  String
+  surfaceGravity Float?
+  temperature    Float
+  x              Float
+  y              Float
+  z              Float
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+}
+
+model Moon {
+  id             Int      @id
+  solarSystemId  Int
+  typeId         Int
+  celestialIndex Int
+  orbitId        Int
+  orbitIndex     Int
+  radius         Int
+  density        Float?
+  eccentricity   Float?
+  escapeVelocity Float?
+  locked         Boolean?
+  massDust       Float?
+  massGas        Float?
+  orbitPeriod    Float?
+  orbitRadius    BigInt?
+  pressure       Float?
+  rotationRate   Float?
+  spectralClass  String?
+  surfaceGravity Float?
+  temperature    Float?
+  x              Float
+  y              Float
+  z              Float
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
 }
