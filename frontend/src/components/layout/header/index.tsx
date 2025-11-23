@@ -7,7 +7,7 @@ import ThemeSwitch from "@/components/layout/header/theme-switch";
 import UserMenu from "@/components/layout/header/user-menu";
 import {Button} from "@/components/ui/button";
 import {useSidebar} from "@/components/ui/sidebar";
-import {Badge} from "@/components/ui/badge.tsx";
+import {StatusBadges} from "@/components/layout/header/status-badges.tsx";
 
 export function SiteHeader() {
     const {toggleSidebar} = useSidebar();
@@ -23,15 +23,7 @@ export function SiteHeader() {
                 <Search/>
 
                 <div className="ml-auto flex items-center gap-2">
-                    <Badge variant="info">
-                        Player: 32319
-                    </Badge>
-                    <Badge variant="success">
-                        ESI available
-                    </Badge>
-                    <Badge variant="success">
-                        API available
-                    </Badge>
+                    <StatusBadges />
                     <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4"/>
                     <Notifications/>
                     <ThemeSwitch/>
