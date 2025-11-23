@@ -1,5 +1,6 @@
 import { useTheme } from "tanstack-theme-kit"
 import { Toaster as Sonner, ToasterProps } from "sonner"
+import {CSSProperties} from "react";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -13,7 +14,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
-        } as React.CSSProperties
+        } as CSSProperties
       }
       {...props}
     />

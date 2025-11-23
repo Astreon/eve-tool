@@ -73,7 +73,7 @@ function esiStatusToLabel(status: EsiRouteHealth): string {
 
 function apiStatusToVariant(
     status: ApiStatus,
-): React.ComponentProps<typeof Badge>["variant"] {
+): ComponentProps<typeof Badge>["variant"] {
     switch (status) {
         case "Up":
             return "success";
@@ -94,12 +94,12 @@ function StatusPill({
                     }: {
     label: string;
     status: string;
-    variant: React.ComponentProps<typeof Badge>["variant"];
+    variant: ComponentProps<typeof Badge>["variant"];
 }) {
     return (
         <Badge
             variant={variant}
-            className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium"
+            className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium font-mono"
         >
             <span className="hidden sm:inline">{label}</span>
             <span>{status}</span>

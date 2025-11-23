@@ -1,6 +1,5 @@
 import {EsiSearchCategories, EsiSearchResult} from "../../types/esi/search.types.js";
 import {esiApi} from "../../lib/axios.js";
-import config from "../../config/config.js";
 
 const KEY_MAP: Record<string, keyof EsiSearchResult> = {
   agent: 'agents',

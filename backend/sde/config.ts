@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 /**
- * SDE_DIR has to be created manually outside the root directory (where frontend and backend folder is).
+ * SDE_DIR has to be created manually outside the root directory (where the frontend and backend folder is).
  */
 export const SDE_DIR = path.resolve(process.cwd(), '../.sde')
 export const BATCH_SIZE = Number(100)
