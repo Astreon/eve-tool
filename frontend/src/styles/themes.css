@@ -78,6 +78,7 @@ body {
     --sidebar-ring: var(--primary-600);
 
     --text-family: "Plus Jakarta Sans", sans-serif;
+    --text-mono-family: "JetBrains Mono", ui-monospace, monospace;
     --display-weight: 800;
 
     @variant dark {
