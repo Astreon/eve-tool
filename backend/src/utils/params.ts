@@ -1,10 +1,13 @@
-// src/utils/params.ts
 import { z } from 'zod'
 import { BadRequestError, NotFoundError } from '../types/appError.js'
 import type { Request as ExpressRequest } from 'express'
 
-type Range = { min: number; max: number }
-type ParseNumericOpts = {
+interface Range {
+    min: number
+    max: number
+}
+
+interface ParseNumericOpts {
   min?: number
   max?: number
   ranges?: ReadonlyArray<Readonly<Range>>
@@ -13,13 +16,13 @@ type ParseNumericOpts = {
 
 export const parseNumericIdFromParams =
   (paramName = 'id', opts: ParseNumericOpts = {}) =>
-  (req: ExpressRequest) => {
+  (req: ExpressRequest): number => {
     const schema = z.object({ [paramName]: z.coerce.number().int().positive() })
     const result = schema.safeParse(req.params)
     if (!result.success) {
       throw new BadRequestError('Invalid path parameter', z.treeifyError(result.error))
     }
-    const id = result.data[paramName] as number
+    const id = result.data[paramName]
 
     // Prefer ranges if provided
     if (opts.ranges && opts.ranges.length > 0) {

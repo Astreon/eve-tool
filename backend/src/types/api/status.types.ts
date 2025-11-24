@@ -1,7 +1,7 @@
 type ServiceStatus = "Up" | "Degraded" | "Down" | "Unknown"
 export type EsiRouteHealth = "Unknown" | "OK" | "Degraded" | "Down" | "Recovering";
 
-export type EsiGlobalStatus = {
+export interface EsiGlobalStatus {
     status: ServiceStatus
     players: number | null
     serverVersion: string | null
@@ -10,8 +10,8 @@ export type EsiGlobalStatus = {
     error: string | null
 }
 
-export type EsiRouteStatus = {
+export interface EsiRouteStatus {
   method: string
   path: string
   status: EsiRouteHealth
-};
+}

@@ -1,4 +1,4 @@
-export type EsiErrorContext = {
+export interface EsiErrorContext {
   op?: string
   url?: string
   method?: string

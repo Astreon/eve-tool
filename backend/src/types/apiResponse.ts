@@ -6,13 +6,13 @@ export interface ApiMeta {
   requestId?: string
 }
 
-export type ApiSuccess<T> = {
+export interface ApiSuccess<T> {
   success: true
   data: T
   meta?: ApiMeta
 }
 
-export type ApiError = {
+export interface ApiError {
   success: false
   message: string
   code?: string

@@ -23,6 +23,7 @@ export class AppError extends Error {
     public code: ErrorCode
     public isOperational: boolean
     public details?: unknown
+    public override cause?: unknown
 
     constructor(message: string, opts: AppErrorOptions = {}) {
         super(message)
@@ -31,10 +32,7 @@ export class AppError extends Error {
         this.code = opts.code ?? 'INTERNAL'
         this.isOperational = opts.isOperational ?? true
         this.details = opts.details
-
-        if (opts.cause !== undefined) {
-            ;(this as any).cause = opts.cause
-        }
+        this.cause = opts.cause
 
         Object.setPrototypeOf(this, new.target.prototype)
         if (Error.captureStackTrace) Error.captureStackTrace(this, new.target)

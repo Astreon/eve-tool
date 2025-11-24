@@ -1,7 +1,6 @@
-// src/types/cache.types.ts
 import type {Request as ExpressRequest} from 'express'
 
-export type EsiResult<T> = {
+export interface EsiResult<T> {
     data: T | null
     etag?: string | null
     ttl?: number | null
@@ -9,7 +8,7 @@ export type EsiResult<T> = {
     lastModified?: string | null
 }
 
-export type DbMeta = {
+export interface DbMeta {
     etag?: string | null
     lastModified?: Date | null
     expiresAt?: Date | null

@@ -1,15 +1,31 @@
-type HeadersLike = Record<string, unknown>
+type HeaderPrimitive = string | number | boolean | null | undefined
+type HeaderValue = HeaderPrimitive | ReadonlyArray<HeaderPrimitive>
+
+export type HeadersLike = Record<string, HeaderValue>
 
 function getHeader(headers: HeadersLike, name: string): string | undefined {
   const lower = name.toLowerCase()
-  for (const [k, v] of Object.entries(headers ?? {})) {
-    if (k.toLowerCase() === lower) {
-      if (typeof v === 'string') return v
-      if (Array.isArray(v)) return v[0]?.toString()
-      if (v == null) return undefined
-      return String(v)
+
+  for (const [k, v] of Object.entries(headers)) {
+    if (k.toLowerCase() !== lower) continue
+
+    if (typeof v === 'string') {
+      return v
     }
+
+    if (Array.isArray(v)) {
+      const first = v[0]
+      if (first == null) return undefined
+      return String(first)
+    }
+
+    if (v == null) {
+      return undefined
+    }
+
+    return String(v)
   }
+
   return undefined
 }
 

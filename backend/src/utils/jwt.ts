@@ -1,12 +1,33 @@
+interface JwtPayload {
+    sub?: unknown
+}
+
 export function extractCharacterIdFromJwt(token: string): number | null {
-  try {
-    const [, payloadB64] = token.split('.')
-    if (!payloadB64) return null
-    const json = JSON.parse(Buffer.from(payloadB64.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'))
-    const sub: string | undefined = json?.sub // z.B. "CHARACTER:EVE:2123162143"
-    const m = typeof sub === 'string' ? /CHARACTER:.*:(\d+)/.exec(sub) : null
-    return m ? Number(m[1]) : null
-  } catch {
-    return null
-  }
+    try {
+        const [, payloadB64] = token.split('.')
+        if (!payloadB64) return null
+
+        const normalized = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
+        const json = Buffer.from(normalized, 'base64').toString('utf8')
+
+        const parsed: unknown = JSON.parse(json)
+
+        if (!isJwtPayload(parsed)) {
+            return null
+        }
+
+        if (typeof parsed.sub !== 'string') {
+            return null
+        }
+
+        // e.g. "CHARACTER:EVE:2123162143"
+        const match = /CHARACTER:.*:(\d+)/.exec(parsed.sub)
+        return match ? Number(match[1]) : null
+    } catch {
+        return null
+    }
+}
+
+function isJwtPayload(value: unknown): value is JwtPayload {
+    return typeof value === 'object' && value !== null
 }
