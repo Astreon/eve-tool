@@ -11,3 +11,8 @@ export interface RegionApiResponse {
   z: number
   faction: RegionFactionApi | null
 }
+
+export interface RegionLinkApi {
+  fromRegionId: number
+  toRegionId: number
+}

@@ -32,6 +32,17 @@ model Character {
   @@index([expiresAt])
 }
 
+model RegionLink {
+  id           Int @id @default(autoincrement())
+  fromRegionId Int
+  toRegionId   Int
+
+  fromRegion Region @relation("RegionLinkFrom", fields: [fromRegionId], references: [id])
+  toRegion   Region @relation("RegionLinkTo", fields: [toRegionId], references: [id])
+
+  @@unique([fromRegionId, toRegionId])
+}
+
 /**
  * SDE Export from CCP
  */
@@ -115,6 +126,9 @@ model Region {
   constellations Constellation[]
   solarSystems   SolarSystem[]
   faction        Faction?        @relation(fields: [factionId], references: [id])
+
+  linksFrom RegionLink[] @relation("RegionLinkFrom")
+  linksTo   RegionLink[] @relation("RegionLinkTo")
 }
 
 model Stargate {

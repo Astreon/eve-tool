@@ -5,7 +5,7 @@ import config from "../config/config.js";
 import {CACHE_THRESHOLDS} from "../config/cacheThresholds.js";
 
 import type {ApiResponse} from "../types/apiResponse.js";
-import type {RegionApiResponse} from "../types/api/region.types.js";
+import type {RegionApiResponse, RegionLinkApi} from "../types/api/region.types.js";
 
 const KNOWN_SPACE_MIN_ID = 10000000
 const KNOWN_SPACE_MAX_ID = 10999999
@@ -84,5 +84,59 @@ export async function getRegions(req: Request, res: Response<ApiResponse<RegionA
         });
     } catch (err) {
         return next(err)
+    }
+}
+
+function getRegionLinksCacheKey() {
+    const v = config.redis.cacheVersion
+    return `region-links:${v}`
+}
+
+export async function getRegionLinks(
+    _req: Request,
+    res: Response<ApiResponse<RegionLinkApi[]>>,
+    next: NextFunction
+) {
+    try {
+        const cacheKey = getRegionLinksCacheKey();
+        const ttlSec = CACHE_THRESHOLDS.REGIONS;
+
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            const data = JSON.parse(cached) as RegionLinkApi[];
+            return res.json({
+                success: true,
+                data,
+                meta: {
+                    source: "redis",
+                    ttl: ttlSec,
+                },
+            });
+        }
+
+        const rows = await prisma.regionLink.findMany({
+            select: {
+                fromRegionId: true,
+                toRegionId: true,
+            },
+        });
+
+        const data: RegionLinkApi[] = rows.map((r) => ({
+            fromRegionId: r.fromRegionId,
+            toRegionId: r.toRegionId,
+        }));
+
+        await redis.set(cacheKey, JSON.stringify(data), "EX", ttlSec);
+
+        return res.json({
+            success: true,
+            data,
+            meta: {
+                source: "db",
+                ttl: ttlSec,
+            },
+        });
+    } catch (err) {
+        return next(err);
     }
 }

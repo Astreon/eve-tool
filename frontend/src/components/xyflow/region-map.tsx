@@ -1,7 +1,8 @@
 import {useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {ReactFlow, Background, NodeProps} from "@xyflow/react";
+import {ReactFlow, Background, NodeProps, Handle, Position} from "@xyflow/react";
 import type {Node as FlowNode} from "@xyflow/react";
+import type {Edge as FlowEdge} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 type RegionFactionApi = {
@@ -43,6 +44,34 @@ type RegionNode = FlowNode & {
     data: RegionNodeData;
     basePosition: { x: number; y: number };
 };
+
+type RegionLinkApi = {
+    fromRegionId: number;
+    toRegionId: number;
+};
+
+async function fetchRegionLinks(): Promise<RegionLinkApi[]> {
+    const res = await fetch("/api/regions/links");
+    if (!res.ok) {
+        throw new Error(`Failed to fetch region links (HTTP ${res.status})`);
+    }
+
+    const body = (await res.json()) as ApiResponse<RegionLinkApi[]>;
+    if (!body.success) {
+        throw new Error(body.message || "Failed to load region links");
+    }
+
+    return body.data;
+}
+
+function useRegionLinks() {
+    return useQuery({
+        queryKey: ["region-links"],
+        queryFn: fetchRegionLinks,
+        staleTime: 60_000,
+    });
+}
+
 
 async function fetchRegions(): Promise<RegionApiResponse[]> {
     const res = await fetch("/api/regions");
@@ -222,6 +251,30 @@ function RegionNodeComponent({data}: NodeProps) {
                 isNeutral ? "text-black" : "text-white"
             }`}
         >
+            <Handle
+                type="source"
+                position={Position.Top}
+                style={{
+                    opacity: 0,
+                    width: 0,
+                    height: 0,
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                }}
+            />
+            <Handle
+                type="target"
+                position={Position.Top}
+                style={{
+                    opacity: 0,
+                    width: 0,
+                    height: 0,
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                }}
+            />
             <div className="max-w-[150px] truncate whitespace-nowrap text-center font-semibold">
                 {label}
             </div>
@@ -239,10 +292,12 @@ const nodeTypes = {
 };
 
 export function RegionMap() {
-    const {nodes, isLoading, isError, error} = useRegionNodes();
+    const {nodes, isLoading: nodesLoading, isError: nodesError, error: nodesErrorObj} = useRegionNodes();
+    const {data: links, isLoading: linksLoading, isError: linksError, error: linksErrorObj} = useRegionLinks();
+
     const proOptions = {hideAttribution: true};
 
-    if (isLoading) {
+    if (nodesLoading || linksLoading) {
         return (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 Loading regions…
@@ -250,29 +305,56 @@ export function RegionMap() {
         );
     }
 
-    if (isError) {
+    if (nodesError || linksError) {
+        const err = (nodesErrorObj || linksErrorObj) as Error;
         return (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-red-500">
                 <span>Failed to load regions.</span>
                 <span className="text-xs text-muted-foreground">
-          {(error as Error).message}
-        </span>
+                    {err?.message ?? "Unknown error"}
+                </span>
             </div>
         );
     }
 
+    const nodeIdSet = new Set(nodes.map((n) => n.id));
+    const edges: FlowEdge[] =
+        links
+            ?.filter((link) => {
+                const s = link.fromRegionId.toString();
+                const t = link.toRegionId.toString();
+                return nodeIdSet.has(s) && nodeIdSet.has(t);
+            })
+            .map((link) => ({
+                id: `${link.fromRegionId}-${link.toRegionId}`,
+                source: link.fromRegionId.toString(),
+                target: link.toRegionId.toString(),
+                type: "straight",
+                selectable: false,
+                focused: false,
+                interactionWidth: 0,
+                animated: false,
+                style: {
+                    stroke: "#8a09cf",
+                    strokeWidth: 1.5,
+                    opacity: 0.6,
+                    pointerEvents: "none",
+                },
+            })) ?? [];
+
+
     return (
         <ReactFlow
             nodes={nodes}
-            edges={[]}
+            edges={edges}
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{padding: 0.04}}
             proOptions={proOptions}
             nodeOrigin={[0.5, 0.5]}
             className="h-full w-full"
-            minZoom={0.1}
-            maxZoom={1.7}
+            minZoom={0.85}
+            maxZoom={1.85}
             panOnDrag
             zoomOnScroll
             zoomOnPinch
