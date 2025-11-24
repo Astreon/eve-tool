@@ -8,7 +8,7 @@
     "dev": "tsx --watch --env-file .env src/server.ts",
     "start": "node --env-file .env dist/server.js",
     "build": "tsc",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit && tsc -p tests/.tsconfig.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "vitest run",

@@ -9,7 +9,9 @@ const app = express()
 app.use(express.json())
 app.use(routes)
 
-app.use((req, _res, next) => next(new NotFoundError('Route not found')))
+app.use((req, _res, next) => {
+    next(new NotFoundError('Route not found'))
+})
 app.use(errorHandler)
 
 export default app

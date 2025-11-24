@@ -1,16 +1,29 @@
 {
   "compilerOptions": {
-    "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator"],
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Iterator"
+    ],
     "module": "nodenext",
     "target": "es2022",
     "outDir": "./dist",
     "rootDir": "./src",
-
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "moduleResolution": "node16",
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "prisma/**/*.ts", "sde/**/*.ts"],
-  "exclude": ["dist", "prisma", "sde"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tests",
+    "sde",
+    "prisma"
+  ]
 }
