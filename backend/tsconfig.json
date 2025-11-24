@@ -11,6 +11,6 @@
     "skipLibCheck": true,
     "moduleResolution": "node16",
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "prisma/**/*.ts", "sde/**/*.ts"],
   "exclude": ["dist", "prisma", "sde"]
 }

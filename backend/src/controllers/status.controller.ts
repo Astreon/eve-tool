@@ -96,7 +96,7 @@ async function fetchEsiRouteStatuses(): Promise<EsiRouteStatus[]> {
         const mapped: EsiRouteStatus[] = body.routes.map((r) => ({
             method: typeof r.method === "string" ? r.method : "",
             path: typeof r.path === "string" ? r.path : "",
-            status: typeof r.status === "string" ? r.status : "Unknown",
+            status: (typeof r.status === "string" ? r.status : "Unknown") as EsiRouteHealth,
         }));
 
         cachedRouteStatuses = mapped;
