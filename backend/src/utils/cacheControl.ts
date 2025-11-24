@@ -1,7 +1,4 @@
-type HeaderPrimitive = string | number | boolean | null | undefined
-type HeaderValue = HeaderPrimitive | ReadonlyArray<HeaderPrimitive>
-
-export type HeadersLike = Record<string, HeaderValue>
+export type HeadersLike = Record<string, unknown>
 
 function getHeader(headers: HeadersLike, name: string): string | undefined {
   const lower = name.toLowerCase()
