@@ -37,7 +37,7 @@ export async function recomputeRegionLinks() {
         }
     }
 
-    // 2) Stream stargates, collect region-pairs
+    // 2) Collect region-pairs
     const edgeKeys = new Set<string>()
 
     {

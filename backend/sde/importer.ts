@@ -1,14 +1,4 @@
-import {
-    importBloodlines,
-    importRaces,
-    importFactions,
-    importRegions,
-    importConstellations,
-    importSolarSystems,
-    importStargates,
-    importPlanets,
-    importMoons,
-} from "./importers";
+import {IMPORT_TASKS} from "./tasks/importTasks.js"
 
 export interface ImportResult {
     success: number
@@ -16,7 +6,7 @@ export interface ImportResult {
     errors: number
 }
 
-export interface ImportStats {
+export interface ImporterStats {
     datasetTotal: number
     datasetSuccess: number
     lineTotal: number
@@ -24,46 +14,38 @@ export interface ImportStats {
     errorCount: number
 }
 
-export const importer = async (dryRun = false): Promise<ImportStats> => {
-    const stats: ImportStats = {
-        datasetTotal: 0,
+export async function importer(dryRun = false): Promise<ImporterStats> {
+    const stats: ImporterStats = {
+        datasetTotal: IMPORT_TASKS.length,
         datasetSuccess: 0,
         lineTotal: 0,
         lineSuccess: 0,
         errorCount: 0,
     }
 
-    const imports = [
-        {name: 'Bloodlines', fn: importBloodlines},
-        {name: 'Races', fn: importRaces},
-        {name: 'Factions', fn: importFactions},
-        {name: 'Region', fn: importRegions},
-        {name: 'Constellation', fn: importConstellations},
-        {name: 'Solar Systems', fn: importSolarSystems},
-        {name: 'Stargates', fn: importStargates},
-        {name: 'Planets', fn: importPlanets},
-        {name: 'Moons', fn: importMoons},
-        // import additional SDE datasets here
-    ]
-
-    stats.datasetTotal = imports.length
-
-    for (const imp of imports) {
-        console.log(`📦 Importing ${imp.name}...`)
-        const datasetStart = performance.now()
+    for (const task of IMPORT_TASKS) {
+        console.log(`📦 Importing ${task.label}…`)
+        const start = performance.now()
 
         try {
-            const result = await imp.fn(dryRun)
+            const result = await task.run(dryRun)
+
             stats.datasetSuccess++
             stats.lineTotal += result.total
             stats.lineSuccess += result.success
             stats.errorCount += result.errors
 
-            const duration = ((performance.now() - datasetStart) / 1000).toFixed(1)
-            console.log(`✅ Imported ${result.success}/${result.total} ${imp.name} in ${duration}s (${result.errors} errors)`)
+            const duration = ((performance.now() - start) / 1000).toFixed(1)
+            console.log(
+                `✅ Imported ${result.success}/${result.total} ${task.label} in ${duration}s (${result.errors} errors)`,
+            )
         } catch (err) {
             stats.errorCount++
-            console.log(`❌ Failed to import ${imp.name}:`, (err as Error).message)
+            const duration = ((performance.now() - start) / 1000).toFixed(1)
+            console.error(
+                `❌ Failed to import ${task.label} after ${duration}s:`,
+                (err as Error).message,
+            )
         }
     }
 
