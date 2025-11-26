@@ -12,6 +12,7 @@ import {
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import { esiApi } from '../lib/axios.js'
 import { USED_ESI_ROUTES } from '../config/esiRoutes.js'
+import { logger } from '../lib/logger.js'
 
 let cachedGlobalStatus: EsiGlobalStatus | null = null
 let cachedGlobalStatusFetchedAt = 0
@@ -106,10 +107,9 @@ async function fetchEsiRouteStatuses(): Promise<EsiRouteStatus[]> {
         const body = res.data as { routes?: RawMetaRoute[] }
 
         if (!body || !Array.isArray(body.routes)) {
-            console.warn(
-                '[ESI] /meta/status body did not contain routes[]',
-                body && Object.keys(body),
-            )
+            logger.warn('ESI', '/meta/status body did not contain routes[]', {
+                keys: body ? Object.keys(body) : null,
+            })
             cachedRouteStatuses = []
             cachedRouteStatusesFetchedAt = now
             return cachedRouteStatuses
@@ -127,7 +127,10 @@ async function fetchEsiRouteStatuses(): Promise<EsiRouteStatus[]> {
         cachedRouteStatusesFetchedAt = now
         return mapped
     } catch (e) {
-        console.error('[ESI] Failed to fetch /meta/status', e)
+        logger.error('ESI', 'Failed to fetch /meta/status', {
+            error: e instanceof Error ? e.message : String(e),
+        })
+
         cachedRouteStatuses = []
         cachedRouteStatusesFetchedAt = now
         return cachedRouteStatuses

@@ -20,8 +20,9 @@ const baseLogger: PinoLogger = pino({
               target: 'pino-pretty',
               options: {
                   colorize: true,
-                  translateTime: 'SYS:standard',
-                  singleLine: true,
+                  translateTime: 'HH:MM:ss',
+                  singleLine: false,
+                  ignore: 'pid,hostname',
               },
           }
         : undefined,
