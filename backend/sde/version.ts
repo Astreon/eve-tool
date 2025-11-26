@@ -6,8 +6,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as readline from 'readline'
-import {prisma} from "../src/lib/prisma"
-import {SDE_DIR} from "./config"
+import { prisma } from '../src/lib/prisma'
+import { SDE_DIR } from './config'
 
 export interface SdeVersion {
     key: 'sde'
@@ -28,7 +28,7 @@ export async function readSdeVersionFromFile(): Promise<SdeVersion> {
     if (!fs.existsSync(VERSION_FILE)) {
         throw new Error(
             `Missing version file: ${VERSION_FILE}\n` +
-            `Expect JSON with an entry: {"_key":"sde","buildNumber":...,"releaseDate":"..."}`
+                `Expect JSON with an entry: {"_key":"sde","buildNumber":...,"releaseDate":"..."}`,
         )
     }
 
@@ -65,19 +65,21 @@ export async function readSdeVersionFromFile(): Promise<SdeVersion> {
         }
     }
 
-    throw new Error(`Can not find any valid version information in ${VERSION_FILE}`)
+    throw new Error(
+        `Can not find any valid version information in ${VERSION_FILE}`,
+    )
 }
 
 export async function getDbVersion(): Promise<SdeVersion | null> {
-    const v = await prisma.version.findUnique({where: {key: 'sde'}})
+    const v = await prisma.version.findUnique({ where: { key: 'sde' } })
     return v
-        ? {key: 'sde', buildNumber: v.buildNumber, releaseDate: v.releaseDate}
+        ? { key: 'sde', buildNumber: v.buildNumber, releaseDate: v.releaseDate }
         : null
 }
 
 export async function upsertDbVersion(v: SdeVersion) {
     await prisma.version.upsert({
-        where: {key: 'sde'},
+        where: { key: 'sde' },
         create: {
             key: 'sde',
             buildNumber: v.buildNumber,

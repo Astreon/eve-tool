@@ -3,11 +3,11 @@
  * Copyright (C) 2025 Astreon
  */
 
-import * as path from "path";
-import * as readline from "readline";
-import * as fs from "fs";
-import {SDE_DIR} from "../config";
-import {prisma} from "../../src/lib/prisma";
+import * as path from 'path'
+import * as readline from 'readline'
+import * as fs from 'fs'
+import { SDE_DIR } from '../config'
+import { prisma } from '../../src/lib/prisma'
 
 type SolarSystemRow = {
     _key: number
@@ -28,7 +28,7 @@ export async function recomputeRegionLinks() {
     const solarToRegion = new Map<number, number>()
 
     {
-        const file = path.join(SDE_DIR, "mapSolarSystems.jsonl");
+        const file = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
         const rl = readline.createInterface({
             input: fs.createReadStream(file),
             crlfDelay: Infinity,
@@ -71,16 +71,16 @@ export async function recomputeRegionLinks() {
 
     // 3) Prepare for DB
     const links = Array.from(edgeKeys).map((key) => {
-        const [fromRegionId, toRegionId] = key.split(":").map(Number)
-        return {fromRegionId, toRegionId}
+        const [fromRegionId, toRegionId] = key.split(':').map(Number)
+        return { fromRegionId, toRegionId }
     })
 
     // 4) Safe to DB
-    await prisma.regionLink.deleteMany();
+    await prisma.regionLink.deleteMany()
     await prisma.regionLink.createMany({
         data: links,
         skipDuplicates: true,
-    });
+    })
 
-    console.log(`✅ Stored ${links.length} region links`);
+    console.log(`✅ Stored ${links.length} region links`)
 }

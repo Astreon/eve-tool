@@ -6,91 +6,99 @@
 export type HeadersLike = Record<string, unknown>
 
 function getHeader(headers: HeadersLike, name: string): string | undefined {
-  const lower = name.toLowerCase()
+    const lower = name.toLowerCase()
 
-  for (const [k, v] of Object.entries(headers)) {
-    if (k.toLowerCase() !== lower) continue
+    for (const [k, v] of Object.entries(headers)) {
+        if (k.toLowerCase() !== lower) continue
 
-    if (typeof v === 'string') {
-      return v
+        if (typeof v === 'string') {
+            return v
+        }
+
+        if (Array.isArray(v)) {
+            const first = v[0]
+            if (first == null) return undefined
+            return String(first)
+        }
+
+        if (v == null) {
+            return undefined
+        }
+
+        return String(v)
     }
 
-    if (Array.isArray(v)) {
-      const first = v[0]
-      if (first == null) return undefined
-      return String(first)
-    }
-
-    if (v == null) {
-      return undefined
-    }
-
-    return String(v)
-  }
-
-  return undefined
+    return undefined
 }
 
 function parseHttpDate(value?: string): number | undefined {
-  if (!value) return undefined
-  const n = Date.parse(value)
-  return Number.isNaN(n) ? undefined : n
+    if (!value) return undefined
+    const n = Date.parse(value)
+    return Number.isNaN(n) ? undefined : n
 }
 
 function parseCacheControl(raw?: string) {
-  const out = new Map<string, string | true>()
-  if (!raw) return out
-  for (const part of raw.split(',').map(s => s.trim()).filter(Boolean)) {
-    const [k, v] = part.split('=', 2)
-    if (v === undefined) out.set(k.toLowerCase(), true)
-    else out.set(k.toLowerCase(), v.replace(/(^"|"$)/g, ''))
-  }
-  return out
+    const out = new Map<string, string | true>()
+    if (!raw) return out
+    for (const part of raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)) {
+        const [k, v] = part.split('=', 2)
+        if (v === undefined) out.set(k.toLowerCase(), true)
+        else out.set(k.toLowerCase(), v.replace(/(^"|"$)/g, ''))
+    }
+    return out
 }
 
-export function computeTtlFromHeaders(headers: HeadersLike): number | undefined {
-  const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now()
+export function computeTtlFromHeaders(
+    headers: HeadersLike,
+): number | undefined {
+    const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now()
 
-  const cc = parseCacheControl(getHeader(headers, 'cache-control'))
-  if (cc.has('no-store') || cc.has('no-cache')) return 0
+    const cc = parseCacheControl(getHeader(headers, 'cache-control'))
+    if (cc.has('no-store') || cc.has('no-cache')) return 0
 
-  const ageHdr = getHeader(headers, 'age')
-  const ageSeconds =
-    ageHdr && /^\d+$/.test(ageHdr) ? parseInt(ageHdr, 10) : undefined
+    const ageHdr = getHeader(headers, 'age')
+    const ageSeconds =
+        ageHdr && /^\d+$/.test(ageHdr) ? parseInt(ageHdr, 10) : undefined
 
-  const maxAgeRaw = cc.get('max-age')
-  if (typeof maxAgeRaw === 'string' && /^\d+$/.test(maxAgeRaw)) {
-    const maxAge = parseInt(maxAgeRaw, 10)
-    const approxAge = Math.max(0, Math.floor((Date.now() - serverNowMs) / 1000))
-    const age = ageSeconds ?? approxAge
-    return Math.max(maxAge - age, 0)
-  }
+    const maxAgeRaw = cc.get('max-age')
+    if (typeof maxAgeRaw === 'string' && /^\d+$/.test(maxAgeRaw)) {
+        const maxAge = parseInt(maxAgeRaw, 10)
+        const approxAge = Math.max(
+            0,
+            Math.floor((Date.now() - serverNowMs) / 1000),
+        )
+        const age = ageSeconds ?? approxAge
+        return Math.max(maxAge - age, 0)
+    }
 
-  const expiresMs = parseHttpDate(getHeader(headers, 'expires'))
-  if (expiresMs !== undefined) {
-    const ttl = Math.floor((expiresMs - serverNowMs) / 1000)
-    return Math.max(ttl, 0)
-  }
+    const expiresMs = parseHttpDate(getHeader(headers, 'expires'))
+    if (expiresMs !== undefined) {
+        const ttl = Math.floor((expiresMs - serverNowMs) / 1000)
+        return Math.max(ttl, 0)
+    }
 
-  return undefined
+    return undefined
 }
 
 export function computeCacheUntil(headers: HeadersLike): Date | undefined {
-  const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now()
-  const ttl = computeTtlFromHeaders(headers)
-  return ttl === undefined ? undefined : new Date(serverNowMs + ttl * 1000)
+    const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now()
+    const ttl = computeTtlFromHeaders(headers)
+    return ttl === undefined ? undefined : new Date(serverNowMs + ttl * 1000)
 }
 
 export function extractCachingHeaders(headers: HeadersLike) {
-  return {
-    etag: getHeader(headers, 'etag'),
-    lastModified: getHeader(headers, 'last-modified'),
-    expires: getHeader(headers, 'expires'),
-    date: getHeader(headers, 'date'),
-    cacheControl: getHeader(headers, 'cache-control'),
-  }
+    return {
+        etag: getHeader(headers, 'etag'),
+        lastModified: getHeader(headers, 'last-modified'),
+        expires: getHeader(headers, 'expires'),
+        date: getHeader(headers, 'date'),
+        cacheControl: getHeader(headers, 'cache-control'),
+    }
 }
 
 export function buildConditionalHeaders(opts: { etag?: string | null }) {
-  return opts.etag ? { 'If-None-Match': opts.etag } : {}
+    return opts.etag ? { 'If-None-Match': opts.etag } : {}
 }

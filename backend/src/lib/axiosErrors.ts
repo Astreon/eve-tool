@@ -4,8 +4,8 @@
  */
 
 import axios from 'axios'
-import {AppError, NotFoundError, RateLimitedError} from '../types/appError.js'
-import {EsiErrorContext} from "../types/axios.types.js";
+import { AppError, NotFoundError, RateLimitedError } from '../types/appError.js'
+import { EsiErrorContext } from '../types/axios.types.js'
 
 export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
     if (axios.isAxiosError(e)) {
@@ -32,18 +32,25 @@ export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
         if (status === 420 || (typeof remain === 'number' && remain <= 0)) {
             return new RateLimitedError(
                 `ESI rate limited${typeof reset === 'number' ? `, resets in ~${reset}s` : ''}`,
-                details
+                details,
             )
         }
 
-        return new EsiError(`ESI request failed (${status})`, {statusCode: status, details, cause: e})
+        return new EsiError(`ESI request failed (${status})`, {
+            statusCode: status,
+            details,
+            cause: e,
+        })
     }
 
-    return new EsiError('ESI request failed', {details: {original: e}})
+    return new EsiError('ESI request failed', { details: { original: e } })
 }
 
 export class EsiError extends AppError {
-    constructor(message: string, opts: { statusCode?: number; details?: unknown; cause?: unknown } = {}) {
+    constructor(
+        message: string,
+        opts: { statusCode?: number; details?: unknown; cause?: unknown } = {},
+    ) {
         super(message, {
             statusCode: opts.statusCode ?? 502,
             code: 'ESI_HTTP_ERROR',
@@ -54,8 +61,13 @@ export class EsiError extends AppError {
     }
 }
 
-function headerNumber(headers: Record<string, any>, name: string): number | undefined {
-    const entry = Object.entries(headers).find(([k]) => k.toLowerCase() === name.toLowerCase())
+function headerNumber(
+    headers: Record<string, any>,
+    name: string,
+): number | undefined {
+    const entry = Object.entries(headers).find(
+        ([k]) => k.toLowerCase() === name.toLowerCase(),
+    )
     const raw = entry?.[1]
     const s = Array.isArray(raw) ? raw[0] : raw
     if (typeof s !== 'string') return undefined

@@ -3,15 +3,17 @@
  * Copyright (C) 2025 Astreon
  */
 
-import * as path from "path";
-import * as readline from "readline";
-import * as fs from "fs";
-import {prisma} from "../../src/lib/prisma.js";
-import {ImportResult} from "../importer.js";
-import {BATCH_SIZE, SDE_DIR} from "../config";
-import {Prisma} from "../../src/generated/client.js";
+import * as path from 'path'
+import * as readline from 'readline'
+import * as fs from 'fs'
+import { prisma } from '../../src/lib/prisma.js'
+import { ImportResult } from '../importer.js'
+import { BATCH_SIZE, SDE_DIR } from '../config'
+import { Prisma } from '../../src/generated/client.js'
 
-export const importSolarSystems = async (dryRun = false): Promise<ImportResult> => {
+export const importSolarSystems = async (
+    dryRun = false,
+): Promise<ImportResult> => {
     const filePath = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
@@ -48,9 +50,9 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
             if (batch.length >= BATCH_SIZE) {
                 if (!dryRun) {
                     await Promise.all(
-                        batch.map(row =>
+                        batch.map((row) =>
                             prisma.solarSystem.upsert({
-                                where: {id: row.id},
+                                where: { id: row.id },
                                 create: row,
                                 update: row,
                             }),
@@ -62,16 +64,19 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
             }
         } catch (err) {
             errors++
-            console.log(`❌ Parse/DB error @line ${total}:`, (err as Error).message)
+            console.log(
+                `❌ Parse/DB error @line ${total}:`,
+                (err as Error).message,
+            )
         }
     }
 
     if (batch.length > 0) {
         if (!dryRun) {
             await Promise.all(
-                batch.map(row =>
+                batch.map((row) =>
                     prisma.solarSystem.upsert({
-                        where: {id: row.id},
+                        where: { id: row.id },
                         create: row,
                         update: row,
                     }),
@@ -81,5 +86,5 @@ export const importSolarSystems = async (dryRun = false): Promise<ImportResult> 
         success += batch.length
     }
 
-    return {success, total, errors}
+    return { success, total, errors }
 }

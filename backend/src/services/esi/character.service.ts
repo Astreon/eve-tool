@@ -3,17 +3,30 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {esiApi} from '../../lib/axios.js'
-import {EsiCharacterResponse, EsiCharacter} from "../../types/esi/character.types.js";
-import {buildConditionalHeaders, computeTtlFromHeaders, extractCachingHeaders} from "../../utils/cacheControl.js";
-import {toEsiAppError} from "../../lib/axiosErrors.js";
+import { esiApi } from '../../lib/axios.js'
+import {
+    EsiCharacterResponse,
+    EsiCharacter,
+} from '../../types/esi/character.types.js'
+import {
+    buildConditionalHeaders,
+    computeTtlFromHeaders,
+    extractCachingHeaders,
+} from '../../utils/cacheControl.js'
+import { toEsiAppError } from '../../lib/axiosErrors.js'
 
-export const getCharacterInfo = async (characterId: number, etag?: string | null): Promise<EsiCharacterResponse> => {
+export const getCharacterInfo = async (
+    characterId: number,
+    etag?: string | null,
+): Promise<EsiCharacterResponse> => {
     try {
-        const response = await esiApi.get<EsiCharacter>(`/characters/${characterId}/`, {
-            headers: buildConditionalHeaders({etag}),
-            validateStatus: s => s === 200 || s === 304,
-        })
+        const response = await esiApi.get<EsiCharacter>(
+            `/characters/${characterId}/`,
+            {
+                headers: buildConditionalHeaders({ etag }),
+                validateStatus: (s) => s === 200 || s === 304,
+            },
+        )
 
         const meta = extractCachingHeaders(response.headers)
         const ttl = computeTtlFromHeaders(response.headers)

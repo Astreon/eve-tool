@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {describe, it, beforeEach, expect, vi} from 'vitest'
+import { describe, it, beforeEach, expect, vi } from 'vitest'
 import express from 'express'
 import request from 'supertest'
 
@@ -15,10 +15,10 @@ vi.mock('../src/config/config.js', () => ({
             esiCompatibilityDate: '2025-09-30',
             esiFallbackTtlSeconds: 86400,
         },
-    }
+    },
 }))
 vi.mock('../src/config/cacheThresholds.js', () => ({
-    CACHE_THRESHOLDS: {CHARACTER: 60}
+    CACHE_THRESHOLDS: { CHARACTER: 60 },
 }))
 
 // ── Redis (in-memory) ──
@@ -32,14 +32,20 @@ vi.mock('../src/lib/redis.js', () => {
     const alive = (k: string) => {
         const e = exp.get(k)
         if (e !== undefined && e < now()) {
-            store.delete(k);
-            exp.delete(k);
+            store.delete(k)
+            exp.delete(k)
             return false
         }
         return store.has(k)
     }
 
-    function set(key: string, value: string, mode?: string, time?: number, mode2?: string) {
+    function set(
+        key: string,
+        value: string,
+        mode?: string,
+        time?: number,
+        mode2?: string,
+    ) {
         let nx = false
         let ex: number | undefined
         let px: number | undefined
@@ -76,52 +82,65 @@ vi.mock('../src/lib/redis.js', () => {
     }
 
     function del(key: string) {
-        const ok = alive(key);
-        store.delete(key);
-        exp.delete(key);
+        const ok = alive(key)
+        store.delete(key)
+        exp.delete(key)
         return ok ? 1 : 0
     }
 
     function __flushAll() {
-        store.clear();
+        store.clear()
         exp.clear()
     }
 
-    return {redis: {set, get, ttl, exists, del, __flushAll}}
+    return { redis: { set, get, ttl, exists, del, __flushAll } }
 })
 
 // ── Prisma (in-memory) ──
 vi.mock('../src/lib/prisma.js', () => {
     type Char = {
-        id: number; name: string; corporationId: number
-        raceId: number | null; bloodlineId: number | null; securityStatus: number | null
-        etag?: string | null; lastModified?: Date | null; expiresAt?: Date | null; updatedAt?: Date
-        race?: { name: string } | null; bloodline?: { name: string } | null
+        id: number
+        name: string
+        corporationId: number
+        raceId: number | null
+        bloodlineId: number | null
+        securityStatus: number | null
+        etag?: string | null
+        lastModified?: Date | null
+        expiresAt?: Date | null
+        updatedAt?: Date
+        race?: { name: string } | null
+        bloodline?: { name: string } | null
     }
     let record: Char | null = null
 
-    const findUnique = vi.fn(async ({where: {id}}: any) => {
+    const findUnique = vi.fn(async ({ where: { id } }: any) => {
         if (!record || record.id !== id) return null
         return {
             ...record,
-            race: record.race ?? (record.raceId ? {name: 'Race'} : null),
-            bloodline: record.bloodline ?? (record.bloodlineId ? {name: 'Bloodline'} : null),
+            race: record.race ?? (record.raceId ? { name: 'Race' } : null),
+            bloodline:
+                record.bloodline ??
+                (record.bloodlineId ? { name: 'Bloodline' } : null),
         }
     })
 
-    const upsert = vi.fn(async ({where: {id}, create, update}: any) => {
-        if (!record || record.id !== id) record = {...create, id, updatedAt: new Date()}
-        else record = {...record, ...update, id, updatedAt: new Date()}
+    const upsert = vi.fn(async ({ where: { id }, create, update }: any) => {
+        if (!record || record.id !== id)
+            record = { ...create, id, updatedAt: new Date() }
+        else record = { ...record, ...update, id, updatedAt: new Date() }
         return {
             ...record,
-            race: record.race ?? (record.raceId ? {name: 'Race'} : null),
-            bloodline: record.bloodline ?? (record.bloodlineId ? {name: 'Bloodline'} : null),
+            race: record.race ?? (record.raceId ? { name: 'Race' } : null),
+            bloodline:
+                record.bloodline ??
+                (record.bloodlineId ? { name: 'Bloodline' } : null),
         }
     })
 
-    const update = vi.fn(async ({where: {id}, data}: any) => {
+    const update = vi.fn(async ({ where: { id }, data }: any) => {
         if (!record || record.id !== id) return null
-        record = {...record, ...data, updatedAt: new Date()}
+        record = { ...record, ...data, updatedAt: new Date() }
         return record
     })
 
@@ -129,11 +148,11 @@ vi.mock('../src/lib/prisma.js', () => {
         record = null
     }
 
-    return {prisma: {character: {findUnique, upsert, update, __reset}}}
+    return { prisma: { character: { findUnique, upsert, update, __reset } } }
 })
 
 // ── ESI-Service (mock) ──
-vi.mock('../src/services/esi/index.js', () => ({getCharacterInfo: vi.fn()}))
+vi.mock('../src/services/esi/index.js', () => ({ getCharacterInfo: vi.fn() }))
 import * as esi from '../src/services/esi/index.js'
 
 const getCharacterInfo = vi.mocked(esi.getCharacterInfo)
@@ -141,34 +160,39 @@ const getCharacterInfo = vi.mocked(esi.getCharacterInfo)
 // ── Logger silent ──
 vi.mock('../src/lib/logger.js', () => ({
     logger: {
-        info: () => {
-        }, error: () => {
-        },
-        entityFromRedis: () => {
-        }, entityFromDb: () => {
-        }, entityFromEsi: () => {
-        },
-    }
+        info: () => {},
+        error: () => {},
+        entityFromRedis: () => {},
+        entityFromDb: () => {},
+        entityFromEsi: () => {},
+    },
 }))
 
 // ── CUT ──
-import {getCharacter} from '../src/controllers/character.controller.js'
-import {redis} from '../src/lib/redis.js'
-import {prisma} from '../src/lib/prisma.js'
+import { getCharacter } from '../src/controllers/character.controller.js'
+import { redis } from '../src/lib/redis.js'
+import { prisma } from '../src/lib/prisma.js'
 
 // Express-App for tests incl Error-Handler (ApiError-Shape)
 function appFactory() {
     const app = express()
     app.get('/characters/:id', (req, res, next) => getCharacter(req, res, next))
     app.use((err: any, _req: any, res: any, _next: any) => {
-        res.status(err?.statusCode ?? 500).json({success: false, message: err?.message ?? 'error'})
+        res.status(err?.statusCode ?? 500).json({
+            success: false,
+            message: err?.message ?? 'error',
+        })
     })
     return app
 }
 
 const CHAR_ID = 2123162143
 const makePayload = (name = 'John') => ({
-    name, corporation_id: 7, race_id: 1, bloodline_id: 2, security_status: 3.1
+    name,
+    corporation_id: 7,
+    race_id: 1,
+    bloodline_id: 2,
+    security_status: 3.1,
 })
 
 describe('character.controller getCharacter', () => {
@@ -179,7 +203,11 @@ describe('character.controller getCharacter', () => {
     })
 
     it('A) cold start -> ESI 200', async () => {
-        getCharacterInfo.mockResolvedValueOnce({data: makePayload('Alpha'), etag: '"v1"', ttl: 3600})
+        getCharacterInfo.mockResolvedValueOnce({
+            data: makePayload('Alpha'),
+            etag: '"v1"',
+            ttl: 3600,
+        })
         const app = appFactory()
         const res = await request(app).get(`/characters/${CHAR_ID}`)
         expect(res.status).toBe(200)
@@ -188,10 +216,25 @@ describe('character.controller getCharacter', () => {
     })
 
     it('B) redis fast-path (fresh-key exists)', async () => {
-        await redis.set(`character:vtest:2025-09-30:${CHAR_ID}`, JSON.stringify({
-            id: CHAR_ID, name: 'Beta', corporation_id: 7, race: 'Race', bloodline: 'Bloodline', security_status: 3.1
-        }), 'EX', 7200)
-        await redis.set(`character:vtest:2025-09-30:${CHAR_ID}:fresh`, '1', 'EX', 60)
+        await redis.set(
+            `character:vtest:2025-09-30:${CHAR_ID}`,
+            JSON.stringify({
+                id: CHAR_ID,
+                name: 'Beta',
+                corporation_id: 7,
+                race: 'Race',
+                bloodline: 'Bloodline',
+                security_status: 3.1,
+            }),
+            'EX',
+            7200,
+        )
+        await redis.set(
+            `character:vtest:2025-09-30:${CHAR_ID}:fresh`,
+            '1',
+            'EX',
+            60,
+        )
 
         const app = appFactory()
         const res = await request(app).get(`/characters/${CHAR_ID}`)
@@ -203,17 +246,33 @@ describe('character.controller getCharacter', () => {
     it('C) DB-window valid (DB delivered, Redis stale-ish)', async () => {
         const future = new Date(Date.now() + 2 * 60 * 60 * 1000)
         await (prisma.character as any).upsert({
-            where: {id: CHAR_ID},
+            where: { id: CHAR_ID },
             create: {
-                id: CHAR_ID, name: 'Gamma', corporationId: 7, raceId: 1, bloodlineId: 2,
-                securityStatus: 3.1, etag: '"v1"', expiresAt: future
+                id: CHAR_ID,
+                name: 'Gamma',
+                corporationId: 7,
+                raceId: 1,
+                bloodlineId: 2,
+                securityStatus: 3.1,
+                etag: '"v1"',
+                expiresAt: future,
             },
-            update: {}
+            update: {},
         })
 
-        await redis.set(`character:vtest:2025-09-30:${CHAR_ID}`, JSON.stringify({
-            id: CHAR_ID, name: 'OLD', corporation_id: 7, race: 'Race', bloodline: 'Bloodline', security_status: 3.1
-        }), 'EX', 7200)
+        await redis.set(
+            `character:vtest:2025-09-30:${CHAR_ID}`,
+            JSON.stringify({
+                id: CHAR_ID,
+                name: 'OLD',
+                corporation_id: 7,
+                race: 'Race',
+                bloodline: 'Bloodline',
+                security_status: 3.1,
+            }),
+            'EX',
+            7200,
+        )
 
         const app = appFactory()
         const res = await request(app).get(`/characters/${CHAR_ID}`)
@@ -225,15 +284,25 @@ describe('character.controller getCharacter', () => {
     it('D) conditional 304 (DB exists, expired)', async () => {
         const past = new Date(Date.now() - 1000)
         await (prisma.character as any).upsert({
-            where: {id: CHAR_ID},
+            where: { id: CHAR_ID },
             create: {
-                id: CHAR_ID, name: 'Delta', corporationId: 7, raceId: 1, bloodlineId: 2,
-                securityStatus: 3.1, etag: '"v1"', expiresAt: past
+                id: CHAR_ID,
+                name: 'Delta',
+                corporationId: 7,
+                raceId: 1,
+                bloodlineId: 2,
+                securityStatus: 3.1,
+                etag: '"v1"',
+                expiresAt: past,
             },
-            update: {}
+            update: {},
         })
 
-        getCharacterInfo.mockResolvedValueOnce({data: null, etag: '"v1"', ttl: 120})
+        getCharacterInfo.mockResolvedValueOnce({
+            data: null,
+            etag: '"v1"',
+            ttl: 120,
+        })
 
         const app = appFactory()
         const res = await request(app).get(`/characters/${CHAR_ID}`)
@@ -244,17 +313,30 @@ describe('character.controller getCharacter', () => {
     it('E) conditional 200 (updated)', async () => {
         const past = new Date(Date.now() - 1000)
         await (prisma.character as any).upsert({
-            where: {id: CHAR_ID},
+            where: { id: CHAR_ID },
             create: {
-                id: CHAR_ID, name: 'Epsilon', corporationId: 7, raceId: 1, bloodlineId: 2,
-                securityStatus: 3.1, etag: '"v1"', expiresAt: past
+                id: CHAR_ID,
+                name: 'Epsilon',
+                corporationId: 7,
+                raceId: 1,
+                bloodlineId: 2,
+                securityStatus: 3.1,
+                etag: '"v1"',
+                expiresAt: past,
             },
-            update: {}
+            update: {},
         })
 
         getCharacterInfo.mockResolvedValueOnce({
-            data: {name: 'Epsilon-UPDATED', corporation_id: 7, race_id: 1, bloodline_id: 2, security_status: 3.1},
-            etag: '"v2"', ttl: 180
+            data: {
+                name: 'Epsilon-UPDATED',
+                corporation_id: 7,
+                race_id: 1,
+                bloodline_id: 2,
+                security_status: 3.1,
+            },
+            etag: '"v2"',
+            ttl: 180,
         })
 
         const app = appFactory()
@@ -264,14 +346,19 @@ describe('character.controller getCharacter', () => {
     })
 
     it('F) stale-if-error -> serve from Redis', async () => {
-        await redis.set(`character:vtest:2025-09-30:${CHAR_ID}`, JSON.stringify({
-            id: CHAR_ID,
-            name: 'FromCache',
-            corporation_id: 7,
-            race: 'Race',
-            bloodline: 'Bloodline',
-            security_status: 3.1
-        }), 'EX', 600)
+        await redis.set(
+            `character:vtest:2025-09-30:${CHAR_ID}`,
+            JSON.stringify({
+                id: CHAR_ID,
+                name: 'FromCache',
+                corporation_id: 7,
+                race: 'Race',
+                bloodline: 'Bloodline',
+                security_status: 3.1,
+            }),
+            'EX',
+            600,
+        )
 
         getCharacterInfo.mockRejectedValueOnce(new Error('ESI down'))
 
@@ -284,12 +371,18 @@ describe('character.controller getCharacter', () => {
     it('G) stale-if-error -> serve from DB', async () => {
         const past = new Date(Date.now() - 1000)
         await (prisma.character as any).upsert({
-            where: {id: CHAR_ID},
+            where: { id: CHAR_ID },
             create: {
-                id: CHAR_ID, name: 'FromDB', corporationId: 7, raceId: 1, bloodlineId: 2,
-                securityStatus: 3.1, etag: '"v1"', expiresAt: past
+                id: CHAR_ID,
+                name: 'FromDB',
+                corporationId: 7,
+                raceId: 1,
+                bloodlineId: 2,
+                securityStatus: 3.1,
+                etag: '"v1"',
+                expiresAt: past,
             },
-            update: {}
+            update: {},
         })
 
         getCharacterInfo.mockRejectedValueOnce(new Error('ESI down'))
@@ -302,14 +395,19 @@ describe('character.controller getCharacter', () => {
 
     it('H) lock busy -> stale from Redis', async () => {
         await redis.set(`lock:character:${CHAR_ID}`, '1', 'EX', 15)
-        await redis.set(`character:vtest:2025-09-30:${CHAR_ID}`, JSON.stringify({
-            id: CHAR_ID,
-            name: 'StaleCache',
-            corporation_id: 7,
-            race: 'Race',
-            bloodline: 'Bloodline',
-            security_status: 3.1
-        }), 'EX', 600)
+        await redis.set(
+            `character:vtest:2025-09-30:${CHAR_ID}`,
+            JSON.stringify({
+                id: CHAR_ID,
+                name: 'StaleCache',
+                corporation_id: 7,
+                race: 'Race',
+                bloodline: 'Bloodline',
+                security_status: 3.1,
+            }),
+            'EX',
+            600,
+        )
 
         const app = appFactory()
         const res = await request(app).get(`/characters/${CHAR_ID}`)

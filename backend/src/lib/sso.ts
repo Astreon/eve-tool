@@ -4,14 +4,14 @@
  */
 
 import qs from 'querystring'
-import axios from "axios";
-import config from "../config/config.js";
+import axios from 'axios'
+import config from '../config/config.js'
 
-const AUTH_BASE = "https://login.eveonline.com/v2/oauth"
+const AUTH_BASE = 'https://login.eveonline.com/v2/oauth'
 
 export function buildAuthUrl(state: string) {
     const q = qs.stringify({
-        response_type: "code",
+        response_type: 'code',
         redirect_uri: config.esiSso.esiSsoRedirectUri,
         client_id: config.esiSso.esiSsoClientId,
         // EVE SSO expects a single space-separated string
@@ -22,13 +22,23 @@ export function buildAuthUrl(state: string) {
 }
 
 export async function exchangeCodeForToken(code: string) {
-    const basic = Buffer.from(`${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`).toString('base64')
-    const res = await axios.post(`${AUTH_BASE}/token`,
-        qs.stringify({grant_type: 'authorization_code', code: code, redirect_uri: config.esiSso.esiSsoRedirectUri}),
+    const basic = Buffer.from(
+        `${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`,
+    ).toString('base64')
+    const res = await axios.post(
+        `${AUTH_BASE}/token`,
+        qs.stringify({
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: config.esiSso.esiSsoRedirectUri,
+        }),
         {
-            headers: {'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                Authorization: `Basic ${basic}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
             validateStatus: (s) => s === 200,
-        }
+        },
     )
     return res.data as {
         access_token: string
@@ -39,13 +49,23 @@ export async function exchangeCodeForToken(code: string) {
 }
 
 export async function refreshToken(refresh_token: string) {
-    const basic = Buffer.from(`${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`).toString('base64')
-    const res = await axios.post(`${AUTH_BASE}/token`,
-        qs.stringify({grant_type: 'refresh_token', refresh_token, redirect_uri: config.esiSso.esiSsoRedirectUri}),
+    const basic = Buffer.from(
+        `${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`,
+    ).toString('base64')
+    const res = await axios.post(
+        `${AUTH_BASE}/token`,
+        qs.stringify({
+            grant_type: 'refresh_token',
+            refresh_token,
+            redirect_uri: config.esiSso.esiSsoRedirectUri,
+        }),
         {
-            headers: {'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                Authorization: `Basic ${basic}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
             validateStatus: (s) => s === 200,
-        }
+        },
     )
     return res.data as {
         access_token: string
@@ -57,8 +77,8 @@ export async function refreshToken(refresh_token: string) {
 
 export async function verifyToken(accessToken: string) {
     const res = await axios.get('https://login.eveonline.com/oauth/verify', {
-        headers: {Authorization: `Bearer ${accessToken}`},
-        validateStatus: s => s === 200,
+        headers: { Authorization: `Bearer ${accessToken}` },
+        validateStatus: (s) => s === 200,
     })
     // Typen lt. ESI SSO verify
     return res.data as {

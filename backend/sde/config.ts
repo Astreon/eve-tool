@@ -17,7 +17,7 @@ export function assertSdeDirOnThrow() {
     if (!exists) {
         throw new Error(
             `SDE Folder not found in ${SDE_DIR}\n` +
-            `Place your JSONL-Files in "../.sde"`
+                `Place your JSONL-Files in "../.sde"`,
         )
     }
 }

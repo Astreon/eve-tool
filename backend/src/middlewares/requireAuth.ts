@@ -3,14 +3,14 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {Request, Response, NextFunction} from "express";
-import {UnauthorizedError} from "../types/appError.js";
-import {verifyToken} from "../lib/sso.js";
+import { Request, Response, NextFunction } from 'express'
+import { UnauthorizedError } from '../types/appError.js'
+import { verifyToken } from '../lib/sso.js'
 
 const MAX_ENTRIES = 1000
-const MIN_TTL_MS = 5_000                // don't cache shorter than 5s
-const MAX_TTL_MS = 5 * 60_000   // don't cache longer than 5min
-const SKEW_MS = 2_000                   // subtract to be safe
+const MIN_TTL_MS = 5_000 // don't cache shorter than 5s
+const MAX_TTL_MS = 5 * 60_000 // don't cache longer than 5min
+const SKEW_MS = 2_000 // subtract to be safe
 
 type VerifyCached = {
     value: {
@@ -47,10 +47,12 @@ function getVerifyFromCache(token: string) {
 function putVerifyInCache(token: string, value: VerifyCached['value']) {
     const now = Date.now()
     const expOn = Date.parse(value.ExpiresOn) // may be NaN if format changes
-    const msLeft = isNaN(expOn) ? MIN_TTL_MS : Math.max(0, expOn - now - SKEW_MS)
+    const msLeft = isNaN(expOn)
+        ? MIN_TTL_MS
+        : Math.max(0, expOn - now - SKEW_MS)
     const ttl = clamp(msLeft, MIN_TTL_MS, MAX_TTL_MS)
 
-    verifyCache.set(token, {value, exp: now + ttl})
+    verifyCache.set(token, { value, exp: now + ttl })
     // simple LRU eviction
     if (verifyCache.size > MAX_ENTRIES) {
         const firstKey = verifyCache.keys().next().value
@@ -58,7 +60,11 @@ function putVerifyInCache(token: string, value: VerifyCached['value']) {
     }
 }
 
-export async function requireAuth(req: Request, _res: Response, next: NextFunction) {
+export async function requireAuth(
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+) {
     const h = req.get('authorization') ?? req.get('Authorization')
     if (!h || !h.startsWith('Bearer ')) {
         return next(new UnauthorizedError('Missing Bearer token'))
@@ -83,6 +89,8 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
         ;(req as any).esiCharacterName = v.CharacterName
         return next()
     } catch (e) {
-        return next(new UnauthorizedError('Invalid or expired token', {cause: e}))
+        return next(
+            new UnauthorizedError('Invalid or expired token', { cause: e }),
+        )
     }
 }

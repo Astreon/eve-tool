@@ -3,70 +3,113 @@
  * Copyright (C) 2025 Astreon
  */
 
-import config from "../config/config.js";
+import pino, { Logger as PinoLogger, Level } from 'pino'
+import config from '../config/config.js'
 
-const IS_DEV = config.nodeEnv === 'development'
+export type LogMeta = Record<string, unknown>
 
-function pad(line: string, indent = 2) { return ' '.repeat(indent) + line }
+export type LogKind = 'APP' | 'HTTP' | 'ESI' | 'REDIS' | 'DB' | string
 
-type Meta = Record<string, unknown> | undefined
+const isDev = config.nodeEnv === 'development'
+const isTest = config.nodeEnv === 'test'
 
-function printHeader(kind: string, id: number | string) {
-  console.log(`[${kind}] ID: ${id}`)
-}
+const baseLogger: PinoLogger = pino({
+    level: process.env.LOG_LEVEL ?? (isDev ? 'debug' : 'info'),
+    transport: isDev
+        ? {
+              target: 'pino-pretty',
+              options: {
+                  colorize: true,
+                  translateTime: 'HH:MM:ss',
+                  singleLine: false,
+                  ignore: 'pid,hostname',
+              },
+          }
+        : undefined,
+})
 
-function printMeta(meta?: Meta) {
-  if (!meta) return
-  for (const [k, v] of Object.entries(meta)) {
-    if (v === undefined || v === null) continue
-    if (k === 'durationMs') continue
-    console.log(pad(`↳ ${k}: ${String(v)}`))
-  }
-  // Duration printed last if present and in dev
-  if (IS_DEV && meta && typeof meta.durationMs === 'number') {
-    console.log(pad(`↳ Duration: ${meta.durationMs}ms`))
-  }
-}
+function log(level: Level, kind: LogKind, message: string, meta?: LogMeta) {
+    // be silent in tests - mocking logger in test anyway
+    if (isTest) return
 
-export function logEntity(kind: string, id: number | string, meta?: Meta) {
-  printHeader(kind, id)
-  printMeta(meta)
+    if (meta && Object.keys(meta).length > 0) {
+        baseLogger[level]({
+            kind,
+            msg: message,
+            ...meta,
+        })
+    } else {
+        baseLogger[level]({ kind, msg: message })
+    }
 }
 
 export const logger = {
-  info(ctx: string, msg: string, meta?: Meta) {
-    console.info(`[INFO] [${ctx}] ${msg}`, meta ?? '')
-  },
-  error(ctx: string, msg: string, meta?: Meta) {
-    console.error(`[ERROR] [${ctx}] ${msg}`, meta ?? '')
-  },
+    debug(kind: LogKind, message: string, meta?: LogMeta) {
+        log('debug', kind, message, meta)
+    },
 
-  entityFromRedis(kind: string, id: number | string, opts: { ttl?: number | null; cachedAt?: string | null; durationMs?: number } = {}) {
-    const meta: Meta = {
-      Source: 'Redis',
-      TTL: opts.ttl !== undefined && opts.ttl !== null ? `${opts.ttl}s` : undefined,
-      CachedAt: opts.cachedAt ?? undefined,
-      durationMs: opts.durationMs,
-    }
-    logEntity(kind, id, meta)
-  },
+    info(kind: LogKind, message: string, meta?: LogMeta) {
+        log('info', kind, message, meta)
+    },
 
-  entityFromEsi(kind: string, id: number | string, opts: { etag?: string | null; ttl?: number | null; durationMs?: number } = {}) {
-    const meta: Meta = {
-      Source: 'ESI',
-      ETag: opts.etag ?? undefined,
-      TTL: opts.ttl !== undefined && opts.ttl !== null ? `${opts.ttl}s` : undefined,
-      durationMs: opts.durationMs,
-    }
-    logEntity(kind, id, meta)
-  },
+    warn(kind: LogKind, message: string, meta?: LogMeta) {
+        log('warn', kind, message, meta)
+    },
 
-  entityFromDb(kind: string, id: number | string, opts: { lastUpdated?: string | null; durationMs?: number } = {}) {
-    const meta: Meta = {
-      Source: 'Database',
-      LastUpdated: opts.lastUpdated ?? undefined,
-      durationMs: opts.durationMs,
-    }
-    logEntity(kind, id, meta)
-  }
-}
+    error(kind: LogKind, message: string, meta?: LogMeta) {
+        log('error', kind, message, meta)
+    },
+
+    // --- Domain-specific loggers
+    entityFromRedis(
+        kind: LogKind,
+        id: number | string,
+        opts: {
+            ttl?: number
+            cachedAt?: string | null
+            durationMs?: number
+        } = {},
+    ) {
+        const meta: LogMeta = {
+            id,
+            source: 'redis',
+            ttl: opts.ttl,
+            cachedAt: opts.cachedAt ?? undefined,
+            durationMs: opts.durationMs,
+        }
+        log('info', kind, 'entity.from.redis', meta)
+    },
+
+    entityFromEsi(
+        kind: LogKind,
+        id: number | string,
+        opts: {
+            etag?: string | null
+            status?: number
+            durationMs?: number
+        } = {},
+    ) {
+        const meta: LogMeta = {
+            id,
+            source: 'esi',
+            etag: opts.etag ?? undefined,
+            status: opts.status,
+            durationMs: opts.durationMs,
+        }
+        log('info', kind, 'entity.from.esi', meta)
+    },
+
+    entityFromDb(
+        kind: LogKind,
+        id: number | string,
+        opts: { lastUpdated?: string | null; durationMs?: number } = {},
+    ) {
+        const meta: LogMeta = {
+            id,
+            source: 'db',
+            lastUpdated: opts.lastUpdated ?? undefined,
+            durationMs: opts.durationMs,
+        }
+        log('info', kind, 'entity.from.db', meta)
+    },
+} as const

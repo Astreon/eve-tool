@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import type {Request as ExpressRequest} from 'express'
+import type { Request as ExpressRequest } from 'express'
 
 export interface EsiResult<T> {
     data: T | null
@@ -35,7 +35,10 @@ export interface WithEsiCacheConfig<TDb, TApi, TEsi> {
     upsertDbOn200: (
         id: number | string,
         payload: TEsi,
-        meta: Required<Pick<DbMeta, 'etag'>> & { expiresAt: Date; lastModified?: Date | null }
+        meta: Required<Pick<DbMeta, 'etag'>> & {
+            expiresAt: Date
+            lastModified?: Date | null
+        },
     ) => Promise<TDb>
 
     bumpDbMetaOn304?: (id: number | string, meta: DbMeta) => Promise<void>

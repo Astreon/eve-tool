@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {Router} from 'express'
-import {getStatus} from '../controllers/status.controller.js'
+import { Router } from 'express'
+import { getStatus } from '../controllers/status.controller.js'
 
 const router = Router()
 
