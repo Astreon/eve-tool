@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import {useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {ReactFlow, Background, NodeProps, Handle, Position} from "@xyflow/react";

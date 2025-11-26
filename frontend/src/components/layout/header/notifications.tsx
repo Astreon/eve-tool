@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { BellIcon, ClockIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useIsMobile } from "@/hooks/use-mobile";

@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { DEFAULT_THEME, ThemeType } from "@/lib/themes";
 

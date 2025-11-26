@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 export type ThemeRadius = "default" | "none" | "sm" | "md" | "lg" | "xl";
 export type ThemePreset = "default" | "ocean-breeze";
 export type ThemeScale = "none" | "xs" | "lg";

@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import axios from 'axios'
 import {AppError, NotFoundError, RateLimitedError} from '../types/appError.js'
 import {EsiErrorContext} from "../types/axios.types.js";

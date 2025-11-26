@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import {Router} from "express";
 import * as crypto from "node:crypto";
 import {buildAuthUrl, exchangeCodeForToken} from "../lib/sso.js";

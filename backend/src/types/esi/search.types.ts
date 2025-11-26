@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 export type EsiSearchCategories =
     | 'agent' | 'alliance' | 'character' | 'constellation' | 'corporation'
     | 'faction' | 'inventory_type' | 'region' | 'solar_system' | 'station' | 'structure'

@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { Router } from 'express'
 import characterRoutes from './character.routes.js'
 import authRoutes from './auth.routes.js'

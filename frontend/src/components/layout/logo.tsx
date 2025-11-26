@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 export default function Logo() {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width={30} height={30}

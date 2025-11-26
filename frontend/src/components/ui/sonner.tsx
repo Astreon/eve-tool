@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { useTheme } from "tanstack-theme-kit"
 import { Toaster as Sonner, ToasterProps } from "sonner"
 import {CSSProperties} from "react";

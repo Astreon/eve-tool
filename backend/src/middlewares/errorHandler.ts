@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { Request, Response, NextFunction } from 'express'
 import { ApiResponse } from '../types/apiResponse.js'
 import { AppError, BadRequestError } from '../types/appError.js'

@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import React, { useEffect, useState } from "react";
 import { CommandIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
