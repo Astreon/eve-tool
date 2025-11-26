@@ -6,8 +6,8 @@
 // @ts-check
 // noinspection JSCheckFunctionSignatures,SpellCheckingInspection
 
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
     {
@@ -95,4 +95,4 @@ export default tseslint.config(
             '@typescript-eslint/consistent-type-definitions': 'off',
         },
     },
-);
+)

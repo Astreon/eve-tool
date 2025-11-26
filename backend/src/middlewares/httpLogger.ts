@@ -3,22 +3,22 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { NextFunction, Request, Response } from 'express';
-import crypto from 'crypto';
-import { logger } from '../lib/logger.js';
+import { NextFunction, Request, Response } from 'express'
+import crypto from 'crypto'
+import { logger } from '../lib/logger.js'
 
 export function httpLogger(req: Request, res: Response, next: NextFunction) {
-    const startedAt = Date.now();
-    const requestId = crypto.randomUUID();
+    const startedAt = Date.now()
+    const requestId = crypto.randomUUID()
 
     // attach requestId to Request
-    (req as any).requestId = requestId;
+    ;(req as any).requestId = requestId
 
     // serve in Response-Header
-    res.setHeader('X-Request-Id', requestId);
+    res.setHeader('X-Request-Id', requestId)
 
     res.on('finish', () => {
-        const durationMs = Date.now() - startedAt;
+        const durationMs = Date.now() - startedAt
 
         logger.info('HTTP', `${req.method} ${req.originalUrl}`, {
             requestId,
@@ -28,8 +28,8 @@ export function httpLogger(req: Request, res: Response, next: NextFunction) {
             durationMs,
             userAgent: req.get('User-Agent') ?? undefined,
             // TODO: Add userId/characterId here, after implement Auth()
-        });
-    });
+        })
+    })
 
-    next();
+    next()
 }

@@ -11,4 +11,4 @@ export const USED_ESI_ROUTES: { method: string; path: string }[] = [
 
     // --- POST
     { method: 'POST', path: '/universe/names' },
-];
+]

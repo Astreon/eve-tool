@@ -3,11 +3,11 @@
  * Copyright (C) 2025 Astreon
  */
 
-import qs from 'querystring';
-import axios from 'axios';
-import config from '../config/config.js';
+import qs from 'querystring'
+import axios from 'axios'
+import config from '../config/config.js'
 
-const AUTH_BASE = 'https://login.eveonline.com/v2/oauth';
+const AUTH_BASE = 'https://login.eveonline.com/v2/oauth'
 
 export function buildAuthUrl(state: string) {
     const q = qs.stringify({
@@ -17,14 +17,14 @@ export function buildAuthUrl(state: string) {
         // EVE SSO expects a single space-separated string
         scope: config.esiSso.esiSsoScopes.join(' '),
         state,
-    });
-    return `${AUTH_BASE}/authorize?${q}`;
+    })
+    return `${AUTH_BASE}/authorize?${q}`
 }
 
 export async function exchangeCodeForToken(code: string) {
     const basic = Buffer.from(
         `${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`,
-    ).toString('base64');
+    ).toString('base64')
     const res = await axios.post(
         `${AUTH_BASE}/token`,
         qs.stringify({
@@ -39,19 +39,19 @@ export async function exchangeCodeForToken(code: string) {
             },
             validateStatus: (s) => s === 200,
         },
-    );
+    )
     return res.data as {
-        access_token: string;
-        refresh_token?: string;
-        expires_in: number;
-        token_type: 'Bearer';
-    };
+        access_token: string
+        refresh_token?: string
+        expires_in: number
+        token_type: 'Bearer'
+    }
 }
 
 export async function refreshToken(refresh_token: string) {
     const basic = Buffer.from(
         `${config.esiSso.esiSsoClientId}:${config.esiSso.esiSsoClientSecret}`,
-    ).toString('base64');
+    ).toString('base64')
     const res = await axios.post(
         `${AUTH_BASE}/token`,
         qs.stringify({
@@ -66,28 +66,28 @@ export async function refreshToken(refresh_token: string) {
             },
             validateStatus: (s) => s === 200,
         },
-    );
+    )
     return res.data as {
-        access_token: string;
-        refresh_token?: string;
-        expires_in: number;
-        token_type: 'Bearer';
-    };
+        access_token: string
+        refresh_token?: string
+        expires_in: number
+        token_type: 'Bearer'
+    }
 }
 
 export async function verifyToken(accessToken: string) {
     const res = await axios.get('https://login.eveonline.com/oauth/verify', {
         headers: { Authorization: `Bearer ${accessToken}` },
         validateStatus: (s) => s === 200,
-    });
+    })
     // Typen lt. ESI SSO verify
     return res.data as {
-        CharacterID: number;
-        CharacterName: string;
-        ExpiresOn: string;
-        Scopes: string;
-        TokenType: 'Bearer';
-        CharacterOwnerHash: string;
-        IntellectualProperty: string;
-    };
+        CharacterID: number
+        CharacterName: string
+        ExpiresOn: string
+        Scopes: string
+        TokenType: 'Bearer'
+        CharacterOwnerHash: string
+        IntellectualProperty: string
+    }
 }

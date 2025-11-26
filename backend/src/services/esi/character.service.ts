@@ -3,17 +3,17 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { esiApi } from '../../lib/axios.js';
+import { esiApi } from '../../lib/axios.js'
 import {
     EsiCharacterResponse,
     EsiCharacter,
-} from '../../types/esi/character.types.js';
+} from '../../types/esi/character.types.js'
 import {
     buildConditionalHeaders,
     computeTtlFromHeaders,
     extractCachingHeaders,
-} from '../../utils/cacheControl.js';
-import { toEsiAppError } from '../../lib/axiosErrors.js';
+} from '../../utils/cacheControl.js'
+import { toEsiAppError } from '../../lib/axiosErrors.js'
 
 export const getCharacterInfo = async (
     characterId: number,
@@ -26,10 +26,10 @@ export const getCharacterInfo = async (
                 headers: buildConditionalHeaders({ etag }),
                 validateStatus: (s) => s === 200 || s === 304,
             },
-        );
+        )
 
-        const meta = extractCachingHeaders(response.headers);
-        const ttl = computeTtlFromHeaders(response.headers);
+        const meta = extractCachingHeaders(response.headers)
+        const ttl = computeTtlFromHeaders(response.headers)
 
         if (response.status === 304) {
             return {
@@ -38,7 +38,7 @@ export const getCharacterInfo = async (
                 expires: meta.expires,
                 lastModified: meta.lastModified,
                 ttl,
-            };
+            }
         }
 
         return {
@@ -47,13 +47,13 @@ export const getCharacterInfo = async (
             expires: meta.expires,
             lastModified: meta.lastModified,
             ttl,
-        };
+        }
     } catch (e) {
         throw toEsiAppError(e, {
             op: 'GET /characters/{character_id}/',
             resource: 'Character',
             characterId,
             etag,
-        });
+        })
     }
-};
+}

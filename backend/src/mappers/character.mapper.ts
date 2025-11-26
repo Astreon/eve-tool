@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { CharacterWithRelations } from '../types/db/character.types.js';
-import { CharacterApiResponse } from '../types/api/character.types.js';
+import { CharacterWithRelations } from '../types/db/character.types.js'
+import { CharacterApiResponse } from '../types/api/character.types.js'
 
 export const mapCharacterToApiResponse = (
     character: CharacterWithRelations,
@@ -15,4 +15,4 @@ export const mapCharacterToApiResponse = (
     name: character.name,
     race: character.race.name,
     security_status: character.securityStatus ?? null,
-});
+})

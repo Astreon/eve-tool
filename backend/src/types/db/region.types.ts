@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Region } from '../../generated/client.js';
+import { Region } from '../../generated/client.js'
 
 export type RegionWithRelations = Region & {
-    faction: { name: string };
-};
+    faction: { name: string }
+}

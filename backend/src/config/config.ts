@@ -3,19 +3,19 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 const ScopesSchema = z.preprocess(
     (val) => {
-        if (Array.isArray(val)) return val;
+        if (Array.isArray(val)) return val
         if (typeof val === 'string') {
-            const s = val.trim().replace(/^['"]|['"]$/g, '');
-            return s.split(/[,\s]+/).filter(Boolean);
+            const s = val.trim().replace(/^['"]|['"]$/g, '')
+            return s.split(/[,\s]+/).filter(Boolean)
         }
-        return undefined;
+        return undefined
     },
     z.array(z.string()).nonempty().default(['publicData']),
-);
+)
 
 const Validator = z.object({
     PORT: z.coerce.number().int().positive().default(3000),
@@ -70,39 +70,39 @@ const Validator = z.object({
     REDIS_PORT: z.coerce.number().positive().int().default(6379),
     REDIS_PASSWORD: z.string().default(''),
     CACHE_VERSION: z.string().default('v1'),
-});
+})
 
-const env = Validator.parse(process.env);
+const env = Validator.parse(process.env)
 
 interface Config {
-    port: number;
-    nodeEnv: string;
+    port: number
+    nodeEnv: string
     esiApi: {
-        esiBaseUrl: string;
-        esiCompatibilityDate: string;
-        esiAcceptLanguage: string;
-        esiFallbackTtlSeconds: number;
-    };
+        esiBaseUrl: string
+        esiCompatibilityDate: string
+        esiAcceptLanguage: string
+        esiFallbackTtlSeconds: number
+    }
     esiSso: {
-        esiSsoClientId: string;
-        esiSsoClientSecret: string;
-        esiSsoRedirectUri: string;
-        esiSsoScopes: string[];
-    };
+        esiSsoClientId: string
+        esiSsoClientSecret: string
+        esiSsoRedirectUri: string
+        esiSsoScopes: string[]
+    }
     esiBackoff: {
-        shareViaRedis: boolean;
-        minRemainSoft: number;
-        minRemainHard: number;
-        key: string;
-        jitter: number;
-        clockSkew: number;
-    };
+        shareViaRedis: boolean
+        minRemainSoft: number
+        minRemainHard: number
+        key: string
+        jitter: number
+        clockSkew: number
+    }
     redis: {
-        host: string;
-        port: number;
-        password: string;
-        cacheVersion: string;
-    };
+        host: string
+        port: number
+        password: string
+        cacheVersion: string
+    }
 }
 
 const config: Config = {
@@ -134,6 +134,6 @@ const config: Config = {
         password: env.REDIS_PASSWORD,
         cacheVersion: env.CACHE_VERSION,
     },
-};
+}
 
-export default config;
+export default config

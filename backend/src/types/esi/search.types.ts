@@ -14,18 +14,18 @@ export type EsiSearchCategories =
     | 'region'
     | 'solar_system'
     | 'station'
-    | 'structure';
+    | 'structure'
 
 export interface EsiSearchResult {
-    agents?: number[];
-    alliances?: number[];
-    characters?: number[];
-    constellations?: number[];
-    corporations?: number[];
-    factions?: number[];
-    inventory_types?: number[];
-    regions?: number[];
-    solar_systems?: number[];
-    stations?: number[];
-    structures?: number[];
+    agents?: number[]
+    alliances?: number[]
+    characters?: number[]
+    constellations?: number[]
+    corporations?: number[]
+    factions?: number[]
+    inventory_types?: number[]
+    regions?: number[]
+    solar_systems?: number[]
+    stations?: number[]
+    structures?: number[]
 }

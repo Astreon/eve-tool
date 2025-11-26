@@ -4,24 +4,24 @@
  */
 
 export interface ApiMeta {
-    stale?: boolean;
-    source?: 'redis' | 'db' | 'esi';
-    ttl?: number;
-    etag?: string;
-    requestId?: string;
+    stale?: boolean
+    source?: 'redis' | 'db' | 'esi'
+    ttl?: number
+    etag?: string
+    requestId?: string
 }
 
 export interface ApiSuccess<T> {
-    success: true;
-    data: T;
-    meta?: ApiMeta;
+    success: true
+    data: T
+    meta?: ApiMeta
 }
 
 export interface ApiError {
-    success: false;
-    message: string;
-    code?: string;
-    meta?: ApiMeta;
+    success: false
+    message: string
+    code?: string
+    meta?: ApiMeta
 }
 
-export type ApiResponse<T> = ApiSuccess<T> | ApiError;
+export type ApiResponse<T> = ApiSuccess<T> | ApiError

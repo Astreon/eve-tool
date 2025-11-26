@@ -13,8 +13,8 @@ import {
     importStargates,
     importPlanets,
     importMoons,
-} from '../importers';
-import type { ImportResult } from '../importer.js';
+} from '../importers'
+import type { ImportResult } from '../importer.js'
 
 export type ImportDatasetId =
     | 'bloodlines'
@@ -25,12 +25,12 @@ export type ImportDatasetId =
     | 'solar-systems'
     | 'stargates'
     | 'planets'
-    | 'moons';
+    | 'moons'
 
 export interface ImportTask {
-    id: ImportDatasetId;
-    label: string;
-    run: (dryRun?: boolean) => Promise<ImportResult>;
+    id: ImportDatasetId
+    label: string
+    run: (dryRun?: boolean) => Promise<ImportResult>
 }
 
 export const IMPORT_TASKS: ImportTask[] = [
@@ -47,13 +47,13 @@ export const IMPORT_TASKS: ImportTask[] = [
     { id: 'stargates', label: 'Stargates', run: importStargates },
     { id: 'planets', label: 'Planets', run: importPlanets },
     { id: 'moons', label: 'Moons', run: importMoons },
-];
+]
 
 export const IMPORT_TASKS_BY_ID: Record<ImportDatasetId, ImportTask> =
     IMPORT_TASKS.reduce(
         (acc, task) => {
-            acc[task.id] = task;
-            return acc;
+            acc[task.id] = task
+            return acc
         },
         {} as Record<ImportDatasetId, ImportTask>,
-    );
+    )

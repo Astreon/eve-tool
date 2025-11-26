@@ -3,10 +3,10 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Router } from 'express';
-import { searchAll } from '../controllers/search.controller.js';
+import { Router } from 'express'
+import { searchAll } from '../controllers/search.controller.js'
 
-const router = Router();
-router.get('/', searchAll);
+const router = Router()
+router.get('/', searchAll)
 
-export default router;
+export default router
