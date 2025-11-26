@@ -4,6 +4,7 @@
  */
 
 export const USED_ESI_ROUTES: { method: string; path: string }[] = [
+    // --- GET
     { method: 'GET', path: '/characters/{character_id}' },
     { method: 'GET', path: '/characters/{character_id}/search' },
     { method: 'GET', path: '/meta/status' },

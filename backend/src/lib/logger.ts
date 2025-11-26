@@ -86,6 +86,7 @@ export const logger = {
         opts: {
             etag?: string | null
             status?: number
+            ttl?: number
             durationMs?: number
         } = {},
     ) {
@@ -94,6 +95,7 @@ export const logger = {
             source: 'esi',
             etag: opts.etag ?? undefined,
             status: opts.status,
+            ttl: opts.ttl,
             durationMs: opts.durationMs,
         }
         log('info', kind, 'entity.from.esi', meta)
