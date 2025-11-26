@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {redis} from "../src/lib/redis.js";
+import { redis } from "../src/lib/redis.js";
 import config from "../src/config/config.js";
 
 const REGION_CACHE_PREFIX = "regions";
@@ -11,9 +11,7 @@ const REGION_CACHE_PREFIX = "regions";
 export async function invalidateSdeCaches() {
     const v = config.redis.cacheVersion;
 
-    const patterns = [
-        `${REGION_CACHE_PREFIX}:${v}:*`,
-    ];
+    const patterns = [`${REGION_CACHE_PREFIX}:${v}:*`];
 
     for (const pattern of patterns) {
         try {
@@ -24,9 +22,7 @@ export async function invalidateSdeCaches() {
                     `[SDE] Cleared ${keys.length} Redis keys for pattern "${pattern}"`,
                 );
             } else {
-                console.log(
-                    `[SDE] No Redis keys matched pattern "${pattern}"`,
-                );
+                console.log(`[SDE] No Redis keys matched pattern "${pattern}"`);
             }
         } catch (err) {
             console.error(

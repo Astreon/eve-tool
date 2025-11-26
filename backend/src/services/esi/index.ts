@@ -3,4 +3,4 @@
  * Copyright (C) 2025 Astreon
  */
 
-export * from './character.service.js'
+export * from "./character.service.js";

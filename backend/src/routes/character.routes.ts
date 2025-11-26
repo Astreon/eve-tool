@@ -3,11 +3,11 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Router } from 'express'
-import { getCharacter } from '../controllers/character.controller.js'
+import { Router } from "express";
+import { getCharacter } from "../controllers/character.controller.js";
 
-const router = Router()
+const router = Router();
 
-router.get('/:id', getCharacter)
+router.get("/:id", getCharacter);
 
-export default router
+export default router;

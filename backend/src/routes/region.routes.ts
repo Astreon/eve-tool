@@ -4,7 +4,10 @@
  */
 
 import { Router } from "express";
-import {getRegionLinks, getRegions} from "../controllers/region.controller.js";
+import {
+    getRegionLinks,
+    getRegions,
+} from "../controllers/region.controller.js";
 
 const router = Router();
 

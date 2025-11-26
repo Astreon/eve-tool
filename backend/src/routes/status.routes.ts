@@ -3,11 +3,11 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {Router} from 'express'
-import {getStatus} from '../controllers/status.controller.js'
+import { Router } from "express";
+import { getStatus } from "../controllers/status.controller.js";
 
-const router = Router()
+const router = Router();
 
-router.get('/', getStatus)
+router.get("/", getStatus);
 
-export default router
+export default router;

@@ -12,4 +12,4 @@ export const CACHE_THRESHOLDS = {
     REGIONS: 60 * 60 * 24, // 1 day
     ESI_STATUS: 30_000, // 30 sec
     ESI_META: 60_000, // 1 min
-} as const
+} as const;

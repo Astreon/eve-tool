@@ -3,10 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-// server.js
-import app from './app.js'
-import config from './config/config.js'
+import app from "./app.js";
+import config from "./config/config.js";
+import { logger } from "./lib/logger.js";
 
 app.listen(config.port, () => {
-  console.log(`🚀  Server is running on http://localhost:${config.port}`)
-})
+    logger.info("APP", "Backend started", {
+        port: config.port,
+        env: config.nodeEnv,
+    });
+});

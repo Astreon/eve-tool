@@ -3,20 +3,20 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {IMPORT_TASKS} from "./tasks/importTasks.js"
+import { IMPORT_TASKS } from "./tasks/importTasks.js";
 
 export interface ImportResult {
-    success: number
-    total: number
-    errors: number
+    success: number;
+    total: number;
+    errors: number;
 }
 
 export interface ImporterStats {
-    datasetTotal: number
-    datasetSuccess: number
-    lineTotal: number
-    lineSuccess: number
-    errorCount: number
+    datasetTotal: number;
+    datasetSuccess: number;
+    lineTotal: number;
+    lineSuccess: number;
+    errorCount: number;
 }
 
 export async function importer(dryRun = false): Promise<ImporterStats> {
@@ -26,33 +26,33 @@ export async function importer(dryRun = false): Promise<ImporterStats> {
         lineTotal: 0,
         lineSuccess: 0,
         errorCount: 0,
-    }
+    };
 
     for (const task of IMPORT_TASKS) {
-        console.log(`📦 Importing ${task.label}…`)
-        const start = performance.now()
+        console.log(`📦 Importing ${task.label}…`);
+        const start = performance.now();
 
         try {
-            const result = await task.run(dryRun)
+            const result = await task.run(dryRun);
 
-            stats.datasetSuccess++
-            stats.lineTotal += result.total
-            stats.lineSuccess += result.success
-            stats.errorCount += result.errors
+            stats.datasetSuccess++;
+            stats.lineTotal += result.total;
+            stats.lineSuccess += result.success;
+            stats.errorCount += result.errors;
 
-            const duration = ((performance.now() - start) / 1000).toFixed(1)
+            const duration = ((performance.now() - start) / 1000).toFixed(1);
             console.log(
                 `✅ Imported ${result.success}/${result.total} ${task.label} in ${duration}s (${result.errors} errors)`,
-            )
+            );
         } catch (err) {
-            stats.errorCount++
-            const duration = ((performance.now() - start) / 1000).toFixed(1)
+            stats.errorCount++;
+            const duration = ((performance.now() - start) / 1000).toFixed(1);
             console.error(
                 `❌ Failed to import ${task.label} after ${duration}s:`,
                 (err as Error).message,
-            )
+            );
         }
     }
 
-    return stats
+    return stats;
 }
