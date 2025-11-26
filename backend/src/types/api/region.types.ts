@@ -8,6 +8,11 @@ export interface RegionFactionApi {
     name: string
 }
 
+export interface RegionLinkApi {
+    fromRegionId: number
+    toRegionId: number
+}
+
 export interface RegionApiResponse {
     id: number
     name: string
@@ -15,9 +20,4 @@ export interface RegionApiResponse {
     y: number
     z: number
     faction: RegionFactionApi | null
-}
-
-export interface RegionLinkApi {
-    fromRegionId: number
-    toRegionId: number
 }

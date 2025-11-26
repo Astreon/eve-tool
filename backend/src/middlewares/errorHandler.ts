@@ -4,7 +4,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express'
-import { ApiResponse } from '../types/apiResponse.js'
+import { ApiErrorResponse, ApiResponse } from '../types/apiResponse.js'
 import { AppError, BadRequestError } from '../types/appError.js'
 import { z, ZodError } from 'zod'
 import { logger } from '../lib/logger.js'
@@ -16,6 +16,7 @@ export function errorHandler(
     _next: NextFunction,
 ) {
     const requestId = (req as any).requestId as string | undefined
+    const timestamp = new Date().toISOString()
 
     // Zod → 400 /w details
     if (err instanceof ZodError) {
@@ -29,12 +30,20 @@ export function errorHandler(
             details,
         })
 
-        return res.status(appErr.statusCode).json({
+        const payload: ApiErrorResponse = {
             success: false,
-            message: appErr.message,
-            code: appErr.code,
-            meta: requestId ? { requestId } : undefined,
-        })
+            error: {
+                code: appErr.code,
+                message: appErr.message,
+                details,
+            },
+            meta: {
+                timestamp,
+                requestId,
+            },
+        }
+
+        return res.status(appErr.statusCode).json(payload)
     }
 
     // --- Already known AppError (e.g., from Services, Prisma, Axios-Mapping, etc.)
@@ -42,7 +51,7 @@ export function errorHandler(
         const level: 'warn' | 'error' =
             !err.isOperational || err.statusCode >= 500 ? 'error' : 'warn'
 
-        const meta = {
+        const logMeta = {
             path: req.originalUrl,
             method: req.method,
             requestId,
@@ -53,17 +62,25 @@ export function errorHandler(
         }
 
         if (level === 'error') {
-            logger.error('HTTP', 'AppError', meta)
+            logger.error('HTTP', 'AppError', logMeta)
         } else {
-            logger.warn('HTTP', 'AppError', meta)
+            logger.warn('HTTP', 'AppError', logMeta)
         }
 
-        return res.status(err.statusCode).json({
+        const payload: ApiErrorResponse = {
             success: false,
-            message: err.message,
-            code: err.code,
-            meta: requestId ? { requestId } : undefined,
-        })
+            error: {
+                code: err.code,
+                message: err.message,
+                details: err.details,
+            },
+            meta: {
+                timestamp,
+                requestId,
+            },
+        }
+
+        return res.status(err.statusCode).json(payload)
     }
 
     // --- every other unknown error
@@ -78,10 +95,18 @@ export function errorHandler(
         details: appErr.details,
     })
 
-    return res.status(appErr.statusCode ?? 500).json({
+    const payload: ApiErrorResponse = {
         success: false,
-        message: appErr.message || 'Internal Server Error',
-        code: appErr.code ?? 'INTERNAL',
-        meta: requestId ? { requestId } : undefined,
-    })
+        error: {
+            code: appErr.code ?? 'INTERNAL',
+            message: appErr.message || 'Internal Server Error',
+            details: appErr.details,
+        },
+        meta: {
+            timestamp,
+            requestId,
+        },
+    }
+
+    return res.status(appErr.statusCode ?? 500).json(payload)
 }

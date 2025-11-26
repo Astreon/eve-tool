@@ -49,11 +49,13 @@ export async function getRegions(
                 meta: {
                     source: 'redis',
                     ...(ttl >= 0 ? { ttl } : {}),
+                    knownSpaceOnly,
+                    timestamp: new Date().toISOString(),
                 },
             })
         }
 
-        // 2) DB Wuery
+        // 2) DB Query
         const where = knownSpaceOnly
             ? {
                   id: {
@@ -94,6 +96,8 @@ export async function getRegions(
             meta: {
                 source: 'db',
                 ttl: ttlSec,
+                knownSpaceOnly,
+                timestamp: new Date().toISOString(),
             },
         })
     } catch (err) {
@@ -124,6 +128,7 @@ export async function getRegionLinks(
                 meta: {
                     source: 'redis',
                     ttl: ttlSec,
+                    timestamp: new Date().toISOString(),
                 },
             })
         }
@@ -148,6 +153,7 @@ export async function getRegionLinks(
             meta: {
                 source: 'db',
                 ttl: ttlSec,
+                timestamp: new Date().toISOString(),
             },
         })
     } catch (err) {

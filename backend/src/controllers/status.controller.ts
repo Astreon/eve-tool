@@ -8,11 +8,13 @@ import {
     EsiGlobalStatus,
     EsiRouteStatus,
     EsiRouteHealth,
+    StatusApiResponse,
 } from '../types/api/status.types.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import { esiApi } from '../lib/axios.js'
 import { USED_ESI_ROUTES } from '../config/esiRoutes.js'
 import { logger } from '../lib/logger.js'
+import { ApiResponse } from '../types/apiResponse.js'
 
 let cachedGlobalStatus: EsiGlobalStatus | null = null
 let cachedGlobalStatusFetchedAt = 0
@@ -170,7 +172,10 @@ function aggregateEsiHealth(routes: EsiRouteStatus[]): EsiRouteHealth {
 }
 
 // --- Aggregated status for frontend
-export async function getStatus(_req: Request, res: Response) {
+export async function getStatus(
+    _req: Request,
+    res: Response<ApiResponse<StatusApiResponse>>,
+) {
     const [esiGlobal, esiAllRoutes] = await Promise.all([
         fetchEsiGlobalStatus(),
         fetchEsiRouteStatuses(),
@@ -188,16 +193,21 @@ export async function getStatus(_req: Request, res: Response) {
 
     const ok = api.status === 'Up' && esiOverall !== 'Down'
 
-    const payload = {
-        ok,
+    const data: StatusApiResponse = {
         api,
         esi: {
             overallStatus: esiOverall,
             global: esiGlobal,
             routes: usedRoutes,
         },
-        timestamp: new Date().toISOString(),
     }
 
-    res.json(payload)
+    return res.json({
+        success: true,
+        data,
+        meta: {
+            ok,
+            timestamp: new Date().toISOString(),
+        },
+    })
 }

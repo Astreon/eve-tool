@@ -7,7 +7,7 @@ export interface CharacterApiResponse {
     id: number
     name: string
     bloodline: string
-    corporation_id: number
+    corporationId: number
     race: string
-    security_status: number | null
+    securityStatus: number | null
 }

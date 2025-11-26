@@ -11,6 +11,29 @@ import { ApiResponse } from '../types/apiResponse.js'
 import { AppError, NotFoundError } from '../types/appError.js'
 import type { EsiResult, WithEsiCacheConfig } from '../types/cache.types.js'
 
+function buildMeta(
+    source: 'redis' | 'db' | 'esi',
+    opts: {
+        ttl?: number | null
+        cachedAt?: string | null
+    } = {},
+) {
+    const meta: Record<string, unknown> = {
+        source,
+        timestamp: new Date().toISOString(),
+    }
+
+    if (typeof opts.ttl === 'number' && opts.ttl >= 0) {
+        meta.ttl = opts.ttl
+    }
+
+    if (opts.cachedAt) {
+        meta.cachedAt = opts.cachedAt
+    }
+
+    return meta
+}
+
 export function makeCachedController<TDb, TApi, TEsi>(
     cfg: WithEsiCacheConfig<TDb, TApi, TEsi>,
 ) {
@@ -63,9 +86,13 @@ export function makeCachedController<TDb, TApi, TEsi>(
                         cachedAt,
                         durationMs: Date.now() - started,
                     })
-                    return res.json({ success: true, data: cached })
+                    return res.json({
+                        success: true,
+                        data: cached,
+                        meta: buildMeta('redis', { ttl: ttlNow, cachedAt }),
+                    })
                 }
-                // stale-ish → revalidate downstream
+                // stale-ish...
             }
 
             // --- 2) DB-Window (if not expired, deliver DB & refresh Redis)
@@ -111,7 +138,15 @@ export function makeCachedController<TDb, TApi, TEsi>(
                         : undefined,
                     durationMs: Date.now() - started,
                 })
-                return res.json({ success: true, data: api })
+
+                return res.json({
+                    success: true,
+                    data: api,
+                    meta: buildMeta('db', {
+                        ttl: ttlFromDb,
+                        cachedAt: dbMeta.expiresAt.toISOString(),
+                    }),
+                })
             }
 
             // --- 3) ESI Refresh with Lock (against thundering herd)
@@ -120,11 +155,23 @@ export function makeCachedController<TDb, TApi, TEsi>(
             if (!lockHeld) {
                 if (cachedStr) {
                     const stale: TApi = JSON.parse(cachedStr)
+                    const ttlNow = await redis.ttl(k.data)
+                    let cachedAt: string | null = null
+                    try {
+                        cachedAt = await redis.get(k.cachedAt)
+                    } catch {
+                        /* noop */
+                    }
+
                     logger.info(
                         cfg.kind,
                         `lock busy -> serving stale from Redis for ID=${id}`,
                     )
-                    return res.json({ success: true, data: stale })
+                    return res.json({
+                        success: true,
+                        data: stale,
+                        meta: buildMeta('redis', { ttl: ttlNow, cachedAt }),
+                    })
                 }
                 logger.info(
                     cfg.kind,
@@ -187,7 +234,12 @@ export function makeCachedController<TDb, TApi, TEsi>(
                         ttl,
                         durationMs: Date.now() - started,
                     })
-                    return res.json({ success: true, data: api })
+
+                    return res.json({
+                        success: true,
+                        data: api,
+                        meta: buildMeta('db', { ttl }),
+                    })
                 }
 
                 // --- 200: fresh data → upsert DB, create Redis
@@ -219,29 +271,53 @@ export function makeCachedController<TDb, TApi, TEsi>(
                 )
 
                 logger.entityFromEsi(cfg.kind, id, {
+                    status: esi.status ?? undefined,
                     etag: esi.etag ?? null,
                     ttl,
                     durationMs: Date.now() - started,
                 })
-                return res.json({ success: true, data: api })
+
+                return res.json({
+                    success: true,
+                    data: api,
+                    meta: buildMeta('esi', { ttl }),
+                })
             } catch (err) {
                 // --- stale-if-error: Redis > DB > error
                 if (cachedStr) {
                     const stale: TApi = JSON.parse(cachedStr)
+                    const ttlNow = await redis.ttl(k.data)
+                    let cachedAt: string | null = null
+                    try {
+                        cachedAt = await redis.get(k.cachedAt)
+                    } catch {
+                        /* noop */
+                    }
+
                     logger.info(
                         'ESI',
                         `stale-if-error -> served from Redis for ${cfg.kind} ${String(id)}`,
                     )
-                    return res.json({ success: true, data: stale })
+                    return res.json({
+                        success: true,
+                        data: stale,
+                        meta: buildMeta('redis', { ttl: ttlNow, cachedAt }),
+                    })
                 }
+
                 if (dbRow) {
                     const api = cfg.mapToApi(dbRow)
                     logger.info(
                         'ESI',
                         `stale-if-error -> served from DB for ${cfg.kind} ${String(id)}`,
                     )
-                    return res.json({ success: true, data: api })
+                    return res.json({
+                        success: true,
+                        data: api,
+                        meta: buildMeta('db'),
+                    })
                 }
+
                 return next(AppError.fromUnknown(err))
             } finally {
                 if (lockHeld) {

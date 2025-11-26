@@ -3,25 +3,22 @@
  * Copyright (C) 2025 Astreon
  */
 
-export interface ApiMeta {
-    stale?: boolean
-    source?: 'redis' | 'db' | 'esi'
-    ttl?: number
-    etag?: string
-    requestId?: string
-}
-
-export interface ApiSuccess<T> {
+export type ApiSuccessResponse<T> = {
     success: true
     data: T
-    meta?: ApiMeta
+    meta?: Record<string, unknown>
 }
 
-export interface ApiError {
-    success: false
+export type ApiError = {
+    code: string
     message: string
-    code?: string
-    meta?: ApiMeta
+    details?: unknown
 }
 
-export type ApiResponse<T> = ApiSuccess<T> | ApiError
+export type ApiErrorResponse = {
+    success: false
+    error: ApiError
+    meta?: Record<string, unknown>
+}
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse

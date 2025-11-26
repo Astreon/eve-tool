@@ -11,28 +11,33 @@ type EsiRouteHealth = "Unknown" | "OK" | "Degraded" | "Down" | "Recovering";
 type ApiStatus = "Up" | "Down";
 
 type StatusResponse = {
-    ok: boolean;
-    api: {
-        status: ApiStatus;
-        uptimeMs: number;
-    };
-    esi: {
-        overallStatus: EsiRouteHealth;
-        global: {
-            status: ApiStatus | "Unknown";
-            players: number | null;
-            serverVersion: string | null;
-            startTime: string | null;
-            latencyMs: number | null;
-            error: string | null;
+    success: boolean;
+    data: {
+        api: {
+            status: ApiStatus;
+            uptimeMs: number;
         };
-        routes: {
-            method: string;
-            path: string;
-            status: EsiRouteHealth | string;
-        }[];
+        esi: {
+            overallStatus: EsiRouteHealth;
+            global: {
+                status: ApiStatus | "Unknown";
+                players: number | null;
+                serverVersion: string | null;
+                startTime: string | null;
+                latencyMs: number | null;
+                error: string | null;
+            };
+            routes: {
+                method: string;
+                path: string;
+                status: EsiRouteHealth | string;
+            }[];
+        };
+    }
+    meta: {
+        ok: boolean
+        version: string;
     };
-    timestamp: string;
 };
 
 async function fetchStatus(): Promise<StatusResponse> {
@@ -120,12 +125,12 @@ export function StatusBadges() {
     }
 
     const esiOverall: EsiRouteHealth =
-        data?.esi.overallStatus ?? (isLoading ? "Unknown" : "Down");
+        data?.data.esi.overallStatus ?? (isLoading ? "Unknown" : "Down");
 
     const apiStatus: ApiStatus =
-        data?.api.status ?? (isLoading ? "Up" : "Down");
+        data?.data.api.status ?? (isLoading ? "Up" : "Down");
 
-    const players = data?.esi.global.players ?? null;
+    const players = data?.data.esi.global.players ?? null;
 
     return (
         <div className="hidden items-center gap-2 lg:flex">

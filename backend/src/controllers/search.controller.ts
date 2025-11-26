@@ -82,7 +82,18 @@ export async function searchAll(
             }
         }
 
-        res.json({ success: true, data: out })
+        const data = out
+
+        return res.json({
+            success: true,
+            data,
+            meta: {
+                query: q,
+                categories,
+                strict,
+                timestamp: new Date().toISOString(),
+            },
+        })
     } catch (e) {
         next(e)
     }
