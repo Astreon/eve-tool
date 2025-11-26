@@ -6,21 +6,21 @@
 import {
     EsiSearchCategories,
     EsiSearchResult,
-} from "../../types/esi/search.types.js";
-import { esiApi } from "../../lib/axios.js";
+} from '../../types/esi/search.types.js';
+import { esiApi } from '../../lib/axios.js';
 
 const KEY_MAP: Record<string, keyof EsiSearchResult> = {
-    agent: "agents",
-    alliance: "alliances",
-    character: "characters",
-    constellation: "constellations",
-    corporation: "corporations",
-    faction: "factions",
-    inventory_type: "inventory_types",
-    region: "regions",
-    solar_system: "solar_systems",
-    station: "stations",
-    structure: "structures",
+    agent: 'agents',
+    alliance: 'alliances',
+    character: 'characters',
+    constellation: 'constellations',
+    corporation: 'corporations',
+    faction: 'factions',
+    inventory_type: 'inventory_types',
+    region: 'regions',
+    solar_system: 'solar_systems',
+    station: 'stations',
+    structure: 'structures',
 };
 
 function normalizeKeys(
@@ -39,11 +39,11 @@ export async function searchEsi(
     token: string,
     characterId: number,
     query: string,
-    categories: EsiSearchCategories[] = ["character"],
+    categories: EsiSearchCategories[] = ['character'],
     strict = false,
 ): Promise<EsiSearchResult> {
     const res = await esiApi.get(`/characters/${characterId}/search`, {
-        params: { categories: categories.join(","), search: query, strict },
+        params: { categories: categories.join(','), search: query, strict },
         headers: { Authorization: `Bearer ${token}` },
         validateStatus: (s) => s === 200 || s === 404,
     });

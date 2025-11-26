@@ -8,24 +8,24 @@ import axios, {
     AxiosHeaders,
     AxiosResponse,
     InternalAxiosRequestConfig,
-} from "axios";
-import config from "../config/config.js";
+} from 'axios';
+import config from '../config/config.js';
 import {
     AppError,
     BadRequestError,
     NotFoundError,
     UnauthorizedError,
-} from "../types/appError.js";
-import { logger } from "./logger.js";
-import { redis } from "./redis.js";
+} from '../types/appError.js';
+import { logger } from './logger.js';
+import { redis } from './redis.js';
 
 export const esiApi = axios.create({
     baseURL: config.esiApi.esiBaseUrl,
     timeout: 10_000,
     headers: {
-        Accept: "application/json",
-        "X-Compatibility-Date": config.esiApi.esiCompatibilityDate,
-        "Accept-Language": config.esiApi.esiAcceptLanguage,
+        Accept: 'application/json',
+        'X-Compatibility-Date': config.esiApi.esiCompatibilityDate,
+        'Accept-Language': config.esiApi.esiAcceptLanguage,
     },
 });
 
@@ -42,7 +42,7 @@ type HeaderLike = Partial<AxiosHeaders> & Record<string, HeaderValue>;
 function normalizeHeaderValue(raw: unknown): HeaderValue | undefined {
     if (raw == null) return undefined;
 
-    if (typeof raw === "string" || typeof raw === "number") {
+    if (typeof raw === 'string' || typeof raw === 'number') {
         return raw;
     }
 
@@ -69,7 +69,7 @@ function headerNumber(headers: HeaderLike, name: string): number | undefined {
     for (const value of candidates) {
         if (value == null) continue;
 
-        if (typeof value === "number") {
+        if (typeof value === 'number') {
             return Number.isFinite(value) ? value : undefined;
         }
 
@@ -115,11 +115,11 @@ async function writeSharedCooldown(untilEpochMs: number): Promise<void> {
         await redis.set(
             config.esiBackoff.key,
             String(untilEpochMs),
-            "PX",
+            'PX',
             String(ttlMs),
         );
     } catch (err: unknown) {
-        logger.error("ESI", "Failed to write shared cooldown to Redis", {
+        logger.error('ESI', 'Failed to write shared cooldown to Redis', {
             error: err,
         });
     }
@@ -162,11 +162,11 @@ esiApi.interceptors.request.use(
     async (
         req: InternalAxiosRequestConfig,
     ): Promise<InternalAxiosRequestConfig> => {
-        const method = (req.method ?? "GET").toUpperCase();
-        const base = req.baseURL ?? "";
-        const urlPart = req.url ?? "";
+        const method = (req.method ?? 'GET').toUpperCase();
+        const base = req.baseURL ?? '';
+        const urlPart = req.url ?? '';
 
-        logger.info("ESI", `→ ${method} ${base}${urlPart}`);
+        logger.info('ESI', `→ ${method} ${base}${urlPart}`);
 
         await maybeSleepForCooldown();
 
@@ -182,16 +182,16 @@ esiApi.interceptors.response.use(
         const headers = res.headers as HeaderLike;
 
         const remain =
-            headerNumber(headers, "X-Esi-Error-Limit-Remain") ??
-            headerNumber(headers, "x-esi-error-limit-remain");
+            headerNumber(headers, 'X-Esi-Error-Limit-Remain') ??
+            headerNumber(headers, 'x-esi-error-limit-remain');
 
         const reset =
-            headerNumber(headers, "X-Esi-Error-Limit-Reset") ??
-            headerNumber(headers, "x-esi-error-limit-reset");
+            headerNumber(headers, 'X-Esi-Error-Limit-Reset') ??
+            headerNumber(headers, 'x-esi-error-limit-reset');
 
         if (remain !== undefined && reset !== undefined) {
             logger.info(
-                "ESI",
+                'ESI',
                 `Error-Limit: remain=${remain}, reset=${reset}s`,
             );
 
@@ -208,18 +208,18 @@ esiApi.interceptors.response.use(
             const { status, data, headers } = error.response;
 
             const errorText =
-                typeof data?.error === "string" ? data.error : undefined;
+                typeof data?.error === 'string' ? data.error : undefined;
             const message = errorText ?? error.message;
 
             const headerMap = headers as HeaderLike;
 
             const remain =
-                headerNumber(headerMap, "X-Esi-Error-Limit-Remain") ??
-                headerNumber(headerMap, "x-esi-error-limit-remain");
+                headerNumber(headerMap, 'X-Esi-Error-Limit-Remain') ??
+                headerNumber(headerMap, 'x-esi-error-limit-remain');
 
             const reset =
-                headerNumber(headerMap, "X-Esi-Error-Limit-Reset") ??
-                headerNumber(headerMap, "x-esi-error-limit-reset");
+                headerNumber(headerMap, 'X-Esi-Error-Limit-Reset') ??
+                headerNumber(headerMap, 'x-esi-error-limit-reset');
 
             if (remain !== undefined && reset !== undefined) {
                 const hardThreshold = config.esiBackoff.minRemainHard ?? 1;
@@ -230,7 +230,7 @@ esiApi.interceptors.response.use(
 
             const safeStatus = status ?? 0;
 
-            logger.error("ESI", `[${safeStatus}] ${message}`, {
+            logger.error('ESI', `[${safeStatus}] ${message}`, {
                 status: safeStatus,
                 remain,
                 reset,
@@ -250,7 +250,7 @@ esiApi.interceptors.response.use(
                 case 503:
                     throw new AppError(message, {
                         statusCode: status,
-                        code: "ESI_BACKOFF",
+                        code: 'ESI_BACKOFF',
                         isOperational: true,
                         details,
                         cause: error,
@@ -258,7 +258,7 @@ esiApi.interceptors.response.use(
                 default:
                     throw new AppError(message, {
                         statusCode: status ?? 500,
-                        code: "ESI_HTTP_ERROR",
+                        code: 'ESI_HTTP_ERROR',
                         isOperational: true,
                         details,
                         cause: error,
@@ -268,11 +268,11 @@ esiApi.interceptors.response.use(
 
         const networkMessage = `[ESI] Network Error: ${error.message}`;
 
-        logger.error("ESI", networkMessage, { stack: error.stack });
+        logger.error('ESI', networkMessage, { stack: error.stack });
 
         throw new AppError(networkMessage, {
             statusCode: 502,
-            code: "NETWORK",
+            code: 'NETWORK',
             isOperational: true,
             cause: error,
         });

@@ -3,9 +3,9 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { z } from "zod";
-import { BadRequestError, NotFoundError } from "../types/appError.js";
-import type { Request as ExpressRequest } from "express";
+import { z } from 'zod';
+import { BadRequestError, NotFoundError } from '../types/appError.js';
+import type { Request as ExpressRequest } from 'express';
 
 interface Range {
     min: number;
@@ -20,7 +20,7 @@ interface ParseNumericOpts {
 }
 
 export const parseNumericIdFromParams =
-    (paramName = "id", opts: ParseNumericOpts = {}) =>
+    (paramName = 'id', opts: ParseNumericOpts = {}) =>
     (req: ExpressRequest): number => {
         const schema = z.object({
             [paramName]: z.coerce.number().int().positive(),
@@ -28,7 +28,7 @@ export const parseNumericIdFromParams =
         const result = schema.safeParse(req.params);
         if (!result.success) {
             throw new BadRequestError(
-                "Invalid path parameter",
+                'Invalid path parameter',
                 z.treeifyError(result.error),
             );
         }
@@ -39,20 +39,20 @@ export const parseNumericIdFromParams =
             const inAny = opts.ranges.some((r) => id >= r.min && id <= r.max);
             if (!inAny) {
                 if (opts.notFoundIfOutOfRange)
-                    throw new NotFoundError("Not Found");
-                throw new BadRequestError("ID out of allowed ranges");
+                    throw new NotFoundError('Not Found');
+                throw new BadRequestError('ID out of allowed ranges');
             }
             return id;
         }
 
         // Fallback to simple min/max (optional)
         if (opts.min !== undefined && id < opts.min) {
-            if (opts.notFoundIfOutOfRange) throw new NotFoundError("Not Found");
-            throw new BadRequestError("ID out of range (min)");
+            if (opts.notFoundIfOutOfRange) throw new NotFoundError('Not Found');
+            throw new BadRequestError('ID out of range (min)');
         }
         if (opts.max !== undefined && id > opts.max) {
-            if (opts.notFoundIfOutOfRange) throw new NotFoundError("Not Found");
-            throw new BadRequestError("ID out of range (max)");
+            if (opts.notFoundIfOutOfRange) throw new NotFoundError('Not Found');
+            throw new BadRequestError('ID out of range (max)');
         }
         return id;
     };

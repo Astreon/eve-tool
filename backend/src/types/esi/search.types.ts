@@ -4,17 +4,17 @@
  */
 
 export type EsiSearchCategories =
-    | "agent"
-    | "alliance"
-    | "character"
-    | "constellation"
-    | "corporation"
-    | "faction"
-    | "inventory_type"
-    | "region"
-    | "solar_system"
-    | "station"
-    | "structure";
+    | 'agent'
+    | 'alliance'
+    | 'character'
+    | 'constellation'
+    | 'corporation'
+    | 'faction'
+    | 'inventory_type'
+    | 'region'
+    | 'solar_system'
+    | 'station'
+    | 'structure';
 
 export interface EsiSearchResult {
     agents?: number[];

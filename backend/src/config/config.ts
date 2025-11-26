@@ -3,31 +3,31 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { z } from "zod";
+import { z } from 'zod';
 
 const ScopesSchema = z.preprocess(
     (val) => {
         if (Array.isArray(val)) return val;
-        if (typeof val === "string") {
-            const s = val.trim().replace(/^['"]|['"]$/g, "");
+        if (typeof val === 'string') {
+            const s = val.trim().replace(/^['"]|['"]$/g, '');
             return s.split(/[,\s]+/).filter(Boolean);
         }
         return undefined;
     },
-    z.array(z.string()).nonempty().default(["publicData"]),
+    z.array(z.string()).nonempty().default(['publicData']),
 );
 
 const Validator = z.object({
     PORT: z.coerce.number().int().positive().default(3000),
-    NODE_ENV: z.string().default("production"),
+    NODE_ENV: z.string().default('production'),
     ESI_BASE_URL: z
-        .url("https://esi.evetech.net")
-        .default("https://esi.evetech.net"),
-    ESI_COMPATIBILITY_DATE: z.string().default("2025-09-30"),
+        .url('https://esi.evetech.net')
+        .default('https://esi.evetech.net'),
+    ESI_COMPATIBILITY_DATE: z.string().default('2025-09-30'),
     ESI_ACCEPT_LANGUAGE: z
         .string()
-        .regex(/^[A-Za-z]{2}(-[A-Za-z]{2})?$/, "invalid IETF language tag")
-        .default("en"),
+        .regex(/^[A-Za-z]{2}(-[A-Za-z]{2})?$/, 'invalid IETF language tag')
+        .default('en'),
     ESI_FALLBACK_TTL_SECONDS: z.coerce
         .number()
         .int()
@@ -51,7 +51,7 @@ const Validator = z.object({
         .max(100)
         .positive()
         .default(1),
-    ESI_BACKOFF_KEY: z.string().default("esi:cooldown-until"),
+    ESI_BACKOFF_KEY: z.string().default('esi:cooldown-until'),
     ESI_BACKOFF_JITTER: z.coerce
         .number()
         .positive()
@@ -66,10 +66,10 @@ const Validator = z.object({
         .min(0)
         .max(2000)
         .default(250),
-    REDIS_HOST: z.string().default("localhost"),
+    REDIS_HOST: z.string().default('localhost'),
     REDIS_PORT: z.coerce.number().positive().int().default(6379),
-    REDIS_PASSWORD: z.string().default(""),
-    CACHE_VERSION: z.string().default("v1"),
+    REDIS_PASSWORD: z.string().default(''),
+    CACHE_VERSION: z.string().default('v1'),
 });
 
 const env = Validator.parse(process.env);

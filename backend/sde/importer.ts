@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { IMPORT_TASKS } from "./tasks/importTasks.js";
+import { IMPORT_TASKS } from './tasks/importTasks.js';
 
 export interface ImportResult {
     success: number;

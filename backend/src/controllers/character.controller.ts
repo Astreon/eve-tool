@@ -3,16 +3,16 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { prisma } from "../lib/prisma.js";
-import { CharacterWithRelations } from "../types/db/character.types.js";
-import { DbMeta } from "../types/cache.types.js";
-import { CharacterApiResponse } from "../types/api/character.types.js";
-import { mapCharacterToApiResponse } from "../mappers/character.mapper.js";
-import { getCharacterInfo } from "../services/esi/index.js";
-import { CACHE_THRESHOLDS } from "../config/cacheThresholds.js";
-import config from "../config/config.js";
-import { makeCachedController } from "../lib/esiCache.js";
-import { parseNumericIdFromParams } from "../utils/params.js";
+import { prisma } from '../lib/prisma.js';
+import { CharacterWithRelations } from '../types/db/character.types.js';
+import { DbMeta } from '../types/cache.types.js';
+import { CharacterApiResponse } from '../types/api/character.types.js';
+import { mapCharacterToApiResponse } from '../mappers/character.mapper.js';
+import { getCharacterInfo } from '../services/esi/index.js';
+import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js';
+import config from '../config/config.js';
+import { makeCachedController } from '../lib/esiCache.js';
+import { parseNumericIdFromParams } from '../utils/params.js';
 
 // ------- ESI: API-Ranges -------
 const CHARACTER_ID_RANGES: ReadonlyArray<{ min: number; max: number }> = [
@@ -52,16 +52,16 @@ const upsertDbOn200 = async (
     payload: Awaited<ReturnType<typeof fetchEsi>> extends { data: infer T }
         ? T
         : never,
-    meta: Required<Pick<DbMeta, "etag">> & {
+    meta: Required<Pick<DbMeta, 'etag'>> & {
         expiresAt: Date;
         lastModified?: Date | null;
     },
 ): Promise<CharacterWithRelations> => {
-    if (!payload) throw new Error("ESI payload missing");
+    if (!payload) throw new Error('ESI payload missing');
 
     if (payload.race_id == null || payload.bloodline_id == null) {
         throw new Error(
-            "ESI returned null for required fields race_id/bloodline_id",
+            'ESI returned null for required fields race_id/bloodline_id',
         );
     }
 
@@ -121,12 +121,12 @@ export const getCharacter = makeCachedController<
     CharacterApiResponse,
     any
 >({
-    kind: "CHARACTER",
-    keyBase: "character",
+    kind: 'CHARACTER',
+    keyBase: 'character',
     freshThresholdSec: CACHE_THRESHOLDS.CHARACTER,
     fallbackTtlSec: config.esiApi.esiFallbackTtlSeconds,
 
-    parseId: parseNumericIdFromParams("id", {
+    parseId: parseNumericIdFromParams('id', {
         ranges: CHARACTER_ID_RANGES,
         notFoundIfOutOfRange: true,
     }),

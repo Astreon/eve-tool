@@ -3,16 +3,16 @@
  * Copyright (C) 2025 Astreon
  */
 
-import * as path from "path";
-import * as readline from "readline";
-import * as fs from "fs";
-import { prisma } from "../../src/lib/prisma.js";
-import { ImportResult } from "../importer.js";
-import { BATCH_SIZE, SDE_DIR } from "../config";
-import { Prisma } from "../../src/generated/client.js";
+import * as path from 'path';
+import * as readline from 'readline';
+import * as fs from 'fs';
+import { prisma } from '../../src/lib/prisma.js';
+import { ImportResult } from '../importer.js';
+import { BATCH_SIZE, SDE_DIR } from '../config';
+import { Prisma } from '../../src/generated/client.js';
 
 export const importPlanets = async (dryRun = false): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, "mapPlanets.jsonl");
+    const filePath = path.join(SDE_DIR, 'mapPlanets.jsonl');
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`);
     }

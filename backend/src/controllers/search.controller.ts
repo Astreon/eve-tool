@@ -3,15 +3,15 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Request, Response, NextFunction } from "express";
-import { searchEsi } from "../services/esi/search.service.js";
-import { BadRequestError } from "../types/appError.js";
-import { ApiResponse } from "../types/apiResponse.js";
-import { esiApi } from "../lib/axios.js";
-import { extractCharacterIdFromJwt } from "../utils/jwt.js";
+import { Request, Response, NextFunction } from 'express';
+import { searchEsi } from '../services/esi/search.service.js';
+import { BadRequestError } from '../types/appError.js';
+import { ApiResponse } from '../types/apiResponse.js';
+import { esiApi } from '../lib/axios.js';
+import { extractCharacterIdFromJwt } from '../utils/jwt.js';
 
 async function resolveNames(ids: number[]) {
-    const res = await esiApi.post("/universe/names", ids, {
+    const res = await esiApi.post('/universe/names', ids, {
         validateStatus: (s) => s === 200 || s === 404,
     });
     if (res.status === 404) return [];
@@ -24,19 +24,19 @@ export async function searchAll(
     next: NextFunction,
 ) {
     try {
-        const q = String(req.query.query ?? "").trim();
-        if (!q) throw new BadRequestError("Missing ?query");
+        const q = String(req.query.query ?? '').trim();
+        if (!q) throw new BadRequestError('Missing ?query');
 
-        const categories = String(req.query.categories ?? "character")
-            .split(",")
+        const categories = String(req.query.categories ?? 'character')
+            .split(',')
             .map((s) => s.trim())
             .filter(Boolean) as any;
 
         const strict =
-            String(req.query.strict ?? "false").toLowerCase() === "true";
+            String(req.query.strict ?? 'false').toLowerCase() === 'true';
 
         const token = (req as any).esiAccessToken as string | undefined;
-        if (!token) throw new BadRequestError("Missing Bearer token");
+        if (!token) throw new BadRequestError('Missing Bearer token');
 
         const cidParam = req.query.character_id
             ? Number(req.query.character_id)
@@ -47,7 +47,7 @@ export async function searchAll(
                 : (extractCharacterIdFromJwt(token) ?? 0);
         if (!characterId)
             throw new BadRequestError(
-                "Missing character_id (and could not derive from token)",
+                'Missing character_id (and could not derive from token)',
             );
 
         const result = await searchEsi(
@@ -72,7 +72,7 @@ export async function searchAll(
                 const named = await resolveNames(charIds);
                 const byId = new Map<number, string>();
                 for (const n of named)
-                    if (n.category === "character") byId.set(n.id, n.name);
+                    if (n.category === 'character') byId.set(n.id, n.name);
                 out.characters = charIds.map((id) => ({
                     id,
                     name: byId.get(id),

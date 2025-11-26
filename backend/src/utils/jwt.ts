@@ -9,11 +9,11 @@ interface JwtPayload {
 
 export function extractCharacterIdFromJwt(token: string): number | null {
     try {
-        const [, payloadB64] = token.split(".");
+        const [, payloadB64] = token.split('.');
         if (!payloadB64) return null;
 
-        const normalized = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
-        const json = Buffer.from(normalized, "base64").toString("utf8");
+        const normalized = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
+        const json = Buffer.from(normalized, 'base64').toString('utf8');
 
         const parsed: unknown = JSON.parse(json);
 
@@ -21,7 +21,7 @@ export function extractCharacterIdFromJwt(token: string): number | null {
             return null;
         }
 
-        if (typeof parsed.sub !== "string") {
+        if (typeof parsed.sub !== 'string') {
             return null;
         }
 
@@ -34,5 +34,5 @@ export function extractCharacterIdFromJwt(token: string): number | null {
 }
 
 function isJwtPayload(value: unknown): value is JwtPayload {
-    return typeof value === "object" && value !== null;
+    return typeof value === 'object' && value !== null;
 }

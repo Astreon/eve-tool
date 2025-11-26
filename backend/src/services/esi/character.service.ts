@@ -3,17 +3,17 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { esiApi } from "../../lib/axios.js";
+import { esiApi } from '../../lib/axios.js';
 import {
     EsiCharacterResponse,
     EsiCharacter,
-} from "../../types/esi/character.types.js";
+} from '../../types/esi/character.types.js';
 import {
     buildConditionalHeaders,
     computeTtlFromHeaders,
     extractCachingHeaders,
-} from "../../utils/cacheControl.js";
-import { toEsiAppError } from "../../lib/axiosErrors.js";
+} from '../../utils/cacheControl.js';
+import { toEsiAppError } from '../../lib/axiosErrors.js';
 
 export const getCharacterInfo = async (
     characterId: number,
@@ -50,8 +50,8 @@ export const getCharacterInfo = async (
         };
     } catch (e) {
         throw toEsiAppError(e, {
-            op: "GET /characters/{character_id}/",
-            resource: "Character",
+            op: 'GET /characters/{character_id}/',
+            resource: 'Character',
             characterId,
             etag,
         });

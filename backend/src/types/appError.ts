@@ -4,16 +4,16 @@
  */
 
 export type ErrorCode =
-    | "INTERNAL"
-    | "BAD_REQUEST"
-    | "UNAUTHORIZED"
-    | "FORBIDDEN"
-    | "NOT_FOUND"
-    | "CONFLICT"
-    | "RATE_LIMITED"
-    | "ESI_HTTP_ERROR" // 4xx/5xx from ESI
-    | "ESI_BACKOFF" // 420/429/503 (Rate-Limit/Backoff)
-    | "NETWORK"; // e.g. DNS/Timeout
+    | 'INTERNAL'
+    | 'BAD_REQUEST'
+    | 'UNAUTHORIZED'
+    | 'FORBIDDEN'
+    | 'NOT_FOUND'
+    | 'CONFLICT'
+    | 'RATE_LIMITED'
+    | 'ESI_HTTP_ERROR' // 4xx/5xx from ESI
+    | 'ESI_BACKOFF' // 420/429/503 (Rate-Limit/Backoff)
+    | 'NETWORK'; // e.g. DNS/Timeout
 
 export interface AppErrorOptions {
     statusCode?: number;
@@ -34,7 +34,7 @@ export class AppError extends Error {
         super(message);
         this.name = new.target.name;
         this.statusCode = opts.statusCode ?? 500;
-        this.code = opts.code ?? "INTERNAL";
+        this.code = opts.code ?? 'INTERNAL';
         this.isOperational = opts.isOperational ?? true;
         this.details = opts.details;
         this.cause = opts.cause;
@@ -45,56 +45,56 @@ export class AppError extends Error {
 
     static fromUnknown(
         err: unknown,
-        fallbackMessage = "Internal Server Error",
+        fallbackMessage = 'Internal Server Error',
     ): AppError {
         if (err instanceof AppError) return err;
         if (err instanceof Error) {
             return new AppError(err.message, {
                 cause: err,
                 isOperational: false,
-                code: "INTERNAL",
+                code: 'INTERNAL',
             });
         }
         return new AppError(fallbackMessage, {
             isOperational: false,
-            code: "INTERNAL",
+            code: 'INTERNAL',
             details: { original: err },
         });
     }
 }
 
 export class BadRequestError extends AppError {
-    constructor(message = "Bad Request", details?: unknown) {
-        super(message, { statusCode: 400, code: "BAD_REQUEST", details });
+    constructor(message = 'Bad Request', details?: unknown) {
+        super(message, { statusCode: 400, code: 'BAD_REQUEST', details });
     }
 }
 
 export class UnauthorizedError extends AppError {
-    constructor(message = "Unauthorized", details?: unknown) {
-        super(message, { statusCode: 401, code: "UNAUTHORIZED", details });
+    constructor(message = 'Unauthorized', details?: unknown) {
+        super(message, { statusCode: 401, code: 'UNAUTHORIZED', details });
     }
 }
 
 export class ForbiddenError extends AppError {
-    constructor(message = "Forbidden", details?: unknown) {
-        super(message, { statusCode: 403, code: "FORBIDDEN", details });
+    constructor(message = 'Forbidden', details?: unknown) {
+        super(message, { statusCode: 403, code: 'FORBIDDEN', details });
     }
 }
 
 export class NotFoundError extends AppError {
-    constructor(message = "Not Found", details?: unknown) {
-        super(message, { statusCode: 404, code: "NOT_FOUND", details });
+    constructor(message = 'Not Found', details?: unknown) {
+        super(message, { statusCode: 404, code: 'NOT_FOUND', details });
     }
 }
 
 export class ConflictError extends AppError {
-    constructor(message = "Conflict", details?: unknown) {
-        super(message, { statusCode: 409, code: "CONFLICT", details });
+    constructor(message = 'Conflict', details?: unknown) {
+        super(message, { statusCode: 409, code: 'CONFLICT', details });
     }
 }
 
 export class RateLimitedError extends AppError {
-    constructor(message = "Too Many Requests", details?: unknown) {
-        super(message, { statusCode: 429, code: "RATE_LIMITED", details });
+    constructor(message = 'Too Many Requests', details?: unknown) {
+        super(message, { statusCode: 429, code: 'RATE_LIMITED', details });
     }
 }

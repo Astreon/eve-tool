@@ -11,7 +11,7 @@ function getHeader(headers: HeadersLike, name: string): string | undefined {
     for (const [k, v] of Object.entries(headers)) {
         if (k.toLowerCase() !== lower) continue;
 
-        if (typeof v === "string") {
+        if (typeof v === 'string') {
             return v;
         }
 
@@ -41,12 +41,12 @@ function parseCacheControl(raw?: string) {
     const out = new Map<string, string | true>();
     if (!raw) return out;
     for (const part of raw
-        .split(",")
+        .split(',')
         .map((s) => s.trim())
         .filter(Boolean)) {
-        const [k, v] = part.split("=", 2);
+        const [k, v] = part.split('=', 2);
         if (v === undefined) out.set(k.toLowerCase(), true);
-        else out.set(k.toLowerCase(), v.replace(/(^"|"$)/g, ""));
+        else out.set(k.toLowerCase(), v.replace(/(^"|"$)/g, ''));
     }
     return out;
 }
@@ -54,17 +54,17 @@ function parseCacheControl(raw?: string) {
 export function computeTtlFromHeaders(
     headers: HeadersLike,
 ): number | undefined {
-    const serverNowMs = parseHttpDate(getHeader(headers, "date")) ?? Date.now();
+    const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now();
 
-    const cc = parseCacheControl(getHeader(headers, "cache-control"));
-    if (cc.has("no-store") || cc.has("no-cache")) return 0;
+    const cc = parseCacheControl(getHeader(headers, 'cache-control'));
+    if (cc.has('no-store') || cc.has('no-cache')) return 0;
 
-    const ageHdr = getHeader(headers, "age");
+    const ageHdr = getHeader(headers, 'age');
     const ageSeconds =
         ageHdr && /^\d+$/.test(ageHdr) ? parseInt(ageHdr, 10) : undefined;
 
-    const maxAgeRaw = cc.get("max-age");
-    if (typeof maxAgeRaw === "string" && /^\d+$/.test(maxAgeRaw)) {
+    const maxAgeRaw = cc.get('max-age');
+    if (typeof maxAgeRaw === 'string' && /^\d+$/.test(maxAgeRaw)) {
         const maxAge = parseInt(maxAgeRaw, 10);
         const approxAge = Math.max(
             0,
@@ -74,7 +74,7 @@ export function computeTtlFromHeaders(
         return Math.max(maxAge - age, 0);
     }
 
-    const expiresMs = parseHttpDate(getHeader(headers, "expires"));
+    const expiresMs = parseHttpDate(getHeader(headers, 'expires'));
     if (expiresMs !== undefined) {
         const ttl = Math.floor((expiresMs - serverNowMs) / 1000);
         return Math.max(ttl, 0);
@@ -84,21 +84,21 @@ export function computeTtlFromHeaders(
 }
 
 export function computeCacheUntil(headers: HeadersLike): Date | undefined {
-    const serverNowMs = parseHttpDate(getHeader(headers, "date")) ?? Date.now();
+    const serverNowMs = parseHttpDate(getHeader(headers, 'date')) ?? Date.now();
     const ttl = computeTtlFromHeaders(headers);
     return ttl === undefined ? undefined : new Date(serverNowMs + ttl * 1000);
 }
 
 export function extractCachingHeaders(headers: HeadersLike) {
     return {
-        etag: getHeader(headers, "etag"),
-        lastModified: getHeader(headers, "last-modified"),
-        expires: getHeader(headers, "expires"),
-        date: getHeader(headers, "date"),
-        cacheControl: getHeader(headers, "cache-control"),
+        etag: getHeader(headers, 'etag'),
+        lastModified: getHeader(headers, 'last-modified'),
+        expires: getHeader(headers, 'expires'),
+        date: getHeader(headers, 'date'),
+        cacheControl: getHeader(headers, 'cache-control'),
     };
 }
 
 export function buildConditionalHeaders(opts: { etag?: string | null }) {
-    return opts.etag ? { "If-None-Match": opts.etag } : {};
+    return opts.etag ? { 'If-None-Match': opts.etag } : {};
 }

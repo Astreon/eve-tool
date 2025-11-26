@@ -3,18 +3,18 @@
  * Copyright (C) 2025 Astreon
  */
 
-import * as path from "path";
-import * as readline from "readline";
-import * as fs from "fs";
-import { prisma } from "../../src/lib/prisma.js";
-import { ImportResult } from "../importer.js";
-import { BATCH_SIZE, SDE_DIR } from "../config";
-import { Prisma } from "../../src/generated/client.js";
+import * as path from 'path';
+import * as readline from 'readline';
+import * as fs from 'fs';
+import { prisma } from '../../src/lib/prisma.js';
+import { ImportResult } from '../importer.js';
+import { BATCH_SIZE, SDE_DIR } from '../config';
+import { Prisma } from '../../src/generated/client.js';
 
 export const importSolarSystems = async (
     dryRun = false,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, "mapSolarSystems.jsonl");
+    const filePath = path.join(SDE_DIR, 'mapSolarSystems.jsonl');
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`);
     }
@@ -35,7 +35,7 @@ export const importSolarSystems = async (
             const json = JSON.parse(line);
             const data: Prisma.SolarSystemCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? "Unknown",
+                name: json.name?.en ?? 'Unknown',
                 securityStatus: json.securityStatus,
                 constellationId: json.constellationID,
                 regionId: json.regionID,

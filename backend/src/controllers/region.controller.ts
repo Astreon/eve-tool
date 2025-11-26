@@ -3,24 +3,24 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Request, Response, NextFunction } from "express";
-import { prisma } from "../lib/prisma.js";
-import { redis } from "../lib/redis.js";
-import config from "../config/config.js";
-import { CACHE_THRESHOLDS } from "../config/cacheThresholds.js";
+import { Request, Response, NextFunction } from 'express';
+import { prisma } from '../lib/prisma.js';
+import { redis } from '../lib/redis.js';
+import config from '../config/config.js';
+import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js';
 
-import type { ApiResponse } from "../types/apiResponse.js";
+import type { ApiResponse } from '../types/apiResponse.js';
 import type {
     RegionApiResponse,
     RegionLinkApi,
-} from "../types/api/region.types.js";
+} from '../types/api/region.types.js';
 
 const KNOWN_SPACE_MIN_ID = 10000000;
 const KNOWN_SPACE_MAX_ID = 10999999;
 
 function getRegionsCacheKey(knownSpaceOnly: boolean) {
     const v = config.redis.cacheVersion;
-    const scope = knownSpaceOnly ? "known" : "all";
+    const scope = knownSpaceOnly ? 'known' : 'all';
     return `regions:${v}:${scope}`;
 }
 
@@ -32,8 +32,8 @@ export async function getRegions(
     try {
         // optional: ?knownSpaceOnly=false (Default: true)
         const knownSpaceOnly =
-            req.query.knownSpaceOnly !== "false" &&
-            req.query.knownSpaceOnly !== "0";
+            req.query.knownSpaceOnly !== 'false' &&
+            req.query.knownSpaceOnly !== '0';
 
         const cacheKey = getRegionsCacheKey(knownSpaceOnly);
 
@@ -47,7 +47,7 @@ export async function getRegions(
                 success: true,
                 data,
                 meta: {
-                    source: "redis",
+                    source: 'redis',
                     ...(ttl >= 0 ? { ttl } : {}),
                 },
             });
@@ -66,7 +66,7 @@ export async function getRegions(
         const regions = await prisma.region.findMany({
             where,
             include: { faction: true },
-            orderBy: { id: "asc" },
+            orderBy: { id: 'asc' },
         });
 
         const data: RegionApiResponse[] = regions.map((r) => ({
@@ -86,13 +86,13 @@ export async function getRegions(
         // 3) Caching
         const ttlSec = CACHE_THRESHOLDS.REGIONS;
 
-        await redis.set(cacheKey, JSON.stringify(data), "EX", ttlSec);
+        await redis.set(cacheKey, JSON.stringify(data), 'EX', ttlSec);
 
         return res.json({
             success: true,
             data,
             meta: {
-                source: "db",
+                source: 'db',
                 ttl: ttlSec,
             },
         });
@@ -122,7 +122,7 @@ export async function getRegionLinks(
                 success: true,
                 data,
                 meta: {
-                    source: "redis",
+                    source: 'redis',
                     ttl: ttlSec,
                 },
             });
@@ -140,13 +140,13 @@ export async function getRegionLinks(
             toRegionId: r.toRegionId,
         }));
 
-        await redis.set(cacheKey, JSON.stringify(data), "EX", ttlSec);
+        await redis.set(cacheKey, JSON.stringify(data), 'EX', ttlSec);
 
         return res.json({
             success: true,
             data,
             meta: {
-                source: "db",
+                source: 'db',
                 ttl: ttlSec,
             },
         });

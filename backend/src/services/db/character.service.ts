@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { prisma } from "../../lib/prisma.js";
+import { prisma } from '../../lib/prisma.js';
 
 export const getCharacterFromDb = async (characterId: number) => {
     return prisma.character.findUnique({

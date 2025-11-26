@@ -3,9 +3,9 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { recomputeRegionLinks } from "../calculators/computeRegionLinks.js";
+import { recomputeRegionLinks } from '../calculators/computeRegionLinks.js';
 
-export type CalculationId = "region-links";
+export type CalculationId = 'region-links';
 
 export interface CalculationTask {
     id: CalculationId;
@@ -15,11 +15,11 @@ export interface CalculationTask {
 
 export const CALCULATION_TASKS: CalculationTask[] = [
     {
-        id: "region-links",
-        label: "Region Links",
+        id: 'region-links',
+        label: 'Region Links',
         async run(dryRun?: boolean) {
             if (dryRun) {
-                console.log("🧪 Dry-run: would recompute region links.");
+                console.log('🧪 Dry-run: would recompute region links.');
                 return;
             }
 

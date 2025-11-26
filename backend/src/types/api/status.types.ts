@@ -3,13 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-type ServiceStatus = "Up" | "Degraded" | "Down" | "Unknown";
+type ServiceStatus = 'Up' | 'Degraded' | 'Down' | 'Unknown';
 export type EsiRouteHealth =
-    | "Unknown"
-    | "OK"
-    | "Degraded"
-    | "Down"
-    | "Recovering";
+    | 'Unknown'
+    | 'OK'
+    | 'Degraded'
+    | 'Down'
+    | 'Recovering';
 
 export interface EsiGlobalStatus {
     status: ServiceStatus;

@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Redis } from "ioredis";
-import config from "../config/config.js";
+import { Redis } from 'ioredis';
+import config from '../config/config.js';
 
 export const redis = new Redis({
     host: config.redis.host,
@@ -13,10 +13,10 @@ export const redis = new Redis({
     db: 0,
 });
 
-redis.on("ready", async () => {
+redis.on('ready', async () => {
     console.log(`[REDIS] connected to ${config.redis.host}`);
 });
 
-redis.on("error", (err) => {
-    console.error("[REDIS] error", err?.message ?? err);
+redis.on('error', (err) => {
+    console.error('[REDIS] error', err?.message ?? err);
 });

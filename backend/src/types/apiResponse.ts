@@ -5,7 +5,7 @@
 
 export interface ApiMeta {
     stale?: boolean;
-    source?: "redis" | "db" | "esi";
+    source?: 'redis' | 'db' | 'esi';
     ttl?: number;
     etag?: string;
     requestId?: string;

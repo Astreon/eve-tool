@@ -3,13 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import { SDE_DIR } from "./config";
-import { getDbVersion, type SdeVersion } from "./version";
+import * as fs from 'fs';
+import * as path from 'path';
+import { SDE_DIR } from './config';
+import { getDbVersion, type SdeVersion } from './version';
 
 const LATEST_META_URL =
-    "https://developers.eveonline.com/static-data/tranquility/latest.jsonl";
+    'https://developers.eveonline.com/static-data/tranquility/latest.jsonl';
 
 type LatestMetaRecord = {
     _key: string;
@@ -22,7 +22,7 @@ function getFetch(): (url: string) => Promise<any> {
     const fetchFn = (globalThis as any).fetch;
     if (!fetchFn)
         throw new Error(
-            "Global fetch is not available. Run this script with Node.js 18+ or provide a fetch polyfill.",
+            'Global fetch is not available. Run this script with Node.js 18+ or provide a fetch polyfill.',
         );
     return fetchFn;
 }
@@ -38,13 +38,13 @@ export async function fetchRemoteSdeVersion(): Promise<SdeVersion> {
 
     const text: string = await res.text();
     const lines = text
-        .split("\n")
+        .split('\n')
         .map((l) => l.trim())
         .filter(Boolean);
 
     for (const line of lines) {
         const obj = JSON.parse(line) as LatestMetaRecord;
-        if (obj._key === "sde") {
+        if (obj._key === 'sde') {
             const buildNumber = Number(obj.buildNumber);
             if (!Number.isFinite(buildNumber))
                 throw new Error(
@@ -59,7 +59,7 @@ export async function fetchRemoteSdeVersion(): Promise<SdeVersion> {
                     `Invalid releaseDate in latest.jsonl: ${String(dateRaw)}`,
                 );
 
-            return { key: "sde", buildNumber, releaseDate };
+            return { key: 'sde', buildNumber, releaseDate };
         }
     }
 
@@ -71,7 +71,7 @@ async function clearSdeJsonlFiles(): Promise<void> {
     const entries = await fs.promises.readdir(SDE_DIR, { withFileTypes: true });
 
     for (const entry of entries) {
-        if (entry.isFile() && entry.name.endsWith(".jsonl")) {
+        if (entry.isFile() && entry.name.endsWith('.jsonl')) {
             await fs.promises.rm(path.join(SDE_DIR, entry.name));
         }
     }
@@ -124,16 +124,16 @@ async function findFileRecursive(
 
 async function copyJsonlFromExtractedTmp(tmpDir: string): Promise<void> {
     const expectedFiles = [
-        "_sde.jsonl",
-        "bloodlines.jsonl",
-        "factions.jsonl",
-        "mapConstellations.jsonl",
-        "mapMoons.jsonl",
-        "mapPlanets.jsonl",
-        "mapRegions.jsonl",
-        "mapSolarSystems.jsonl",
-        "mapStargates.jsonl",
-        "races.jsonl",
+        '_sde.jsonl',
+        'bloodlines.jsonl',
+        'factions.jsonl',
+        'mapConstellations.jsonl',
+        'mapMoons.jsonl',
+        'mapPlanets.jsonl',
+        'mapRegions.jsonl',
+        'mapSolarSystems.jsonl',
+        'mapStargates.jsonl',
+        'races.jsonl',
     ];
 
     await clearSdeJsonlFiles();
@@ -151,9 +151,9 @@ async function copyJsonlFromExtractedTmp(tmpDir: string): Promise<void> {
 }
 
 async function extractZip(zipPath: string, targetDir: string): Promise<void> {
-    const mod = await import("extract-zip");
+    const mod = await import('extract-zip');
     const extractFn = (mod as any).default ?? mod;
-    if (typeof extractFn !== "function") {
+    if (typeof extractFn !== 'function') {
         throw new Error(
             `extract-zip module did not export a function. Got: ${typeof extractFn}`,
         );
@@ -165,18 +165,18 @@ async function extractZip(zipPath: string, targetDir: string): Promise<void> {
 export async function downloadAndPrepareSde(
     buildNumber: number,
 ): Promise<void> {
-    const tmpDir = path.join(SDE_DIR, ".tmp-download");
+    const tmpDir = path.join(SDE_DIR, '.tmp-download');
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
     await fs.promises.mkdir(tmpDir, { recursive: true });
 
     const zipPath = await downloadSdeZip(buildNumber, tmpDir);
 
-    console.log("📦 Extracting SDE ZIP…");
+    console.log('📦 Extracting SDE ZIP…');
     await extractZip(zipPath, tmpDir);
 
     await fs.promises.rm(zipPath, { force: true });
 
-    console.log("📁 Copying JSONL files into .sde directory…");
+    console.log('📁 Copying JSONL files into .sde directory…');
     await copyJsonlFromExtractedTmp(tmpDir);
 
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
@@ -186,7 +186,7 @@ export async function ensureLatestSdeOnDisk(): Promise<SdeVersion> {
     const remote = await fetchRemoteSdeVersion();
     const dbVersion = await getDbVersion();
 
-    const versionFile = path.join(SDE_DIR, "_sde.jsonl");
+    const versionFile = path.join(SDE_DIR, '_sde.jsonl');
     const hasLocalVersionFile = fs.existsSync(versionFile);
 
     if (
@@ -206,12 +206,12 @@ export async function ensureLatestSdeOnDisk(): Promise<SdeVersion> {
         !hasLocalVersionFile
     ) {
         console.log(
-            "⚠️ DB has latest SDE version but local .sde folder is missing. Re-downloading SDE for this build…",
+            '⚠️ DB has latest SDE version but local .sde folder is missing. Re-downloading SDE for this build…',
         );
     } else {
         console.log(
             `⬆️ New or missing SDE version detected. Remote build ${remote.buildNumber}, local build ${
-                dbVersion?.buildNumber ?? "none"
+                dbVersion?.buildNumber ?? 'none'
             }.`,
         );
     }

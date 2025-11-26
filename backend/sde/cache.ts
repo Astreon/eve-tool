@@ -3,10 +3,10 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { redis } from "../src/lib/redis.js";
-import config from "../src/config/config.js";
+import { redis } from '../src/lib/redis.js';
+import config from '../src/config/config.js';
 
-const REGION_CACHE_PREFIX = "regions";
+const REGION_CACHE_PREFIX = 'regions';
 
 export async function invalidateSdeCaches() {
     const v = config.redis.cacheVersion;

@@ -3,9 +3,9 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Request, Response, NextFunction } from "express";
-import { UnauthorizedError } from "../types/appError.js";
-import { verifyToken } from "../lib/sso.js";
+import { Request, Response, NextFunction } from 'express';
+import { UnauthorizedError } from '../types/appError.js';
+import { verifyToken } from '../lib/sso.js';
 
 const MAX_ENTRIES = 1000;
 const MIN_TTL_MS = 5_000; // don't cache shorter than 5s
@@ -18,7 +18,7 @@ type VerifyCached = {
         CharacterName: string;
         ExpiresOn: string;
         Scopes: string;
-        TokenType: "Bearer";
+        TokenType: 'Bearer';
         CharacterOwnerHash: string;
         IntellectualProperty: string;
     };
@@ -44,7 +44,7 @@ function getVerifyFromCache(token: string) {
     return hit.value;
 }
 
-function putVerifyInCache(token: string, value: VerifyCached["value"]) {
+function putVerifyInCache(token: string, value: VerifyCached['value']) {
     const now = Date.now();
     const expOn = Date.parse(value.ExpiresOn); // may be NaN if format changes
     const msLeft = isNaN(expOn)
@@ -65,12 +65,12 @@ export async function requireAuth(
     _res: Response,
     next: NextFunction,
 ) {
-    const h = req.get("authorization") ?? req.get("Authorization");
-    if (!h || !h.startsWith("Bearer ")) {
-        return next(new UnauthorizedError("Missing Bearer token"));
+    const h = req.get('authorization') ?? req.get('Authorization');
+    if (!h || !h.startsWith('Bearer ')) {
+        return next(new UnauthorizedError('Missing Bearer token'));
     }
 
-    const token = h.slice("Bearer ".length).trim();
+    const token = h.slice('Bearer '.length).trim();
     (req as any).esiAccessToken = token;
 
     // 1) try cache
@@ -90,7 +90,7 @@ export async function requireAuth(
         return next();
     } catch (e) {
         return next(
-            new UnauthorizedError("Invalid or expired token", { cause: e }),
+            new UnauthorizedError('Invalid or expired token', { cause: e }),
         );
     }
 }

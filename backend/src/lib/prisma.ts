@@ -3,6 +3,6 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { PrismaClient } from "../generated/client.js";
+import { PrismaClient } from '../generated/client.js';
 
 export const prisma = new PrismaClient();

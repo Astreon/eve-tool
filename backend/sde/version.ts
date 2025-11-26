@@ -3,19 +3,19 @@
  * Copyright (C) 2025 Astreon
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as readline from "readline";
-import { prisma } from "../src/lib/prisma";
-import { SDE_DIR } from "./config";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as readline from 'readline';
+import { prisma } from '../src/lib/prisma';
+import { SDE_DIR } from './config';
 
 export interface SdeVersion {
-    key: "sde";
+    key: 'sde';
     buildNumber: number;
     releaseDate: Date;
 }
 
-const VERSION_FILE = path.join(SDE_DIR, "_sde.jsonl");
+const VERSION_FILE = path.join(SDE_DIR, '_sde.jsonl');
 
 type VersionFileRecord = {
     _key?: string;
@@ -42,7 +42,7 @@ export async function readSdeVersionFromFile(): Promise<SdeVersion> {
         if (!trimmed) continue;
 
         const obj = JSON.parse(trimmed) as VersionFileRecord;
-        if (obj._key === "sde" && obj.buildNumber != null) {
+        if (obj._key === 'sde' && obj.buildNumber != null) {
             const buildNumber = Number(obj.buildNumber);
             if (!Number.isFinite(buildNumber)) {
                 continue;
@@ -58,7 +58,7 @@ export async function readSdeVersionFromFile(): Promise<SdeVersion> {
             }
 
             return {
-                key: "sde",
+                key: 'sde',
                 buildNumber,
                 releaseDate,
             };
@@ -71,17 +71,17 @@ export async function readSdeVersionFromFile(): Promise<SdeVersion> {
 }
 
 export async function getDbVersion(): Promise<SdeVersion | null> {
-    const v = await prisma.version.findUnique({ where: { key: "sde" } });
+    const v = await prisma.version.findUnique({ where: { key: 'sde' } });
     return v
-        ? { key: "sde", buildNumber: v.buildNumber, releaseDate: v.releaseDate }
+        ? { key: 'sde', buildNumber: v.buildNumber, releaseDate: v.releaseDate }
         : null;
 }
 
 export async function upsertDbVersion(v: SdeVersion) {
     await prisma.version.upsert({
-        where: { key: "sde" },
+        where: { key: 'sde' },
         create: {
-            key: "sde",
+            key: 'sde',
             buildNumber: v.buildNumber,
             releaseDate: v.releaseDate,
         },

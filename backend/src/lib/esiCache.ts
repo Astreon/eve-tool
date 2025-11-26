@@ -3,13 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Response, NextFunction, Request as ExpressRequest } from "express";
-import { redis } from "./redis.js";
-import config from "../config/config.js";
-import { logger } from "./logger.js";
-import { ApiResponse } from "../types/apiResponse.js";
-import { AppError, NotFoundError } from "../types/appError.js";
-import type { EsiResult, WithEsiCacheConfig } from "../types/cache.types.js";
+import { Response, NextFunction, Request as ExpressRequest } from 'express';
+import { redis } from './redis.js';
+import config from '../config/config.js';
+import { logger } from './logger.js';
+import { ApiResponse } from '../types/apiResponse.js';
+import { AppError, NotFoundError } from '../types/appError.js';
+import type { EsiResult, WithEsiCacheConfig } from '../types/cache.types.js';
 
 export function makeCachedController<TDb, TApi, TEsi>(
     cfg: WithEsiCacheConfig<TDb, TApi, TEsi>,
@@ -87,21 +87,21 @@ export function makeCachedController<TDb, TApi, TEsi>(
                 await redis.set(
                     k.data,
                     JSON.stringify(api),
-                    "EX",
+                    'EX',
                     Math.max(ttlFromDb, 60),
                 );
                 if (dbMeta.etag)
                     await redis.set(
                         k.etag,
                         dbMeta.etag,
-                        "EX",
+                        'EX',
                         Math.max(ttlFromDb, 60),
                     );
-                await redis.set(k.fresh, "1", "EX", cfg.freshThresholdSec);
+                await redis.set(k.fresh, '1', 'EX', cfg.freshThresholdSec);
                 await redis.set(
                     k.cachedAt,
                     new Date().toISOString(),
-                    "EX",
+                    'EX',
                     Math.max(ttlFromDb, 60),
                 );
 
@@ -115,8 +115,8 @@ export function makeCachedController<TDb, TApi, TEsi>(
             }
 
             // --- 3) ESI Refresh with Lock (against thundering herd)
-            const lockOk = await redis.set(k.lock, "1", "EX", 15, "NX");
-            lockHeld = lockOk === "OK";
+            const lockOk = await redis.set(k.lock, '1', 'EX', 15, 'NX');
+            lockHeld = lockOk === 'OK';
             if (!lockHeld) {
                 if (cachedStr) {
                     const stale: TApi = JSON.parse(cachedStr);
@@ -152,19 +152,19 @@ export function makeCachedController<TDb, TApi, TEsi>(
                     const api = cfg.mapToApi(dbRow);
                     const ttl = (esi.ttl ?? fallbackTtl) | 0;
 
-                    await redis.set(k.data, JSON.stringify(api), "EX", ttl);
+                    await redis.set(k.data, JSON.stringify(api), 'EX', ttl);
                     if (esi.etag)
                         await redis.set(
                             k.etag,
                             esi.etag,
-                            "EX",
+                            'EX',
                             Math.max(ttl, 60),
                         );
-                    await redis.set(k.fresh, "1", "EX", cfg.freshThresholdSec);
+                    await redis.set(k.fresh, '1', 'EX', cfg.freshThresholdSec);
                     await redis.set(
                         k.cachedAt,
                         new Date().toISOString(),
-                        "EX",
+                        'EX',
                         Math.max(ttl, 60),
                     );
 
@@ -206,14 +206,14 @@ export function makeCachedController<TDb, TApi, TEsi>(
 
                 const api = cfg.mapToApi(upserted);
 
-                await redis.set(k.data, JSON.stringify(api), "EX", ttl);
+                await redis.set(k.data, JSON.stringify(api), 'EX', ttl);
                 if (esi.etag)
-                    await redis.set(k.etag, esi.etag, "EX", Math.max(ttl, 60));
-                await redis.set(k.fresh, "1", "EX", cfg.freshThresholdSec);
+                    await redis.set(k.etag, esi.etag, 'EX', Math.max(ttl, 60));
+                await redis.set(k.fresh, '1', 'EX', cfg.freshThresholdSec);
                 await redis.set(
                     k.cachedAt,
                     new Date().toISOString(),
-                    "EX",
+                    'EX',
                     Math.max(ttl, 60),
                 );
 
@@ -228,7 +228,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
                 if (cachedStr) {
                     const stale: TApi = JSON.parse(cachedStr);
                     logger.info(
-                        "ESI",
+                        'ESI',
                         `stale-if-error -> served from Redis for ${cfg.kind} ${String(id)}`,
                     );
                     return res.json({ success: true, data: stale });
@@ -236,7 +236,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
                 if (dbRow) {
                     const api = cfg.mapToApi(dbRow);
                     logger.info(
-                        "ESI",
+                        'ESI',
                         `stale-if-error -> served from DB for ${cfg.kind} ${String(id)}`,
                     );
                     return res.json({ success: true, data: api });
