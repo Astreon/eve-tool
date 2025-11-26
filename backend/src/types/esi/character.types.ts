@@ -19,6 +19,7 @@ export interface EsiCharacter {
 
 export interface EsiCharacterResponse {
     data: EsiCharacter | null
+    status: number
     etag?: string | null
     ttl?: number | null
     expires?: string | null

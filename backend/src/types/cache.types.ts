@@ -7,6 +7,7 @@ import type { Request as ExpressRequest } from 'express'
 
 export interface EsiResult<T> {
     data: T | null
+    status?: number | null
     etag?: string | null
     ttl?: number | null
     expires?: string | null

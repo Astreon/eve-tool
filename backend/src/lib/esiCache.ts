@@ -182,6 +182,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
                     }
 
                     logger.entityFromEsi(cfg.kind, id, {
+                        status: esi.status ?? undefined,
                         etag: esi.etag ?? null,
                         ttl,
                         durationMs: Date.now() - started,

@@ -84,18 +84,18 @@ export const logger = {
         kind: LogKind,
         id: number | string,
         opts: {
+            status?: number | null
             etag?: string | null
-            status?: number
-            ttl?: number
+            ttl?: number | null
             durationMs?: number
         } = {},
     ) {
         const meta: LogMeta = {
             id,
             source: 'esi',
+            status: opts.status ?? undefined,
             etag: opts.etag ?? undefined,
-            status: opts.status,
-            ttl: opts.ttl,
+            ttl: opts.ttl ?? undefined,
             durationMs: opts.durationMs,
         }
         log('info', kind, 'entity.from.esi', meta)

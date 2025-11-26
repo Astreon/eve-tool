@@ -166,7 +166,7 @@ esiApi.interceptors.request.use(
         const base = req.baseURL ?? ''
         const urlPart = req.url ?? ''
 
-        logger.info('ESI', `→ ${method} ${base}${urlPart}`)
+        logger.debug('ESI', `${method} ${base}${urlPart}`, { op: 'request' })
 
         await maybeSleepForCooldown()
 
@@ -190,11 +190,14 @@ esiApi.interceptors.response.use(
             headerNumber(headers, 'x-esi-error-limit-reset')
 
         if (remain !== undefined && reset !== undefined) {
-            logger.info('ESI', `Error-Limit: remain=${remain}, reset=${reset}s`)
-
             const softThreshold = config.esiBackoff.minRemainSoft ?? 5
+            const meta = { remain, resetSeconds: reset }
+
             if (remain <= softThreshold && reset > 0) {
+                logger.warn('ESI', 'Error-Limit low', meta)
                 setCooldownFromReset(reset)
+            } else if (config.nodeEnv === 'development') {
+                logger.debug('ESI', 'Error-Limit status', meta)
             }
         }
 

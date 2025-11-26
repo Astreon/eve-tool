@@ -34,6 +34,7 @@ export const getCharacterInfo = async (
         if (response.status === 304) {
             return {
                 data: null,
+                status: response.status,
                 etag: meta.etag,
                 expires: meta.expires,
                 lastModified: meta.lastModified,
@@ -43,6 +44,7 @@ export const getCharacterInfo = async (
 
         return {
             data: response.data,
+            status: response.status,
             etag: meta.etag,
             expires: meta.expires,
             lastModified: meta.lastModified,
