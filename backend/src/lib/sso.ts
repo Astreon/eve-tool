@@ -9,15 +9,19 @@ import config from '../config/config.js'
 
 const AUTH_BASE = 'https://login.eveonline.com/v2/oauth'
 
-export function buildAuthUrl(state: string) {
+export function buildAuthUrl(state: string, scopes?: string[]) {
+    const scopeList =
+        scopes && scopes.length > 0 ? scopes : config.esiSso.esiSsoScopes
+
     const q = qs.stringify({
         response_type: 'code',
         redirect_uri: config.esiSso.esiSsoRedirectUri,
         client_id: config.esiSso.esiSsoClientId,
         // EVE SSO expects a single space-separated string
-        scope: config.esiSso.esiSsoScopes.join(' '),
+        scope: scopeList.join(' '),
         state,
     })
+
     return `${AUTH_BASE}/authorize?${q}`
 }
 

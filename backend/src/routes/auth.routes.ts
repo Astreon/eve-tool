@@ -5,18 +5,31 @@
 
 import { Router } from 'express'
 import * as crypto from 'node:crypto'
-import { buildAuthUrl, exchangeCodeForToken } from '../lib/sso.js'
+import { buildAuthUrl, exchangeCodeForToken, verifyToken } from '../lib/sso.js'
 import { redis } from '../lib/redis.js'
 
 const router = Router()
 
 const stateKey = (s: string) => `sso:state:${s}`
+const STATE_TTL_SECONDS = 60 * 5 // 5 minutes
 
-router.get('/login', async (_req, res, next) => {
+router.get('/login', async (req, res, next) => {
     try {
         const state = crypto.randomBytes(16).toString('hex')
-        await redis.set(stateKey(state), '1', 'EX', 600)
-        res.redirect(buildAuthUrl(state))
+
+        await redis.setex(stateKey(state), STATE_TTL_SECONDS, '1')
+
+        let scopes: string[] | undefined
+        const rawScopes = req.query.scopes
+        if (typeof rawScopes === 'string' && rawScopes.trim() !== '') {
+            scopes = rawScopes
+                .split(/[,\s]+/)
+                .map((s) => s.trim())
+                .filter(Boolean)
+        }
+
+        const url = buildAuthUrl(state, scopes)
+        res.json({ success: true, url })
     } catch (e) {
         next(e)
     }
@@ -24,19 +37,43 @@ router.get('/login', async (_req, res, next) => {
 
 router.get('/callback', async (req, res, next) => {
     try {
-        const code = typeof req.query.code === 'string' ? req.query.code : ''
-        const state = typeof req.query.state === 'string' ? req.query.state : ''
+        const { code, state } = req.query
 
-        if (!code) return res.status(400).send('missing code')
-        if (!state) return res.status(400).send('missing state')
+        if (!code || typeof code !== 'string') {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Missing code' })
+        }
+        if (!state || typeof state !== 'string') {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Missing state' })
+        }
 
-        const stateExists = (await redis.exists(stateKey(state))) === 1
-        if (!stateExists) return res.status(400).send('invalid state')
-        await redis.del(stateKey(state))
+        const key = stateKey(state)
+        const stateExists = (await redis.exists(key)) === 1
+        if (!stateExists) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Invalid or expired state' })
+        }
+
+        await redis.del(key)
 
         const tokens = await exchangeCodeForToken(code)
-        // TODO: persist refresh_token with user; set secure HTTP-only cookie or return payload
-        res.json({ success: true, tokens })
+
+        const verify = await verifyToken(tokens.access_token)
+        const scopes = verify.Scopes?.split(' ').filter(Boolean)
+
+        res.json({
+            success: true,
+            tokens,
+            character: {
+                id: Number(verify.CharacterID),
+                name: verify.CharacterName,
+                scopes,
+            },
+        })
     } catch (e) {
         next(e)
     }

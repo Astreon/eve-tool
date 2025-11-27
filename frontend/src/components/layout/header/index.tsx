@@ -9,10 +9,10 @@ import {Separator} from "@/components/ui/separator";
 import Notifications from "@/components/layout/header/notifications";
 import Search from "@/components/layout/header/search";
 import ThemeSwitch from "@/components/layout/header/theme-switch";
-import UserMenu from "@/components/layout/header/user-menu";
 import {Button} from "@/components/ui/button";
 import {useSidebar} from "@/components/ui/sidebar";
 import {StatusBadges} from "@/components/layout/header/status-badges.tsx";
+import {GearIcon} from "@radix-ui/react-icons";
 
 export function SiteHeader() {
     const {toggleSidebar} = useSidebar();
@@ -28,12 +28,17 @@ export function SiteHeader() {
                 <Search/>
 
                 <div className="ml-auto flex items-center gap-2">
-                    <StatusBadges />
+                    <StatusBadges/>
                     <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4"/>
                     <Notifications/>
                     <ThemeSwitch/>
-                    <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4"/>
-                    <UserMenu/>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="relative">
+                        <GearIcon/>
+                        <span className="sr-only">Settings</span>
+                    </Button>
                 </div>
             </div>
         </header>
