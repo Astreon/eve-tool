@@ -3,15 +3,15 @@
  * Copyright (C) 2025 Astreon
  */
 
-import type {ReactNode} from "react"
-import {useEffect, useState} from "react"
-import {useHydrated} from "@tanstack/react-router"
-import {useAuth} from "@/components/auth/auth-provider"
-import {AppSplashScreen} from "@/components/app-splash-screen"
+import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
+import { useHydrated } from '@tanstack/react-router'
+import { useAuth } from '@/components/auth/auth-provider'
+import { AppSplashScreen } from '@/components/app-splash-screen'
 
-export function AppReadyGate({children}: { children: ReactNode }) {
+export function AppReadyGate({ children }: { children: ReactNode }) {
     const hydrated = useHydrated()
-    const {isReady: authReady} = useAuth()
+    const { isReady: authReady } = useAuth()
 
     const isAppReady = hydrated && authReady
 
@@ -24,7 +24,7 @@ export function AppReadyGate({children}: { children: ReactNode }) {
 
             const timeout = setTimeout(() => {
                 setShowSplash(false)
-            }, 500) // muss zur CSS duration passen
+            }, 500)
 
             return () => clearTimeout(timeout)
         }
@@ -33,7 +33,7 @@ export function AppReadyGate({children}: { children: ReactNode }) {
     return (
         <>
             {children}
-            {showSplash && <AppSplashScreen fadingOut={isFadingOut}/>}
+            {showSplash && <AppSplashScreen fadingOut={isFadingOut} />}
         </>
     )
 }
