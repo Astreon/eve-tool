@@ -3,15 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {
-    createContext,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
-    type ReactNode,
-} from 'react'
-import {useHydrated} from '@tanstack/react-router'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useHydrated } from '@tanstack/react-router'
 
 export type AuthSession = {
     characterId: number
@@ -35,7 +28,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const STORAGE_KEY = 'eve-tool.sso'
 
-export function AuthProvider({children}: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
     const hydrated = useHydrated()
     const [session, setSession] = useState<AuthSession | null>(null)
     const [isReady, setIsReady] = useState(false)
@@ -84,11 +77,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
                 )
 
                 if (!resp.ok) {
-                    console.error(
-                        'Login callback failed',
-                        resp.status,
-                        await resp.text(),
-                    )
+                    console.error('Login callback failed', resp.status, await resp.text())
                     return
                 }
 

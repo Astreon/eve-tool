@@ -3,20 +3,18 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {useEffect, useRef} from "react";
-import LoadingBar, {
-    type LoadingBarRef,
-} from "react-top-loading-bar";
-import {useRouterState} from "@tanstack/react-router";
+import { useEffect, useRef } from 'react'
+import LoadingBar, { type LoadingBarRef } from 'react-top-loading-bar'
+import { useRouterState } from '@tanstack/react-router'
 
 export function RouterTopLoadingBar() {
-    const ref = useRef<LoadingBarRef | null>(null);
+    const ref = useRef<LoadingBarRef | null>(null)
     const routerState = useRouterState()
 
     const isLoading =
         routerState.isLoading ||
         routerState.isTransitioning ||
-        ((routerState.pendingMatches?.length ?? 0) > 0)
+        (routerState.pendingMatches?.length ?? 0) > 0
 
     useEffect(() => {
         if (!ref.current) return
@@ -39,5 +37,5 @@ export function RouterTopLoadingBar() {
             className="z-[9999]"
             containerClassName="fixed top-0 left-0 right-0"
         />
-    );
+    )
 }

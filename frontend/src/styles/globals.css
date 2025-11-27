@@ -3,10 +3,10 @@
  * Copyright (C) 2025 Astreon
  */
 
-@import "tailwindcss";
-@import "./themes.css";
+@import 'tailwindcss';
+@import './themes.css';
 
-@plugin "tailwindcss-animate";
+@plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -71,8 +71,8 @@
     --fc-page-bg-color: var(--muted);
     --fc-today-bg-color: var(--muted);
 
-    --text-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --display-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --text-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --display-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .dark {
@@ -112,7 +112,8 @@
 @theme inline {
     --scroll-animation-duration: 40s;
     --scroll-animation-direction: forwards;
-    --animate-scroll: scroll var(--scroll-animation-duration) var(--scroll-animation-direction) linear infinite;
+    --animate-scroll: scroll var(--scroll-animation-duration) var(--scroll-animation-direction)
+        linear infinite;
 
     @keyframes scroll {
         to {
@@ -192,19 +193,21 @@
         font-weight: var(--display-weight);
     }
 
-    [data-slot="button"],
-    [data-slot="dialog-trigger"],
-    [data-slot="dropdown-menu-item"],
-    [data-slot="command-item"],
-    [data-slot="toggle-group-item"],
-    [data-slot="dropdown-menu-trigger"],
-    [data-slot="popover-trigger"],
-    [data-slot="tooltip-trigger"],
-    [data-slot="collapsible-trigger"] {
-        @apply cursor-pointer!
+    [data-slot='button'],
+    [data-slot='dialog-trigger'],
+    [data-slot='dropdown-menu-item'],
+    [data-slot='command-item'],
+    [data-slot='toggle-group-item'],
+    [data-slot='dropdown-menu-trigger'],
+    [data-slot='popover-trigger'],
+    [data-slot='tooltip-trigger'],
+    [data-slot='collapsible-trigger'] {
+        @apply cursor-pointer!;
     }
 
-    [data-slot="dialog-overlay"], [data-slot="sheet-overlay"], [data-slot="drawer-overlay"] {
+    [data-slot='dialog-overlay'],
+    [data-slot='sheet-overlay'],
+    [data-slot='drawer-overlay'] {
         @apply bg-black/20! backdrop-blur-sm;
     }
 }

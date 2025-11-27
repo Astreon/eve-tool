@@ -95,7 +95,8 @@ export default function Search() {
                                             setOpen(false)
                                             router.navigate({ to: item.href })
                                         }}
-                                        value={item.title.toLowerCase()}>
+                                        value={item.title.toLowerCase()}
+                                    >
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>
                                     </CommandItem>

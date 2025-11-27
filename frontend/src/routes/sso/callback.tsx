@@ -3,9 +3,9 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {createFileRoute} from '@tanstack/react-router'
-import {useEffect, useState} from 'react'
-import {useAuth} from '@/components/auth/auth-provider'
+import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/components/auth/auth-provider'
 
 type CallbackResponse = {
     success: boolean
@@ -28,7 +28,7 @@ export const Route = createFileRoute('/sso/callback')({
 })
 
 function CallbackPage() {
-    const {setSession} = useAuth()
+    const { setSession } = useAuth()
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -46,10 +46,10 @@ function CallbackPage() {
                 }
 
                 const res = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`
+                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
                 )
 
-                const body = await res.json() as CallbackResponse
+                const body = (await res.json()) as CallbackResponse
 
                 if (!res.ok || !body.success || !body.tokens) {
                     throw new Error(body.message ?? `Callback failed (HTTP ${res.status})`)
@@ -81,7 +81,7 @@ function CallbackPage() {
             <div className="flex min-h-[50vh] items-center justify-center">
                 <div className="space-y-2 text-center">
                     <h1 className="text-xl font-semibold">Login failed</h1>
-                    <p className="text-muted-foreground text-sm max-w-md">{error}</p>
+                    <p className="text-muted-foreground max-w-md text-sm">{error}</p>
                 </div>
             </div>
         )

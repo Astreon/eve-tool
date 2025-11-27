@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {createFileRoute} from '@tanstack/react-router'
-import {RegionMap} from "@/components/xyflow/region-map.tsx";
+import { createFileRoute } from '@tanstack/react-router'
+import { RegionMap } from '@/components/xyflow/region-map.tsx'
 
 export const Route = createFileRoute('/regions/')({
     component: RouteComponent,
