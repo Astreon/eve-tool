@@ -22,6 +22,7 @@ import {LogOut, Telescope, UserCircle2Icon} from "lucide-react";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {Button} from "@/components/ui/button";
 import {useAuth} from "@/components/auth/auth-provider";
+import {Link} from "@tanstack/react-router";
 
 export function NavUser() {
     const {isMobile} = useSidebar();
@@ -112,9 +113,11 @@ export function NavUser() {
                                 <UserCircle2Icon/>
                                 Account
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Telescope/>
-                                Update Scopes
+                            <DropdownMenuItem asChild>
+                                <Link to={"/onboarding"}>
+                                    <Telescope/>
+                                    Update Scopes
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator/>

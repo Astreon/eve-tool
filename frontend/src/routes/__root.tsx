@@ -30,6 +30,7 @@ import {Toaster} from "@/components/ui/sonner.tsx";
 import {RouterTopLoadingBar} from "@/components/router-top-loading-bar";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {AuthProvider} from "@/components/auth/auth-provider";
+import {AppReadyGate} from "@/components/app-ready-gate.tsx";
 
 const queryClient = new QueryClient()
 
@@ -98,23 +99,25 @@ function RootDocument({children}: Readonly<{ children: ReactNode }>) {
             <AuthProvider>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     <ActiveThemeProvider initialTheme={themeSettings}>
-                        <RouterTopLoadingBar/>
-                        <SidebarProvider defaultOpen={true} style={{
-                            "--sidebar-width": "calc(var(--spacing) * 64)",
-                            "--header-height": "calc(var(--spacing) * 14)"
-                        } as React.CSSProperties}>
-                            <AppSidebar variant="inset"/>
-                            <SidebarInset>
-                                <SiteHeader/>
-                                <div className="flex flex-1 flex-col">
-                                    <div
-                                        className="@container/main p-4 xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
-                                        {children}
-                                        <Toaster position="top-center" richColors/>
+                        <AppReadyGate>
+                            <RouterTopLoadingBar/>
+                            <SidebarProvider defaultOpen={true} style={{
+                                "--sidebar-width": "calc(var(--spacing) * 64)",
+                                "--header-height": "calc(var(--spacing) * 14)"
+                            } as React.CSSProperties}>
+                                <AppSidebar variant="inset"/>
+                                <SidebarInset>
+                                    <SiteHeader/>
+                                    <div className="flex flex-1 flex-col">
+                                        <div
+                                            className="@container/main p-4 xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
+                                            {children}
+                                            <Toaster position="top-center" richColors/>
+                                        </div>
                                     </div>
-                                </div>
-                            </SidebarInset>
-                        </SidebarProvider>
+                                </SidebarInset>
+                            </SidebarProvider>
+                        </AppReadyGate>
                     </ActiveThemeProvider>
                 </ThemeProvider>
 

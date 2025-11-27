@@ -147,7 +147,7 @@ function OnboardingPage() {
                                     <Badge
                                         variant={
                                             isBase
-                                                ? 'default' // Required immer "voll"
+                                                ? 'default'
                                                 : isSelected
                                                     ? 'default'
                                                     : 'outline'
