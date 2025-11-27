@@ -9,9 +9,8 @@ import config from '../config/config.js'
 
 const AUTH_BASE = 'https://login.eveonline.com/v2/oauth'
 
-export function buildAuthUrl(state: string, scopes?: string[]) {
-    const scopeList =
-        scopes && scopes.length > 0 ? scopes : config.esiSso.esiSsoScopes
+export function buildAuthUrl(state: string, scopes: string[]) {
+    const scopeList = scopes.length > 0 ? scopes : ['publicData']
 
     const q = qs.stringify({
         response_type: 'code',

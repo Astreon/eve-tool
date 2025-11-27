@@ -13,12 +13,13 @@ import {
 } from 'react'
 import {useHydrated} from '@tanstack/react-router'
 
-type AuthSession = {
-    accessToken: string
+export type AuthSession = {
     characterId: number
     characterName: string
     scopes: string[]
-    expiresAt: number // epoch ms
+    accessToken: string
+    refreshToken?: string
+    expiresAt: number
 }
 
 type AuthContextValue = {

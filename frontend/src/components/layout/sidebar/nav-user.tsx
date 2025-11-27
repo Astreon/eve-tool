@@ -14,11 +14,11 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {
-    SidebarMenu,
+    SidebarMenu, SidebarMenuButton,
     SidebarMenuItem,
     useSidebar
 } from "@/components/ui/sidebar";
-import {LogOut, UserCircle2Icon} from "lucide-react";
+import {LogOut, Telescope, UserCircle2Icon} from "lucide-react";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {Button} from "@/components/ui/button";
 import {useAuth} from "@/components/auth/auth-provider";
@@ -42,7 +42,7 @@ export function NavUser() {
                 <img
                     src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-white-small.png"
                     alt="Log in with EVE Online"
-                    className="h-8 w-auto"
+                    className="h-auto w-auto"
                 />
             </Button>
         );
@@ -61,13 +61,11 @@ export function NavUser() {
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button
-                            type="button"
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm
-                                       hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-                                       data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                        <SidebarMenuButton
+                            size="lg"
+                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
-                            <Avatar className="h-8 w-8 rounded-full">
+                            <Avatar className="rounded-full">
                                 {portraitUrl && <AvatarImage src={portraitUrl} alt={session?.characterName}/>}
                                 <AvatarFallback className="rounded-lg">
                                     {initials}
@@ -82,7 +80,7 @@ export function NavUser() {
                             </div>
 
                             <DotsVerticalIcon className="ml-auto size-4"/>
-                        </button>
+                        </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
@@ -111,13 +109,17 @@ export function NavUser() {
                         <DropdownMenuSeparator/>
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
-                                <UserCircle2Icon className="mr-2 h-4 w-4"/>
+                                <UserCircle2Icon/>
                                 Account
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <Telescope/>
+                                Update Scopes
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem onClick={logout}>
-                            <LogOut className="mr-2 h-4 w-4"/>
+                            <LogOut/>
                             Log out
                         </DropdownMenuItem>
                     </DropdownMenuContent>
