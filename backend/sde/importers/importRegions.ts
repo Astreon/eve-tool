@@ -34,7 +34,6 @@ async function countLines(filePath: string): Promise<number> {
 export const importRegions = async (
     dryRun = false,
     label: string,
-    _id: string,
 ): Promise<ImportResult> => {
     const filePath = path.join(SDE_DIR, 'mapRegions.jsonl')
     if (!fs.existsSync(filePath)) {

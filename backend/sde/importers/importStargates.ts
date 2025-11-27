@@ -34,7 +34,6 @@ async function countLines(filePath: string): Promise<number> {
 export const importStargates = async (
     dryRun = false,
     label: string,
-    _id: string,
 ): Promise<ImportResult> => {
     const filePath = path.join(SDE_DIR, 'mapStargates.jsonl')
     if (!fs.existsSync(filePath)) {

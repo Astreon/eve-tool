@@ -30,7 +30,7 @@ export type ImportDatasetId =
 export interface ImportTask {
     id: ImportDatasetId
     label: string
-    run: (dryRun: boolean, label: string, id: string) => Promise<ImportResult>
+    run: (dryRun: boolean, label: string) => Promise<ImportResult>
 }
 
 export const IMPORT_TASKS: ImportTask[] = [

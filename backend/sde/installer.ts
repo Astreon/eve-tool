@@ -330,7 +330,10 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
         const dsStart = performance.now()
 
         try {
-            const { success, total, errors } = await task.run(dryRun)
+            const { success, total, errors } = await task.run(
+                dryRun,
+                task.label,
+            )
             datasetSuccess++
             lineTotal += total
             lineSuccess += success

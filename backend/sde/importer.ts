@@ -30,21 +30,33 @@ export async function importer(dryRun = false): Promise<ImporterStats> {
         errorCount: 0,
     }
 
-    const globalProgress = createProgressBar({
-        label: 'Datasets',
-        total: IMPORT_TASKS.length,
-        redrawEvery: 1,
-    })
+    const isTty = process.stdout.isTTY
+
+    const globalProgress = isTty
+        ? createProgressBar({
+              label: 'Datasets',
+              total: IMPORT_TASKS.length,
+              redrawEvery: 250,
+          })
+        : null
 
     let index = 0
 
     for (const task of IMPORT_TASKS) {
         index++
-        sdeLogger.info(`📦 Importing ${task.label}…`)
+
+        if (globalProgress) {
+            globalProgress.done({ clear: true })
+        }
+
+        sdeLogger.info(
+            `📦 (${index}/${IMPORT_TASKS.length}) Importing ${task.label}`,
+        )
+
         const start = performance.now()
 
         try {
-            const result = await task.run(dryRun, task.label, task.id)
+            const result = await task.run(dryRun, task.label)
 
             stats.datasetSuccess++
             stats.lineTotal += result.total
@@ -55,8 +67,6 @@ export async function importer(dryRun = false): Promise<ImporterStats> {
             sdeLogger.info(
                 `✅ Imported ${result.success}/${result.total} ${task.label} in ${duration}s (${result.errors} errors)`,
             )
-
-            globalProgress.tick()
         } catch (err) {
             stats.errorCount++
             const duration = ((performance.now() - start) / 1000).toFixed(1)
@@ -65,11 +75,15 @@ export async function importer(dryRun = false): Promise<ImporterStats> {
                 (err as Error).message,
             )
 
-            globalProgress.tick()
+            if (globalProgress) {
+                globalProgress.tick(1)
+            }
         }
     }
 
-    globalProgress.done({ clear: true })
+    if (globalProgress) {
+        globalProgress.done({ clear: true })
+    }
 
     sdeLogger.info(
         `🏁 Imported ${stats.lineSuccess}/${stats.lineTotal} lines in ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} total errors)`,
