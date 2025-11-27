@@ -17,10 +17,6 @@ export function httpLogger(req: Request, res: Response, next: NextFunction) {
     const reqWithId = req as RequestWithId
     reqWithId.requestId = requestId
 
-    // attach requestId to Request
-    ;(req as any).requestId = requestId
-
-    // serve in Response-Header
     res.setHeader('X-Request-Id', requestId)
 
     res.on('finish', () => {

@@ -31,7 +31,7 @@ function normalizeKeys(
 
     for (const [k, v] of Object.entries(input)) {
         const key = KEY_MAP[k] ?? (k as keyof EsiSearchResult)
-        ;(out[key] as number[] | undefined) = Array.isArray(v) ? v : []
+        out[key] = Array.isArray(v) ? v : []
     }
 
     return out
