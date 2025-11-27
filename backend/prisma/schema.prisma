@@ -26,10 +26,24 @@ model Character {
   expiresAt      DateTime?
   updatedAt      DateTime  @updatedAt
 
+  User      User?
   bloodline Bloodline @relation(fields: [bloodlineId], references: [id])
   race      Race      @relation(fields: [raceId], references: [id])
 
   @@index([expiresAt])
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  characterId   Int      @unique
+  characterName String
+  scopes        String   @db.Text
+  refreshToken  String?  @db.Text
+  lastLoginAt   DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  character Character @relation(fields: [characterId], references: [id])
 }
 
 model RegionLink {

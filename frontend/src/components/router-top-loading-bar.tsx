@@ -3,40 +3,39 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { useEffect, useRef } from "react";
-import LoadingBar, {
-  type LoadingBarRef,
-} from "react-top-loading-bar";
-import { useRouterState } from "@tanstack/react-router";
+import { useEffect, useRef } from 'react'
+import LoadingBar, { type LoadingBarRef } from 'react-top-loading-bar'
+import { useRouterState } from '@tanstack/react-router'
 
 export function RouterTopLoadingBar() {
-  const loadingBarRef = useRef<LoadingBarRef | null>(null);
+    const ref = useRef<LoadingBarRef | null>(null)
+    const routerState = useRouterState()
 
-  const isLoading = useRouterState({
-    select: (state) => state.isLoading,
-  });
+    const isLoading =
+        routerState.isLoading ||
+        routerState.isTransitioning ||
+        (routerState.pendingMatches?.length ?? 0) > 0
 
-  useEffect(() => {
-    const bar = loadingBarRef.current;
-    if (!bar) return;
+    useEffect(() => {
+        if (!ref.current) return
 
-    if (isLoading) {
-      bar.continuousStart(30, 200);
-    } else {
-      bar.complete();
-    }
-  }, [isLoading]);
+        if (isLoading) {
+            ref.current.continuousStart()
+        } else {
+            ref.current.complete()
+        }
+    }, [isLoading])
 
-  return (
-    <LoadingBar
-      ref={loadingBarRef}
-      height={2}
-      color="var(--primary)"
-      shadow={false}
-      waitingTime={200}
-      loaderSpeed={300}
-      className="z-[9999]"
-      containerClassName="fixed top-0 left-0 right-0"
-    />
-  );
+    return (
+        <LoadingBar
+            ref={ref}
+            height={2}
+            color="var(--primary)"
+            shadow={false}
+            waitingTime={200}
+            loaderSpeed={300}
+            className="z-[9999]"
+            containerClassName="fixed top-0 left-0 right-0"
+        />
+    )
 }
