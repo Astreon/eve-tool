@@ -30,6 +30,7 @@ router.get('/login', async (req, res, next) => {
 
         const rawScopes =
             typeof req.query.scopes === 'string' ? req.query.scopes : undefined
+
         if (rawScopes && rawScopes.trim() !== '') {
             const requested = rawScopes
                 .split(/[,\s]+/)
@@ -39,11 +40,11 @@ router.get('/login', async (req, res, next) => {
             const allowed = new Set(config.esiSso.esiSsoScopes)
             const filtered = requested.filter((s) => allowed.has(s))
 
-            if (!scopes.includes('publicData')) {
-                scopes.push('publicData')
-            }
+            scopes = Array.from(new Set(filtered))
+        }
 
-            scopes = filtered
+        if (!scopes.includes('publicData')) {
+            scopes.push('publicData')
         }
 
         const url = buildAuthUrl(state, scopes)

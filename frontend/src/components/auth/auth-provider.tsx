@@ -47,6 +47,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
             const raw = window.localStorage.getItem(STORAGE_KEY)
             if (raw) {
                 const parsed = JSON.parse(raw) as AuthSession
+                // Nur gültige (nicht abgelaufene) Session übernehmen
                 if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
                     setSession(parsed)
                 } else {
@@ -60,6 +61,75 @@ export function AuthProvider({children}: { children: ReactNode }) {
         }
     }, [hydrated])
 
+    useEffect(() => {
+        if (!hydrated || typeof window === 'undefined') return
+        if (session) return // schon eingeloggt, nichts tun
+
+        const url = new URL(window.location.href)
+
+        if (url.pathname !== '/auth/callback') {
+            return
+        }
+
+        const code = url.searchParams.get('code')
+        const state = url.searchParams.get('state')
+        if (!code || !state) return
+
+        const run = async () => {
+            try {
+                const resp = await fetch(
+                    `/auth/callback?code=${encodeURIComponent(
+                        code,
+                    )}&state=${encodeURIComponent(state)}`,
+                )
+
+                if (!resp.ok) {
+                    console.error(
+                        'Login callback failed',
+                        resp.status,
+                        await resp.text(),
+                    )
+                    return
+                }
+
+                const data = (await resp.json()) as {
+                    success: boolean
+                    tokens: {
+                        access_token: string
+                        refresh_token?: string
+                        expires_in: number
+                    }
+                    character: {
+                        id: number
+                        name: string
+                        scopes: string[]
+                    }
+                }
+
+                if (!data.success) {
+                    console.error('Login callback reported failure', data)
+                    return
+                }
+
+                setSession({
+                    characterId: data.character.id,
+                    characterName: data.character.name,
+                    scopes: data.character.scopes ?? [],
+                    accessToken: data.tokens.access_token,
+                    refreshToken: data.tokens.refresh_token,
+                    expiresAt: Date.now() + data.tokens.expires_in * 1000,
+                })
+            } catch (err) {
+                console.error('Failed to complete login callback', err)
+            } finally {
+                url.searchParams.delete('code')
+                url.searchParams.delete('state')
+                window.history.replaceState({}, '', '/')
+            }
+        }
+
+        void run()
+    }, [hydrated, session])
 
     useEffect(() => {
         if (!hydrated || typeof window === 'undefined') return

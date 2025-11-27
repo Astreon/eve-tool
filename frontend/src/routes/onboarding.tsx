@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import {useState, useMemo} from 'react'
+import {useState, useMemo, useEffect} from 'react'
 import {useAuth} from '@/components/auth/auth-provider'
 import {createFileRoute, Link} from '@tanstack/react-router'
 import {FEATURES, type FeatureId} from '@/features/auth/features'
@@ -18,12 +18,34 @@ export const Route = createFileRoute('/onboarding')({
 const BASE_FEATURE_ID: FeatureId = 'search'
 
 function OnboardingPage() {
-    const {isAuthenticated} = useAuth()
+    const { isAuthenticated, isReady, session } = useAuth()
     const label = isAuthenticated ? 'Verify with EVE Online' : 'Login with EVE Online'
+
+    const currentScopes = (session?.scopes ?? []).slice()
 
     const [selected, setSelected] = useState<Set<FeatureId>>(
         () => new Set(),
     )
+    const [initializedFromSession, setInitializedFromSession] = useState(false)
+
+    useEffect(() => {
+        if (!isReady || initializedFromSession) return
+
+        const next = new Set<FeatureId>()
+
+        for (const feature of FEATURES) {
+            if (feature.id === BASE_FEATURE_ID) continue
+            if (
+                feature.scopes.length > 0 &&
+                feature.scopes.every((s) => currentScopes.includes(s))
+            ) {
+                next.add(feature.id)
+            }
+        }
+
+        setSelected(next)
+        setInitializedFromSession(true)
+    }, [isReady, initializedFromSession, currentScopes.join(',')])
 
     const toggle = (id: FeatureId) => {
         if (id === BASE_FEATURE_ID) return

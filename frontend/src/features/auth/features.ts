@@ -29,7 +29,7 @@ export const FEATURES: Feature[] = [
     {
         id: 'structureSearch',
         name: 'Structure Search',
-        description: 'Search for entities that match a given sub-string.',
+        description: 'Allows searching over all structures that a character can see in the structure browser.',
         scopes: ['esi-search.search_structures.v1'],
         icon: '🏗️',
         badge: 'Optional',
