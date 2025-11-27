@@ -4,6 +4,7 @@
  */
 
 import { recomputeRegionLinks } from '../calculators/computeRegionLinks.js'
+import { sdeLogger } from '../lib/logger'
 
 export type CalculationId = 'region-links'
 
@@ -19,7 +20,7 @@ export const CALCULATION_TASKS: CalculationTask[] = [
         label: 'Region Links',
         async run(dryRun?: boolean) {
             if (dryRun) {
-                console.log('🧪 Dry-run: would recompute region links.')
+                sdeLogger.info('🧪 Dry-run: would recompute region links.')
                 return
             }
 
