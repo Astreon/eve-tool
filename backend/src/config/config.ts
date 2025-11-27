@@ -6,8 +6,11 @@
 import { z } from 'zod'
 
 const ScopesSchema = z.preprocess(
-    (val) => {
-        if (Array.isArray(val)) return val
+    (val: unknown) => {
+        if (Array.isArray(val)) {
+            // alles sicher zu string[] normalisieren
+            return val.map((v) => String(v)).filter(Boolean)
+        }
         if (typeof val === 'string') {
             const s = val.trim().replace(/^['"]|['"]$/g, '')
             return s.split(/[,\s]+/).filter(Boolean)

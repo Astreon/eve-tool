@@ -13,11 +13,14 @@ function getHeader(headers: HeadersLike, name: string): string | undefined {
         const v = headers[k]
 
         if (typeof v === 'string') return v
+
         if (Array.isArray(v)) {
-            const first = v[0]
+            const arr = v as unknown[]
+            const first = arr[0]
             if (first == null) return undefined
             return String(first)
         }
+
         if (v == null) return undefined
         return String(v)
     }

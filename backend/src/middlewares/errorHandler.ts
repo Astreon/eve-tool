@@ -9,13 +9,18 @@ import { AppError, BadRequestError } from '../types/appError.js'
 import { z, ZodError } from 'zod'
 import { logger } from '../lib/logger.js'
 
+interface RequestWithId extends Request {
+    requestId?: string
+}
+
 export function errorHandler(
     err: unknown,
     req: Request,
     res: Response<ApiResponse<never>>,
     _next: NextFunction,
 ) {
-    const requestId = (req as any).requestId as string | undefined
+    const reqWithId = req as RequestWithId
+    const requestId = reqWithId.requestId
     const timestamp = new Date().toISOString()
 
     // Zod → 400 /w details

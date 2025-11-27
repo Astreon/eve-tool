@@ -65,11 +65,18 @@ function headerNumber(
     headers: Record<string, unknown>,
     name: string,
 ): number | undefined {
-    const entry = Object.entries(headers).find(
-        ([k]) => k.toLowerCase() === name.toLowerCase(),
-    )
-    const raw = entry?.[1]
-    const s = Array.isArray(raw) ? raw[0] : raw
+    const lower = name.toLowerCase()
+    const key = Object.keys(headers).find((k) => k.toLowerCase() === lower)
+    if (!key) return undefined
+
+    const raw = headers[key]
+    let s: unknown = raw
+
+    if (Array.isArray(raw)) {
+        const arr = raw as unknown[]
+        s = arr[0]
+    }
+
     if (typeof s !== 'string') return undefined
     const n = parseInt(s, 10)
     return Number.isFinite(n) ? n : undefined

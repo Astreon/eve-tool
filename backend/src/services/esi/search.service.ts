@@ -44,11 +44,16 @@ export async function searchEsi(
     categories: EsiSearchCategories[] = ['character'],
     strict = false,
 ): Promise<EsiSearchResult> {
-    const res = await esiApi.get(`/characters/${characterId}/search`, {
-        params: { categories: categories.join(','), search: query, strict },
-        headers: { Authorization: `Bearer ${token}` },
-        validateStatus: (s) => s === 200 || s === 404,
-    })
+    const res = await esiApi.get<Record<string, number[]>>(
+        `/characters/${characterId}/search`,
+        {
+            params: { categories: categories.join(','), search: query, strict },
+            headers: { Authorization: `Bearer ${token}` },
+            validateStatus: (s) => s === 200 || s === 404,
+        },
+    )
+
     if (res.status === 404) return {}
-    return normalizeKeys(res.data as Record<string, number[]>)
+
+    return normalizeKeys(res.data)
 }

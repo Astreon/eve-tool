@@ -7,9 +7,15 @@ import { NextFunction, Request, Response } from 'express'
 import crypto from 'crypto'
 import { logger } from '../lib/logger.js'
 
+interface RequestWithId extends Request {
+    requestId?: string
+}
+
 export function httpLogger(req: Request, res: Response, next: NextFunction) {
     const startedAt = Date.now()
     const requestId = crypto.randomUUID()
+    const reqWithId = req as RequestWithId
+    reqWithId.requestId = requestId
 
     // attach requestId to Request
     ;(req as any).requestId = requestId
