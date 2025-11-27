@@ -3,7 +3,15 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode,
+} from 'react'
 import { useHydrated } from '@tanstack/react-router'
 
 export type AuthSession = {
@@ -27,6 +35,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const STORAGE_KEY = 'eve-tool.sso'
+const REFRESH_SKEW_MS = 60_000
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const hydrated = useHydrated()
@@ -40,8 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const raw = window.localStorage.getItem(STORAGE_KEY)
             if (raw) {
                 const parsed = JSON.parse(raw) as AuthSession
-                // Nur gültige (nicht abgelaufene) Session übernehmen
-                if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
+
+                if (parsed.refreshToken) {
+                    setSession(parsed)
+                } else if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
                     setSession(parsed)
                 } else {
                     window.localStorage.removeItem(STORAGE_KEY)
@@ -56,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (!hydrated || typeof window === 'undefined') return
-        if (session) return // schon eingeloggt, nichts tun
+        if (session) return
 
         const url = new URL(window.location.href)
 
@@ -128,6 +139,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
     }, [session, hydrated])
+
+    const refresh = useCallback(async () => {
+        if (!session?.refreshToken) return
+        try {
+            const res = await fetch('/auth/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken: session.refreshToken }),
+            })
+
+            if (!res.ok) {
+                console.error('Refresh failed', res.status, await res.text())
+                setSession(null)
+                return
+            }
+
+            const data = (await res.json()) as {
+                success: boolean
+                tokens: {
+                    access_token: string
+                    refresh_token?: string
+                    expires_in: number
+                }
+                character: {
+                    id: number
+                    name: string
+                    scopes?: string[]
+                }
+            }
+
+            if (!data.success) {
+                console.error('Refresh failed', data)
+                setSession(null)
+                return
+            }
+
+            setSession((prev) => ({
+                characterId: data.character.id,
+                characterName: data.character.name,
+                scopes: data.character.scopes ?? prev?.scopes ?? [],
+                accessToken: data.tokens.access_token,
+                refreshToken: data.tokens.refresh_token ?? prev?.refreshToken,
+                expiresAt: Date.now() + data.tokens.expires_in * 1000,
+            }))
+        } catch (e) {
+            console.error('Refresh error', e)
+            setSession(null)
+        }
+    }, [session?.refreshToken])
+
+    useEffect(() => {
+        if (!hydrated || typeof window === 'undefined') return
+        if (!session?.refreshToken || !session.expiresAt) return
+
+        const now = Date.now()
+        const msUntilExpiry = session.expiresAt - now
+        const timeoutMs = Math.max(msUntilExpiry - REFRESH_SKEW_MS, 0)
+
+        if (msUntilExpiry <= 0) {
+            void refresh()
+            return
+        }
+
+        const id = window.setTimeout(() => {
+            void refresh()
+        }, timeoutMs)
+
+        return () => window.clearTimeout(id)
+    }, [hydrated, session?.expiresAt, session?.refreshToken, refresh])
 
     const value = useMemo<AuthContextValue>(
         () => ({

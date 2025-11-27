@@ -111,8 +111,10 @@ function TimelineIndicator({
     children,
     ...props
 }: TimelineIndicatorProps) {
+    const Comp = asChild ? Slot : 'div'
+
     return (
-        <div
+        <Comp
             data-slot="timeline-indicator"
             className={cn(
                 'border-primary/20 group-data-completed/timeline-item:border-primary/30 absolute size-3 rounded-full border-1 group-data-[orientation=horizontal]/timeline:-top-6 group-data-[orientation=horizontal]/timeline:left-0 group-data-[orientation=horizontal]/timeline:-translate-y-1/2 group-data-[orientation=vertical]/timeline:top-0 group-data-[orientation=vertical]/timeline:-left-6 group-data-[orientation=vertical]/timeline:-translate-x-1/2',
@@ -122,7 +124,7 @@ function TimelineIndicator({
             {...props}
         >
             {children}
-        </div>
+        </Comp>
     )
 }
 

@@ -5,9 +5,8 @@
 
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ReactFlow, Background, NodeProps, Handle, Position } from '@xyflow/react'
-import type { Node as FlowNode } from '@xyflow/react'
-import type { Edge as FlowEdge } from '@xyflow/react'
+import type { Edge as FlowEdge, Node as FlowNode } from '@xyflow/react'
+import { Background, Handle, NodeProps, Position, ReactFlow } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
 type RegionFactionApi = {
