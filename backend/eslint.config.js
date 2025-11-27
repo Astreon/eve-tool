@@ -33,10 +33,7 @@ export default tseslint.config(
             },
         },
         rules: {
-            '@typescript-eslint/consistent-type-definitions': [
-                'warn',
-                'interface',
-            ],
+            '@typescript-eslint/consistent-type-definitions': ['off'],
             '@typescript-eslint/array-type': 'off',
 
             '@typescript-eslint/no-confusing-void-expression': [

@@ -3,10 +3,10 @@
  * Copyright (C) 2025 Astreon
  */
 
-export type ApiSuccessResponse<T> = {
+export type ApiSuccessResponse<T, M = Record<string, unknown>> = {
     success: true
     data: T
-    meta?: Record<string, unknown>
+    meta?: M
 }
 
 export type ApiError = {
@@ -15,10 +15,12 @@ export type ApiError = {
     details?: unknown
 }
 
-export type ApiErrorResponse = {
+export type ApiErrorResponse<M = Record<string, unknown>> = {
     success: false
     error: ApiError
-    meta?: Record<string, unknown>
+    meta?: M
 }
 
-export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse
+export type ApiResponse<T, M = Record<string, unknown>> =
+    | ApiSuccessResponse<T, M>
+    | ApiErrorResponse<M>

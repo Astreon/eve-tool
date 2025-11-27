@@ -9,6 +9,7 @@ import {
     EsiRouteStatus,
     EsiRouteHealth,
     StatusApiResponse,
+    EsiStatusRaw,
 } from '../types/api/status.types.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import { esiApi } from '../lib/axios.js'
@@ -52,7 +53,7 @@ async function fetchEsiGlobalStatus(): Promise<EsiGlobalStatus> {
             res.data &&
             typeof res.data === 'object'
         ) {
-            const data: any = res.data
+            const data = res.data as EsiStatusRaw
             base.status = 'Up'
             base.players =
                 typeof data.players === 'number' ? data.players : null
@@ -66,10 +67,10 @@ async function fetchEsiGlobalStatus(): Promise<EsiGlobalStatus> {
             base.status = 'Down'
             base.error = `HTTP ${res.status}`
         }
-    } catch (err: any) {
+    } catch (err: unknown) {
         base.status = 'Down'
         base.latencyMs = Math.round(performance.now() - t0)
-        base.error = err?.message ?? 'Unknown error'
+        base.error = err instanceof Error ? err.message : 'Unknown error'
     }
 
     cachedGlobalStatus = base
@@ -78,7 +79,7 @@ async function fetchEsiGlobalStatus(): Promise<EsiGlobalStatus> {
 }
 
 // --- ESI Route-Status (/meta/status)
-type RawMetaRoute = {
+interface RawMetaRoute {
     method?: string
     path?: string
     status?: string
@@ -96,7 +97,6 @@ async function fetchEsiRouteStatuses(): Promise<EsiRouteStatus[]> {
 
     try {
         const res = await esiApi.get('/meta/status', {
-            // wir wollen den Body auch sehen, wenn es mal 4xx/5xx ist
             validateStatus: () => true,
         })
 

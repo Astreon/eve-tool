@@ -28,10 +28,13 @@ function normalizeKeys(
 ): EsiSearchResult {
     const out: EsiSearchResult = {}
     if (!input) return out
+
     for (const [k, v] of Object.entries(input)) {
         const key = KEY_MAP[k] ?? (k as keyof EsiSearchResult)
-        ;(out as any)[key] = Array.isArray(v) ? v : []
+        const arr = Array.isArray(v) ? v : []
+        ;(out[key] as number[] | undefined) = arr
     }
+
     return out
 }
 

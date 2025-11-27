@@ -10,18 +10,18 @@ import { EsiErrorContext } from '../types/axios.types.js'
 export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
     if (axios.isAxiosError(e)) {
         const status = e.response?.status ?? 502
-        const headers = (e.response?.headers ?? {}) as Record<string, any>
+        const headers = (e.response?.headers ?? {}) as Record<string, unknown>
         const remain = headerNumber(headers, 'x-esi-error-limit-remain')
         const reset = headerNumber(headers, 'x-esi-error-limit-reset')
 
-        const details = {
+        const details: Record<string, unknown> = {
             ...ctx,
             status,
             url: ctx.url ?? e.config?.url,
             method: ctx.method ?? e.config?.method,
             remain,
             reset,
-            data: e.response?.data,
+            data: e.response?.data as unknown,
         }
 
         if (status === 404) {
@@ -62,7 +62,7 @@ export class EsiError extends AppError {
 }
 
 function headerNumber(
-    headers: Record<string, any>,
+    headers: Record<string, unknown>,
     name: string,
 ): number | undefined {
     const entry = Object.entries(headers).find(

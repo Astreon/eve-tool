@@ -9,16 +9,17 @@ import config from '../config/config.js'
 import { logger } from './logger.js'
 import { ApiResponse } from '../types/apiResponse.js'
 import { AppError, NotFoundError } from '../types/appError.js'
-import type { EsiResult, WithEsiCacheConfig } from '../types/cache.types.js'
+import type {
+    EsiCacheMeta,
+    EsiResult,
+    WithEsiCacheConfig,
+} from '../types/cache.types.js'
 
 function buildMeta(
-    source: 'redis' | 'db' | 'esi',
-    opts: {
-        ttl?: number | null
-        cachedAt?: string | null
-    } = {},
-) {
-    const meta: Record<string, unknown> = {
+    source: EsiCacheMeta['source'],
+    opts: { ttl?: number | null; cachedAt?: string | null } = {},
+): EsiCacheMeta {
+    const meta: EsiCacheMeta = {
         source,
         timestamp: new Date().toISOString(),
     }
@@ -27,8 +28,8 @@ function buildMeta(
         meta.ttl = opts.ttl
     }
 
-    if (opts.cachedAt) {
-        meta.cachedAt = opts.cachedAt
+    if (opts.cachedAt ?? undefined) {
+        meta.cachedAt = opts.cachedAt ?? undefined
     }
 
     return meta
@@ -55,7 +56,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
 
     return async function handler(
         req: ExpressRequest,
-        res: Response<ApiResponse<TApi>>,
+        res: Response<ApiResponse<TApi, EsiCacheMeta>>,
         next: NextFunction,
     ) {
         const started = Date.now()
@@ -80,7 +81,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
                         cachedAt = null
                     }
 
-                    const cached: TApi = JSON.parse(cachedStr)
+                    const cached = JSON.parse(cachedStr) as unknown as TApi
                     logger.entityFromRedis(cfg.kind, id, {
                         ttl: ttlNow,
                         cachedAt,
@@ -144,7 +145,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
                     data: api,
                     meta: buildMeta('db', {
                         ttl: ttlFromDb,
-                        cachedAt: dbMeta.expiresAt.toISOString(),
+                        cachedAt: dbMeta.expiresAt?.toISOString() ?? null,
                     }),
                 })
             }
@@ -154,7 +155,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
             lockHeld = lockOk === 'OK'
             if (!lockHeld) {
                 if (cachedStr) {
-                    const stale: TApi = JSON.parse(cachedStr)
+                    const stale = JSON.parse(cachedStr) as unknown as TApi
                     const ttlNow = await redis.ttl(k.data)
                     let cachedAt: string | null = null
                     try {
@@ -189,12 +190,14 @@ export function makeCachedController<TDb, TApi, TEsi>(
 
                 // --- 304: unchanged → DB must exist
                 if (esi.data === null) {
-                    if (!dbRow)
-                        return next(
+                    if (!dbRow) {
+                        next(
                             new NotFoundError(
                                 `${cfg.kind} ${String(id)} not found`,
                             ),
                         )
+                        return
+                    }
 
                     const api = cfg.mapToApi(dbRow)
                     const ttl = (esi.ttl ?? fallbackTtl) | 0
@@ -234,7 +237,6 @@ export function makeCachedController<TDb, TApi, TEsi>(
                         ttl,
                         durationMs: Date.now() - started,
                     })
-
                     return res.json({
                         success: true,
                         data: api,
@@ -276,7 +278,6 @@ export function makeCachedController<TDb, TApi, TEsi>(
                     ttl,
                     durationMs: Date.now() - started,
                 })
-
                 return res.json({
                     success: true,
                     data: api,
@@ -285,7 +286,7 @@ export function makeCachedController<TDb, TApi, TEsi>(
             } catch (err) {
                 // --- stale-if-error: Redis > DB > error
                 if (cachedStr) {
-                    const stale: TApi = JSON.parse(cachedStr)
+                    const stale = JSON.parse(cachedStr) as unknown as TApi
                     const ttlNow = await redis.ttl(k.data)
                     let cachedAt: string | null = null
                     try {
@@ -318,7 +319,8 @@ export function makeCachedController<TDb, TApi, TEsi>(
                     })
                 }
 
-                return next(AppError.fromUnknown(err))
+                next(AppError.fromUnknown(err))
+                return
             } finally {
                 if (lockHeld) {
                     try {
@@ -329,7 +331,8 @@ export function makeCachedController<TDb, TApi, TEsi>(
                 }
             }
         } catch (e) {
-            return next(AppError.fromUnknown(e))
+            next(AppError.fromUnknown(e))
+            return
         }
     }
 }

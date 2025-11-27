@@ -8,8 +8,8 @@ import { UnauthorizedError } from '../types/appError.js'
 import { verifyToken } from '../lib/sso.js'
 
 const MAX_ENTRIES = 1000
-const MIN_TTL_MS = 5_000 // don't cache shorter than 5s
-const MAX_TTL_MS = 5 * 60_000 // don't cache longer than 5min
+const MIN_TTL_MS = 5_000 // don't cache shorter than 5 s
+const MAX_TTL_MS = 5 * 60_000 // don't cache longer than 5 min
 const SKEW_MS = 2_000 // subtract to be safe
 
 type VerifyCached = {
@@ -46,8 +46,8 @@ function getVerifyFromCache(token: string) {
 
 function putVerifyInCache(token: string, value: VerifyCached['value']) {
     const now = Date.now()
-    const expOn = Date.parse(value.ExpiresOn) // may be NaN if format changes
-    const msLeft = isNaN(expOn)
+    const expOn = Date.parse(value.ExpiresOn) // may be NaN if the format changes
+    const msLeft = Number.isNaN(expOn)
         ? MIN_TTL_MS
         : Math.max(0, expOn - now - SKEW_MS)
     const ttl = clamp(msLeft, MIN_TTL_MS, MAX_TTL_MS)
@@ -56,8 +56,16 @@ function putVerifyInCache(token: string, value: VerifyCached['value']) {
     // simple LRU eviction
     if (verifyCache.size > MAX_ENTRIES) {
         const firstKey = verifyCache.keys().next().value
-        if (firstKey) verifyCache.delete(firstKey)
+        if (firstKey) {
+            verifyCache.delete(firstKey)
+        }
     }
+}
+
+export interface AuthedRequest extends Request {
+    esiAccessToken: string
+    esiCharacterId?: number
+    esiCharacterName?: string
 }
 
 export async function requireAuth(
@@ -65,32 +73,38 @@ export async function requireAuth(
     _res: Response,
     next: NextFunction,
 ) {
-    const h = req.get('authorization') ?? req.get('Authorization')
-    if (!h || !h.startsWith('Bearer ')) {
-        return next(new UnauthorizedError('Missing Bearer token'))
+    const authedReq = req as AuthedRequest
+
+    // Express header helper ist schon case-insensitive
+    const h = authedReq.header('authorization')
+
+    if (!h?.startsWith('Bearer ')) {
+        next(new UnauthorizedError('Missing Bearer token'))
+        return
     }
 
     const token = h.slice('Bearer '.length).trim()
-    ;(req as any).esiAccessToken = token
+    authedReq.esiAccessToken = token
 
     // 1) try cache
     const cached = getVerifyFromCache(token)
     if (cached) {
-        ;(req as any).esiCharacterId = Number(cached.CharacterID)
-        ;(req as any).esiCharacterName = cached.CharacterName
-        return next()
+        authedReq.esiCharacterId = Number(cached.CharacterID)
+        authedReq.esiCharacterName = cached.CharacterName
+        next()
+        return
     }
 
     // 2) roundtrip to SSO, then cache
     try {
         const v = await verifyToken(token)
         putVerifyInCache(token, v)
-        ;(req as any).esiCharacterId = Number(v.CharacterID)
-        ;(req as any).esiCharacterName = v.CharacterName
-        return next()
+
+        authedReq.esiCharacterId = Number(v.CharacterID)
+        authedReq.esiCharacterName = v.CharacterName
+
+        next()
     } catch (e) {
-        return next(
-            new UnauthorizedError('Invalid or expired token', { cause: e }),
-        )
+        next(new UnauthorizedError('Invalid or expired token', { cause: e }))
     }
 }

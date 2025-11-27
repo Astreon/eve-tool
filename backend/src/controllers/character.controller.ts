@@ -13,6 +13,7 @@ import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import config from '../config/config.js'
 import { makeCachedController } from '../lib/esiCache.js'
 import { parseNumericIdFromParams } from '../utils/params.js'
+import { logger } from '../lib/logger.js'
 
 // ------- ESI: API-Ranges -------
 const CHARACTER_ID_RANGES: ReadonlyArray<{ min: number; max: number }> = [
@@ -108,7 +109,12 @@ const bumpDbMetaOn304 = async (id: number | string, meta: DbMeta) => {
                 expiresAt: meta.expiresAt ?? null,
             },
         })
-        .catch(() => {})
+        .catch((err) => {
+            logger.warn('DB', 'Failed to bump character meta on 304', {
+                id,
+                error: err instanceof Error ? err.message : String(err),
+            })
+        })
 }
 
 // ------- Mapper -------
@@ -119,7 +125,7 @@ const mapToApi = (row: CharacterWithRelations): CharacterApiResponse =>
 export const getCharacter = makeCachedController<
     CharacterWithRelations,
     CharacterApiResponse,
-    any
+    unknown
 >({
     kind: 'CHARACTER',
     keyBase: 'character',

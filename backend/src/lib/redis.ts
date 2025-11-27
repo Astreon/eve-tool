@@ -14,7 +14,7 @@ export const redis = new Redis({
     db: 0,
 })
 
-redis.on('ready', async () => {
+redis.on('ready', () => {
     logger.info('REDIS', 'Connected to Redis', {
         host: config.redis.host,
         port: config.redis.port,

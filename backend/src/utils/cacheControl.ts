@@ -8,23 +8,17 @@ export type HeadersLike = Record<string, unknown>
 function getHeader(headers: HeadersLike, name: string): string | undefined {
     const lower = name.toLowerCase()
 
-    for (const [k, v] of Object.entries(headers)) {
+    for (const k of Object.keys(headers)) {
         if (k.toLowerCase() !== lower) continue
+        const v = headers[k]
 
-        if (typeof v === 'string') {
-            return v
-        }
-
+        if (typeof v === 'string') return v
         if (Array.isArray(v)) {
             const first = v[0]
             if (first == null) return undefined
             return String(first)
         }
-
-        if (v == null) {
-            return undefined
-        }
-
+        if (v == null) return undefined
         return String(v)
     }
 

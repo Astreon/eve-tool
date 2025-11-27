@@ -5,6 +5,13 @@
 
 import type { Request as ExpressRequest } from 'express'
 
+export interface EsiCacheMeta {
+    source: 'redis' | 'db' | 'esi'
+    ttl?: number
+    cachedAt?: string
+    timestamp: string
+}
+
 export interface EsiResult<T> {
     data: T | null
     status?: number | null

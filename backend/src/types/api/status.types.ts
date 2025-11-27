@@ -27,6 +27,12 @@ export interface EsiRouteStatus {
     status: EsiRouteHealth
 }
 
+export interface EsiStatusRaw {
+    players?: number
+    server_version?: string
+    start_time?: string
+}
+
 export interface StatusApiResponse {
     api: {
         status: 'Up' | 'Degraded' | 'Down' | 'Unknown'

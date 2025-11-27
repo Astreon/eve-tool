@@ -1,5 +1,6 @@
 /*
  * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * File: C:/Users/Astreon/Code/webdev/eve-tool/backend/src/lib/logger.ts
  * Copyright (C) 2025 Astreon
  */
 
@@ -8,7 +9,7 @@ import config from '../config/config.js'
 
 export type LogMeta = Record<string, unknown>
 
-export type LogKind = 'APP' | 'HTTP' | 'ESI' | 'REDIS' | 'DB' | string
+export type LogKind = 'APP' | 'HTTP' | 'ESI' | 'REDIS' | 'DB' | (string & {})
 
 const isDev = config.nodeEnv === 'development'
 const isTest = config.nodeEnv === 'test'

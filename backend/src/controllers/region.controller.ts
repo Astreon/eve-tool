@@ -40,7 +40,7 @@ export async function getRegions(
         // 1) Redis Fast-Path
         const cachedStr = await redis.get(cacheKey)
         if (cachedStr) {
-            const data: RegionApiResponse[] = JSON.parse(cachedStr)
+            const data = JSON.parse(cachedStr) as unknown as RegionApiResponse[]
             const ttl = await redis.ttl(cacheKey) // number, kann -1/-2 sein
 
             return res.json({
@@ -101,7 +101,8 @@ export async function getRegions(
             },
         })
     } catch (err) {
-        return next(err)
+        next(err)
+        return
     }
 }
 
@@ -157,6 +158,7 @@ export async function getRegionLinks(
             },
         })
     } catch (err) {
-        return next(err)
+        next(err)
+        return
     }
 }
