@@ -11,6 +11,7 @@ import {
     verifyToken,
     refreshToken,
 } from '../lib/sso.js'
+import { AppError, BadRequestError } from '../types/appError.js'
 import { redis } from '../lib/redis.js'
 import { prisma } from '../lib/prisma.js'
 import { getCharacterInfo } from '../services/esi/index.js'
@@ -50,7 +51,7 @@ router.get('/login', async (req, res, next) => {
         const url = buildAuthUrl(state, scopes)
         res.json({ success: true, url })
     } catch (e) {
-        next(e)
+        next(AppError.fromUnknown(e))
     }
 })
 
@@ -60,21 +61,18 @@ router.get('/callback', async (req, res, next) => {
         const state = req.query.state as string | undefined
 
         if (!code) {
-            return res
-                .status(400)
-                .json({ success: false, message: 'Missing code' })
+            return next(new BadRequestError('Missing code'))
         }
+
         if (!state) {
-            return res
-                .status(400)
-                .json({ success: false, message: 'Missing state' })
+            return next(new BadRequestError('Missing state'))
         }
 
         const stateExists = (await redis.exists(stateKey(state))) === 1
         if (!stateExists) {
-            return res
-                .status(400)
-                .json({ success: false, message: 'Invalid or expired state' })
+            return next(
+                new BadRequestError('Invalid or expired state', { state }),
+            )
         }
         await redis.del(stateKey(state))
 
@@ -86,7 +84,7 @@ router.get('/callback', async (req, res, next) => {
         const characterName = verify.CharacterName
         const scopes = verify.Scopes?.split(' ').filter(Boolean) ?? []
 
-        let characterRow = await prisma.character.findUnique({
+        const characterRow = await prisma.character.findUnique({
             where: { id: characterId },
         })
 
@@ -94,14 +92,29 @@ router.get('/callback', async (req, res, next) => {
             const esi = await getCharacterInfo(characterId)
 
             if (!esi.data) {
-                throw new Error('ESI character payload missing')
+                return next(
+                    new AppError('ESI character payload missing', {
+                        code: 'INTERNAL',
+                        details: { characterId },
+                    }),
+                )
             }
 
             const payload = esi.data
 
             if (payload.race_id == null || payload.bloodline_id == null) {
-                throw new Error(
-                    'ESI returned null for required fields race_id/bloodline_id',
+                return next(
+                    new AppError(
+                        'ESI returned null for required fields race_id/bloodline_id',
+                        {
+                            code: 'INTERNAL',
+                            details: {
+                                characterId,
+                                race_id: payload.race_id,
+                                bloodline_id: payload.bloodline_id,
+                            },
+                        },
+                    ),
                 )
             }
 
@@ -176,9 +189,7 @@ router.post('/refresh', async (req, res, next) => {
     try {
         const { refreshToken: rt } = req.body as { refreshToken?: string }
         if (!rt) {
-            return res
-                .status(400)
-                .json({ success: false, message: 'Missing refreshToken' })
+            return next(new BadRequestError('Missing refreshToken'))
         }
 
         const tokens = await refreshToken(rt)
