@@ -9,6 +9,7 @@ import { DbMeta } from '../types/cache.types.js'
 import { CharacterApiResponse } from '../types/api/character.types.js'
 import { mapCharacterToApiResponse } from '../mappers/character.mapper.js'
 import { getCharacterInfo } from '../services/esi/index.js'
+import type { EsiCharacter } from '../types/esi/character.types.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import config from '../config/config.js'
 import { makeCachedController } from '../lib/esiCache.js'
@@ -50,9 +51,7 @@ const fetchEsi = (id: number | string, etag?: string) =>
 // ------- Upsert if 200 (ESI) -------
 const upsertDbOn200 = async (
     id: number | string,
-    payload: Awaited<ReturnType<typeof fetchEsi>> extends { data: infer T }
-        ? T
-        : never,
+    payload: EsiCharacter,
     meta: Required<Pick<DbMeta, 'etag'>> & {
         expiresAt: Date
         lastModified?: Date | null
@@ -125,7 +124,7 @@ const mapToApi = (row: CharacterWithRelations): CharacterApiResponse =>
 export const getCharacter = makeCachedController<
     CharacterWithRelations,
     CharacterApiResponse,
-    unknown
+    EsiCharacter
 >({
     kind: 'CHARACTER',
     keyBase: 'character',
