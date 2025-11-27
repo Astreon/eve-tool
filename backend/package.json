@@ -11,7 +11,7 @@
         "type-check": "tsc --noEmit && tsc -p tests/.tsconfig.json --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
-        "prettier": "prettier --write .",
+        "prettier": "prettier --check .",
         "test": "vitest run",
         "test:ui": "vitest",
         "db:push": "npx prisma db push",
