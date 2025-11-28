@@ -39,7 +39,7 @@ function getRegionGraphCacheKey(knownSpaceOnly: boolean) {
 
 function getRegionMapCacheKey(regionId: number) {
     const v = config.redis.cacheVersion
-    return `regions:${v}:map:region:${regionId}`
+    return `regions:${v}:region:${regionId}`
 }
 
 export async function getRegionGraph(

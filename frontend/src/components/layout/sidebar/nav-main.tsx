@@ -49,8 +49,8 @@ export const navItems: NavGroup[] = [
         title: 'Tools',
         items: [
             {
-                title: 'Regions',
-                href: '/regions',
+                title: 'Map Tool',
+                href: '/map',
                 icon: Globe,
             },
         ],
