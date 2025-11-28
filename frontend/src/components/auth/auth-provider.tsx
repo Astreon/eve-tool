@@ -222,25 +222,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             login: () => {
                 if (typeof window === 'undefined') return
 
-                let loginUrl = '/auth/login'
-
-                try {
-                    const raw = window.localStorage.getItem('eve-tool.scopes')
-                    if (raw) {
-                        const parsed = JSON.parse(raw) as unknown
-                        if (Array.isArray(parsed)) {
-                            const scopes = parsed
-                                .map((s) => (typeof s === 'string' ? s.trim() : ''))
-                                .filter((s) => s.length > 0)
-                            if (scopes.length > 0) {
-                                const scopeString = scopes.join(',')
-                                loginUrl = `/auth/login?scopes=${encodeURIComponent(scopeString)}`
-                            }
-                        }
-                    }
-                } catch {
-                    // ignore and fall back to default loginUrl
-                }
+                const loginUrl = '/auth/login'
 
                 void fetch(loginUrl)
                     .then(async (res) => {

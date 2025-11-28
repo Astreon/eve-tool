@@ -84,10 +84,6 @@ function OnboardingPage() {
 
     const handleLogin = async () => {
         try {
-            if (typeof window !== 'undefined') {
-                window.localStorage.setItem('eve-tool.scopes', JSON.stringify(scopes))
-            }
-
             const resp = await fetch(`/auth/login?scopes=${encodeURIComponent(scopeString)}`)
 
             if (!resp.ok) {
