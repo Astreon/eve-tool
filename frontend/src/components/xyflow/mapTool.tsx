@@ -72,7 +72,7 @@ export function MapTool() {
                                 setMode('universe')
                                 setSelectedSystem(null)
                             }}
-                            className="text-muted-foreground hover:bg-accent rounded border px-2 py-1 text-[11px]"
+                            className="text-muted-foreground hover:bg-accent rounded-sm border px-2 py-1 text-[11px]"
                         >
                             ← Back to universe
                         </button>

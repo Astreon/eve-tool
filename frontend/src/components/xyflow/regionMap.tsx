@@ -169,7 +169,7 @@ function SystemNodeComponent({ data }: NodeProps) {
     const d = data as SystemNodeData
 
     return (
-        <div className="bg-background/90 ring-border rounded px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
+        <div className="bg-background/90 ring-border rounded-sm px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
             <Handle
                 type="source"
                 position={Position.Top}
@@ -337,7 +337,7 @@ export function RegionMap({
                     <button
                         type="button"
                         onClick={onBack}
-                        className="text-muted-foreground hover:bg-accent rounded border px-2 py-1 text-[11px]"
+                        className="text-muted-foreground hover:bg-accent rounded-sm border px-2 py-1 text-[11px]"
                     >
                         ← Back to universe
                     </button>
