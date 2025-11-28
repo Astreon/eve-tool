@@ -4,11 +4,17 @@
  */
 
 import { Router } from 'express'
-import { getRegionLinks, getRegions } from '../controllers/region.controller.js'
+import {
+    getRegions,
+    getRegionGraph,
+    getRegionMap,
+} from '../controllers/region.controller.js'
 
 const router = Router()
 
-router.get('/', getRegions)
-router.get('/links', getRegionLinks)
+router.get('/', getRegions) // ?knownSpaceOnly=true
+
+router.get('/graph', getRegionGraph) // ?knownSpaceOnly=true
+router.get('/:regionId/map', getRegionMap)
 
 export default router

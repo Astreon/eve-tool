@@ -23,18 +23,10 @@ type RegionApiResponse = {
     faction: RegionFactionApi | null
 }
 
-type ApiSuccess<T> = {
-    success: true
-    data: T
+type RegionLinkApi = {
+    fromRegionId: number
+    toRegionId: number
 }
-
-type ApiError = {
-    success: false
-    message: string
-    code?: string
-}
-
-type ApiResponse<T> = ApiSuccess<T> | ApiError
 
 type RegionNodeData = {
     label: string
@@ -49,46 +41,56 @@ type RegionNode = FlowNode & {
     basePosition: { x: number; y: number }
 }
 
-type RegionLinkApi = {
-    fromRegionId: number
-    toRegionId: number
+type RegionGraphApiResponse = {
+    regions: RegionApiResponse[]
+    links: RegionLinkApi[]
 }
 
-async function fetchRegionLinks(): Promise<RegionLinkApi[]> {
-    const res = await fetch('/api/regions/links')
+type ApiSuccess<T> = {
+    success: true
+    data: T
+}
+
+type ApiError = {
+    success: false
+    message: string
+    code?: string
+}
+
+type ApiResponse<T> = ApiSuccess<T> | ApiError
+
+async function fetchRegionGraph(): Promise<RegionGraphApiResponse> {
+    const res = await fetch('/api/regions/graph')
     if (!res.ok) {
-        throw new Error(`Failed to fetch region links (HTTP ${res.status})`)
+        throw new Error(`Failed to fetch region graph (HTTP ${res.status})`)
     }
 
-    const body = (await res.json()) as ApiResponse<RegionLinkApi[]>
+    const body = (await res.json()) as ApiResponse<RegionGraphApiResponse>
+
     if (!body.success) {
-        throw new Error(body.message || 'Failed to load region links')
+        throw new Error(body.message || 'Failed to load region graph')
     }
 
     return body.data
 }
 
-function useRegionLinks() {
+function useRegionGraph() {
     return useQuery({
-        queryKey: ['region-links'],
-        queryFn: fetchRegionLinks,
+        queryKey: ['region-graph'],
+        queryFn: fetchRegionGraph,
         staleTime: 60_000,
     })
 }
 
-async function fetchRegions(): Promise<RegionApiResponse[]> {
-    const res = await fetch('/api/regions')
-    if (!res.ok) {
-        throw new Error(`Failed to fetch regions (HTTP ${res.status})`)
+function useRegionLinks() {
+    const query = useRegionGraph()
+
+    const links = query.data?.links ?? []
+
+    return {
+        ...query,
+        data: links,
     }
-
-    const body = (await res.json()) as ApiResponse<RegionApiResponse[]>
-
-    if (!body.success) {
-        throw new Error(body.message || 'Failed to load regions')
-    }
-
-    return body.data
 }
 
 const FACTION_COLORS: Record<string, string> = {
@@ -172,16 +174,12 @@ function relaxLayout(baseNodes: RegionNode[]): RegionNode[] {
 }
 
 function useRegionNodes() {
-    const query = useQuery({
-        queryKey: ['regions'],
-        queryFn: fetchRegions,
-        staleTime: 60_000,
-    })
+    const query = useRegionGraph()
 
     const nodes = useMemo<RegionNode[]>(() => {
-        if (!query.data || query.data.length === 0) return []
+        if (!query.data || query.data.regions.length === 0) return []
 
-        const projected = query.data.map((r) => ({
+        const projected = query.data.regions.map((r) => ({
             id: r.id,
             name: r.name,
             factionName: r.faction?.name ?? null,
@@ -255,6 +253,7 @@ function RegionNodeComponent({ data }: NodeProps) {
             <Handle
                 type="source"
                 position={Position.Top}
+                isConnectable={false}
                 style={{
                     opacity: 0,
                     width: 0,
@@ -262,11 +261,13 @@ function RegionNodeComponent({ data }: NodeProps) {
                     left: '50%',
                     top: '50%',
                     transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'none',
                 }}
             />
             <Handle
                 type="target"
                 position={Position.Top}
+                isConnectable={false}
                 style={{
                     opacity: 0,
                     width: 0,
@@ -274,6 +275,7 @@ function RegionNodeComponent({ data }: NodeProps) {
                     left: '50%',
                     top: '50%',
                     transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'none',
                 }}
             />
             <div className="max-w-[150px] truncate text-center font-semibold whitespace-nowrap">
@@ -290,7 +292,13 @@ const nodeTypes = {
     region: RegionNodeComponent,
 }
 
-export function RegionMap() {
+export function UniverseMap({
+    onRegionClick,
+    onRegionDoubleClick,
+}: {
+    onRegionClick?: (regionId: number) => void
+    onRegionDoubleClick?: (regionId: number) => void
+}) {
     const {
         nodes,
         isLoading: nodesLoading,
@@ -370,6 +378,12 @@ export function RegionMap() {
             nodesDraggable={false}
             nodesConnectable={false}
             elementsSelectable={true}
+            onNodeClick={(_, node) => {
+                onRegionClick?.(Number(node.id))
+            }}
+            onNodeDoubleClick={(_, node) => {
+                onRegionDoubleClick?.(Number(node.id))
+            }}
         >
             <Background />
         </ReactFlow>

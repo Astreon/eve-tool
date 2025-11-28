@@ -21,3 +21,34 @@ export interface RegionApiResponse {
     z: number
     faction: RegionFactionApi | null
 }
+
+export interface RegionGraphApiResponse {
+    regions: RegionApiResponse[]
+    links: RegionLinkApi[]
+}
+
+export type SystemBorderType = 'INTERNAL' | 'CONSTELLATION' | 'REGION'
+
+export interface RegionSystemNode {
+    id: number
+    name: string
+    x: number
+    y: number
+    z: number
+    constellationId: number
+    regionId: number
+    regionName: string
+    isForeign: boolean
+}
+
+export interface RegionSystemEdge {
+    fromSystemId: number
+    toSystemId: number
+    borderType: SystemBorderType
+}
+
+export interface RegionMapApiResponse {
+    region: RegionApiResponse
+    systems: RegionSystemNode[]
+    edges: RegionSystemEdge[]
+}

@@ -70,6 +70,39 @@ model RegionLink {
   @@schema("public")
 }
 
+model ConstellationLink {
+  id                  Int @id @default(autoincrement())
+  fromConstellationId Int
+  toConstellationId   Int
+
+  fromConstellation Constellation @relation("ConstellationLinkFrom", fields: [fromConstellationId], references: [id])
+  toConstellation   Constellation @relation("ConstellationLinkTo", fields: [toConstellationId], references: [id])
+
+  @@unique([fromConstellationId, toConstellationId])
+  @@schema("public")
+}
+
+enum SystemBorderType {
+  INTERNAL
+  CONSTELLATION
+  REGION
+
+  @@schema("public")
+}
+
+model SystemLink {
+  id           Int              @id @default(autoincrement())
+  fromSystemId Int
+  toSystemId   Int
+  borderType   SystemBorderType @default(INTERNAL)
+
+  fromSystem SolarSystem @relation("SystemLinkFrom", fields: [fromSystemId], references: [id])
+  toSystem   SolarSystem @relation("SystemLinkTo", fields: [toSystemId], references: [id])
+
+  @@unique([fromSystemId, toSystemId])
+  @@schema("public")
+}
+
 /**
  * SDE Export from CCP
  */
@@ -135,6 +168,9 @@ model SolarSystem {
   faction       Faction?      @relation(fields: [factionId], references: [id])
   constellation Constellation @relation(fields: [constellationId], references: [id])
 
+  linksFrom SystemLink[] @relation("SystemLinkFrom")
+  linksTo   SystemLink[] @relation("SystemLinkTo")
+
   @@schema("sde")
 }
 
@@ -150,6 +186,9 @@ model Constellation {
   solarSystems SolarSystem[]
   faction      Faction?      @relation(fields: [factionId], references: [id])
   region       Region        @relation(fields: [regionId], references: [id])
+
+  linksFrom ConstellationLink[] @relation("ConstellationLinkFrom")
+  linksTo   ConstellationLink[] @relation("ConstellationLinkTo")
 
   @@schema("sde")
 }

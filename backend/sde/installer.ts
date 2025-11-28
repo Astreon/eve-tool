@@ -4,6 +4,7 @@
  */
 
 import { importer } from './importer.js'
+import { calculator } from './calculator.js'
 import {
     IMPORT_TASKS,
     IMPORT_TASKS_BY_ID,
@@ -201,7 +202,7 @@ async function runInstall(options: GlobalOptions): Promise<void> {
 
     sdeLogger.info('🧮 Running ALL calculations (force)…')
     const calcStart = performance.now()
-    const calcStats = await runAllCalculations(dryRun)
+    const calcStats = await calculator(dryRun)
     const calcDuration = ((performance.now() - calcStart) / 1000).toFixed(1)
     sdeLogger.info(
         `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
@@ -376,76 +377,6 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
 }
 
 // --- CALCULATE – version-aware
-interface CalculationStats {
-    taskTotal: number
-    taskSuccess: number
-    errorCount: number
-}
-
-async function runAllCalculations(dryRun: boolean): Promise<CalculationStats> {
-    const stats: CalculationStats = {
-        taskTotal: CALCULATION_TASKS.length,
-        taskSuccess: 0,
-        errorCount: 0,
-    }
-
-    for (const task of CALCULATION_TASKS) {
-        sdeLogger.info(`🧮 Running calculation: ${task.label}…`)
-        const start = performance.now()
-
-        try {
-            await task.run(dryRun)
-            stats.taskSuccess++
-
-            const dur = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.info(`✅ Calculation ${task.label} finished in ${dur}s.`)
-        } catch (err) {
-            stats.errorCount++
-            const dur = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.error(
-                `❌ Calculation ${task.label} failed after ${dur}s:`,
-                (err as Error).message,
-            )
-        }
-    }
-
-    return stats
-}
-
-async function runCalculationsSelected(
-    ids: CalculationId[],
-    dryRun: boolean,
-): Promise<CalculationStats> {
-    const stats: CalculationStats = {
-        taskTotal: ids.length,
-        taskSuccess: 0,
-        errorCount: 0,
-    }
-
-    for (const id of ids) {
-        const task = CALCULATION_TASKS_BY_ID[id]
-        sdeLogger.info(`🧮 Running calculation: ${task.label}…`)
-        const start = performance.now()
-
-        try {
-            await task.run(dryRun)
-            stats.taskSuccess++
-
-            const dur = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.info(`✅ Calculation ${task.label} finished in ${dur}s.`)
-        } catch (err) {
-            stats.errorCount++
-            const dur = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.error(
-                `❌ Calculation ${task.label} failed after ${dur}s:`,
-                (err as Error).message,
-            )
-        }
-    }
-
-    return stats
-}
-
 async function runCalculateCommand(
     subcommand: string | undefined,
     options: GlobalOptions,
@@ -484,7 +415,7 @@ async function runCalculateCommand(
     }
 
     if (!subcommand) {
-        const stats = await runAllCalculations(dryRun)
+        const stats = await calculator(dryRun)
         sdeLogger.info(
             `📊 Calculations summary: ${stats.taskSuccess}/${stats.taskTotal} tasks (${stats.errorCount} errors)`,
         )
@@ -496,7 +427,7 @@ async function runCalculateCommand(
             return
         }
 
-        const stats = await runCalculationsSelected([id], dryRun)
+        const stats = await calculator(dryRun, [id])
         sdeLogger.info(
             `📊 Calculations summary: ${stats.taskSuccess}/${stats.taskTotal} tasks (${stats.errorCount} errors)`,
         )
@@ -566,7 +497,7 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
 
     // --- Calculations
     const calcStart = performance.now()
-    const calcStats = await runAllCalculations(dryRun)
+    const calcStats = await calculator(dryRun)
     const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
     sdeLogger.info(
         `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,

@@ -3,10 +3,16 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { recomputeRegionLinks } from '../calculators/computeRegionLinks.js'
-import { sdeLogger } from '../lib/logger'
+import {
+    computeRegionLinks,
+    computeConstellationLinks,
+    computeSystemLinks,
+} from '../calculators'
 
-export type CalculationId = 'region-links'
+export type CalculationId =
+    | 'region-links'
+    | 'constellation-links'
+    | 'system-links'
 
 export interface CalculationTask {
     id: CalculationId
@@ -18,14 +24,17 @@ export const CALCULATION_TASKS: CalculationTask[] = [
     {
         id: 'region-links',
         label: 'Region Links',
-        async run(dryRun?: boolean) {
-            if (dryRun) {
-                sdeLogger.info('🧪 Dry-run: would recompute region links.')
-                return
-            }
-
-            await recomputeRegionLinks()
-        },
+        run: computeRegionLinks,
+    },
+    {
+        id: 'constellation-links',
+        label: 'Constellation Links',
+        run: computeConstellationLinks,
+    },
+    {
+        id: 'system-links',
+        label: 'System Links',
+        run: computeSystemLinks,
     },
 ]
 
