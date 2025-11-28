@@ -98,7 +98,9 @@ router.get('/callback', async (req, res, next) => {
                     .map((s) => s.trim())
                     .filter(Boolean)
             }
-        } catch {}
+        } catch {
+            // ignore, just use the default scopes
+        }
 
         const tokens = await exchangeCodeForToken(code)
         const verify = await verifyToken(tokens.access_token)
