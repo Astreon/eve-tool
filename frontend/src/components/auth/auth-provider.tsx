@@ -35,12 +35,16 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const STORAGE_KEY = 'eve-tool.sso'
-const REFRESH_SKEW_MS = 60_000
+const REFRESH_SKEW_MS = 60_000 // 1 minute
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-    const hydrated = useHydrated()
+type AuthProviderProps = {
+    children: ReactNode
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
     const [session, setSession] = useState<AuthSession | null>(null)
     const [isReady, setIsReady] = useState(false)
+    const hydrated = useHydrated()
 
     useEffect(() => {
         if (!hydrated || typeof window === 'undefined') return
@@ -77,14 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const code = url.searchParams.get('code')
         const state = url.searchParams.get('state')
-        if (!code || !state) return
+
+        if (!code || !state) {
+            return
+        }
 
         const run = async () => {
             try {
                 const resp = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(
-                        code,
-                    )}&state=${encodeURIComponent(state)}`,
+                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
                 )
 
                 if (!resp.ok) {
@@ -107,17 +112,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
 
                 if (!data.success) {
-                    console.error('Login callback reported failure', data)
+                    console.error('Login callback returned error', data)
                     return
                 }
 
                 setSession({
                     characterId: data.character.id,
                     characterName: data.character.name,
-                    scopes: data.character.scopes ?? [],
+                    scopes: data.character.scopes,
                     accessToken: data.tokens.access_token,
                     refreshToken: data.tokens.refresh_token,
-                    expiresAt: Date.now() + data.tokens.expires_in * 1000,
+                    expiresAt: Date.now() + (data.tokens.expires_in ?? 1200) * 1000,
                 })
             } catch (err) {
                 console.error('Failed to complete login callback', err)
@@ -216,7 +221,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isReady,
             login: () => {
                 if (typeof window === 'undefined') return
-                void fetch('/auth/login')
+
+                let loginUrl = '/auth/login'
+
+                try {
+                    const raw = window.localStorage.getItem('eve-tool.scopes')
+                    if (raw) {
+                        const parsed = JSON.parse(raw) as unknown
+                        if (Array.isArray(parsed)) {
+                            const scopes = parsed
+                                .map((s) => (typeof s === 'string' ? s.trim() : ''))
+                                .filter((s) => s.length > 0)
+                            if (scopes.length > 0) {
+                                const scopeString = scopes.join(',')
+                                loginUrl = `/auth/login?scopes=${encodeURIComponent(scopeString)}`
+                            }
+                        }
+                    }
+                } catch {
+                    // ignore and fall back to default loginUrl
+                }
+
+                void fetch(loginUrl)
                     .then(async (res) => {
                         if (!res.ok) throw new Error(`HTTP ${res.status}`)
                         const body = (await res.json()) as {

@@ -14,12 +14,11 @@ type CallbackResponse = {
         access_token: string
         refresh_token?: string
         expires_in: number
-        token_type: 'Bearer'
     }
     character?: {
         id: number
         name: string
-        scopes: string[]
+        scopes?: string[]
     }
 }
 
@@ -32,10 +31,8 @@ function CallbackPage() {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        async function run() {
+        const run = async () => {
             try {
-                if (typeof window === 'undefined') return
-
                 const url = new URL(window.location.href)
                 const code = url.searchParams.get('code')
                 const state = url.searchParams.get('state')
@@ -46,7 +43,9 @@ function CallbackPage() {
                 }
 
                 const res = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
+                    `/auth/callback?code=${encodeURIComponent(
+                        code,
+                    )}&state=${encodeURIComponent(state)}`,
                 )
 
                 const body = (await res.json()) as CallbackResponse
@@ -60,6 +59,7 @@ function CallbackPage() {
 
                 setSession({
                     accessToken: body.tokens.access_token,
+                    refreshToken: body.tokens.refresh_token ?? undefined,
                     characterId: body.character?.id ?? 0,
                     characterName: body.character?.name ?? 'Unknown',
                     scopes,
@@ -81,7 +81,7 @@ function CallbackPage() {
             <div className="flex min-h-[50vh] items-center justify-center">
                 <div className="space-y-2 text-center">
                     <h1 className="text-xl font-semibold">Login failed</h1>
-                    <p className="text-muted-foreground max-w-md text-sm">{error}</p>
+                    <p className="text-muted-foreground text-sm">{error}</p>
                 </div>
             </div>
         )
