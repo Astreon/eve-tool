@@ -1,11 +1,20 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "sde";
+
 -- CreateTable
-CREATE TABLE "Character" (
+CREATE TABLE "public"."Character" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
+    "birthday" TIMESTAMP(3) NOT NULL,
     "bloodlineId" INTEGER NOT NULL,
     "corporationId" INTEGER NOT NULL,
+    "allianceId" INTEGER,
     "raceId" INTEGER NOT NULL,
+    "factionId" INTEGER,
     "securityStatus" DOUBLE PRECISION,
+    "gender" TEXT NOT NULL,
+    "title" TEXT,
+    "description" TEXT,
     "etag" TEXT,
     "lastModified" TIMESTAMP(3),
     "expiresAt" TIMESTAMP(3),
@@ -15,7 +24,7 @@ CREATE TABLE "Character" (
 );
 
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "public"."User" (
     "id" SERIAL NOT NULL,
     "characterId" INTEGER NOT NULL,
     "characterName" TEXT NOT NULL,
@@ -30,7 +39,7 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "RegionLink" (
+CREATE TABLE "public"."RegionLink" (
     "id" SERIAL NOT NULL,
     "fromRegionId" INTEGER NOT NULL,
     "toRegionId" INTEGER NOT NULL,
@@ -39,7 +48,7 @@ CREATE TABLE "RegionLink" (
 );
 
 -- CreateTable
-CREATE TABLE "Version" (
+CREATE TABLE "sde"."Version" (
     "key" TEXT NOT NULL,
     "buildNumber" INTEGER NOT NULL,
     "releaseDate" TIMESTAMP(3) NOT NULL,
@@ -48,7 +57,7 @@ CREATE TABLE "Version" (
 );
 
 -- CreateTable
-CREATE TABLE "Bloodline" (
+CREATE TABLE "sde"."Bloodline" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -57,7 +66,7 @@ CREATE TABLE "Bloodline" (
 );
 
 -- CreateTable
-CREATE TABLE "Race" (
+CREATE TABLE "sde"."Race" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -66,7 +75,7 @@ CREATE TABLE "Race" (
 );
 
 -- CreateTable
-CREATE TABLE "Faction" (
+CREATE TABLE "sde"."Faction" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -77,7 +86,7 @@ CREATE TABLE "Faction" (
 );
 
 -- CreateTable
-CREATE TABLE "SolarSystem" (
+CREATE TABLE "sde"."SolarSystem" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "securityStatus" DOUBLE PRECISION NOT NULL,
@@ -93,7 +102,7 @@ CREATE TABLE "SolarSystem" (
 );
 
 -- CreateTable
-CREATE TABLE "Constellation" (
+CREATE TABLE "sde"."Constellation" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "factionId" INTEGER,
@@ -106,7 +115,7 @@ CREATE TABLE "Constellation" (
 );
 
 -- CreateTable
-CREATE TABLE "Region" (
+CREATE TABLE "sde"."Region" (
     "id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -119,7 +128,7 @@ CREATE TABLE "Region" (
 );
 
 -- CreateTable
-CREATE TABLE "Stargate" (
+CREATE TABLE "sde"."Stargate" (
     "id" INTEGER NOT NULL,
     "solarSystemId" INTEGER NOT NULL,
     "destSolarSystemId" INTEGER NOT NULL,
@@ -133,7 +142,7 @@ CREATE TABLE "Stargate" (
 );
 
 -- CreateTable
-CREATE TABLE "Planet" (
+CREATE TABLE "sde"."Planet" (
     "id" INTEGER NOT NULL,
     "solarSystemId" INTEGER NOT NULL,
     "typeId" INTEGER NOT NULL,
@@ -161,7 +170,7 @@ CREATE TABLE "Planet" (
 );
 
 -- CreateTable
-CREATE TABLE "Moon" (
+CREATE TABLE "sde"."Moon" (
     "id" INTEGER NOT NULL,
     "solarSystemId" INTEGER NOT NULL,
     "typeId" INTEGER NOT NULL,
@@ -190,76 +199,79 @@ CREATE TABLE "Moon" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Character_name_key" ON "Character"("name");
+CREATE UNIQUE INDEX "Character_name_key" ON "public"."Character"("name");
 
 -- CreateIndex
-CREATE INDEX "Character_expiresAt_idx" ON "Character"("expiresAt");
+CREATE INDEX "Character_expiresAt_idx" ON "public"."Character"("expiresAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_characterId_key" ON "User"("characterId");
+CREATE UNIQUE INDEX "User_characterId_key" ON "public"."User"("characterId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "RegionLink_fromRegionId_toRegionId_key" ON "RegionLink"("fromRegionId", "toRegionId");
+CREATE UNIQUE INDEX "RegionLink_fromRegionId_toRegionId_key" ON "public"."RegionLink"("fromRegionId", "toRegionId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Version_buildNumber_key" ON "Version"("buildNumber");
+CREATE UNIQUE INDEX "Version_buildNumber_key" ON "sde"."Version"("buildNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Bloodline_name_key" ON "Bloodline"("name");
+CREATE UNIQUE INDEX "Bloodline_name_key" ON "sde"."Bloodline"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Race_name_key" ON "Race"("name");
+CREATE UNIQUE INDEX "Race_name_key" ON "sde"."Race"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Faction_name_key" ON "Faction"("name");
+CREATE UNIQUE INDEX "Faction_name_key" ON "sde"."Faction"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SolarSystem_name_key" ON "SolarSystem"("name");
+CREATE UNIQUE INDEX "SolarSystem_name_key" ON "sde"."SolarSystem"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Constellation_name_key" ON "Constellation"("name");
+CREATE UNIQUE INDEX "Constellation_name_key" ON "sde"."Constellation"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Region_name_key" ON "Region"("name");
+CREATE UNIQUE INDEX "Region_name_key" ON "sde"."Region"("name");
 
 -- AddForeignKey
-ALTER TABLE "Character" ADD CONSTRAINT "Character_bloodlineId_fkey" FOREIGN KEY ("bloodlineId") REFERENCES "Bloodline"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Character" ADD CONSTRAINT "Character_bloodlineId_fkey" FOREIGN KEY ("bloodlineId") REFERENCES "sde"."Bloodline"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Character" ADD CONSTRAINT "Character_raceId_fkey" FOREIGN KEY ("raceId") REFERENCES "Race"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Character" ADD CONSTRAINT "Character_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "sde"."Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Character" ADD CONSTRAINT "Character_raceId_fkey" FOREIGN KEY ("raceId") REFERENCES "sde"."Race"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RegionLink" ADD CONSTRAINT "RegionLink_fromRegionId_fkey" FOREIGN KEY ("fromRegionId") REFERENCES "Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."User" ADD CONSTRAINT "User_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "public"."Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RegionLink" ADD CONSTRAINT "RegionLink_toRegionId_fkey" FOREIGN KEY ("toRegionId") REFERENCES "Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."RegionLink" ADD CONSTRAINT "RegionLink_fromRegionId_fkey" FOREIGN KEY ("fromRegionId") REFERENCES "sde"."Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SolarSystem" ADD CONSTRAINT "SolarSystem_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."RegionLink" ADD CONSTRAINT "RegionLink_toRegionId_fkey" FOREIGN KEY ("toRegionId") REFERENCES "sde"."Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SolarSystem" ADD CONSTRAINT "SolarSystem_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "sde"."SolarSystem" ADD CONSTRAINT "SolarSystem_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "sde"."Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SolarSystem" ADD CONSTRAINT "SolarSystem_constellationId_fkey" FOREIGN KEY ("constellationId") REFERENCES "Constellation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sde"."SolarSystem" ADD CONSTRAINT "SolarSystem_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "sde"."Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Constellation" ADD CONSTRAINT "Constellation_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "sde"."SolarSystem" ADD CONSTRAINT "SolarSystem_constellationId_fkey" FOREIGN KEY ("constellationId") REFERENCES "sde"."Constellation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Constellation" ADD CONSTRAINT "Constellation_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sde"."Constellation" ADD CONSTRAINT "Constellation_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "sde"."Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Region" ADD CONSTRAINT "Region_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "sde"."Constellation" ADD CONSTRAINT "Constellation_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "sde"."Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Stargate" ADD CONSTRAINT "Stargate_solarSystemId_fkey" FOREIGN KEY ("solarSystemId") REFERENCES "SolarSystem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sde"."Region" ADD CONSTRAINT "Region_factionId_fkey" FOREIGN KEY ("factionId") REFERENCES "sde"."Faction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Planet" ADD CONSTRAINT "Planet_solarSystemId_fkey" FOREIGN KEY ("solarSystemId") REFERENCES "SolarSystem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sde"."Stargate" ADD CONSTRAINT "Stargate_solarSystemId_fkey" FOREIGN KEY ("solarSystemId") REFERENCES "sde"."SolarSystem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Moon" ADD CONSTRAINT "Moon_solarSystemId_fkey" FOREIGN KEY ("solarSystemId") REFERENCES "SolarSystem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sde"."Planet" ADD CONSTRAINT "Planet_solarSystemId_fkey" FOREIGN KEY ("solarSystemId") REFERENCES "sde"."SolarSystem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sde"."Moon" ADD CONSTRAINT "Moon_solarSystemId_fkey" FOREIGN KEY ("solarSystemId") REFERENCES "sde"."SolarSystem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
