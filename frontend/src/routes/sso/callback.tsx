@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/auth/auth-provider'
 
@@ -19,6 +19,7 @@ type CallbackResponse = {
         id: number
         name: string
         scopes?: string[]
+        onboardingCompleted?: boolean
     }
 }
 
@@ -29,6 +30,7 @@ export const Route = createFileRoute('/sso/callback')({
 function CallbackPage() {
     const { setSession } = useAuth()
     const [error, setError] = useState<string | null>(null)
+    const router = useRouter()
 
     useEffect(() => {
         const run = async () => {
@@ -50,12 +52,14 @@ function CallbackPage() {
 
                 const body = (await res.json()) as CallbackResponse
 
-                if (!res.ok || !body.success || !body.tokens) {
+                if (!res.ok || !body.success || !body.tokens || !body.character) {
                     throw new Error(body.message ?? `Callback failed (HTTP ${res.status})`)
                 }
 
                 const expiresAt = Date.now() + body.tokens.expires_in * 1000
-                const scopes = body.character?.scopes ?? []
+                const scopes = body.character.scopes ?? []
+
+                const onboardingCompleted = body.character.onboardingCompleted ?? false
 
                 setSession({
                     accessToken: body.tokens.access_token,
@@ -64,9 +68,18 @@ function CallbackPage() {
                     characterName: body.character?.name ?? 'Unknown',
                     scopes,
                     expiresAt,
+                    onboardingCompleted,
                 })
 
-                window.history.replaceState({}, '', '/')
+                url.searchParams.delete('code')
+                url.searchParams.delete('state')
+                window.history.replaceState({}, '', url.toString())
+
+                if (!onboardingCompleted) {
+                    router.navigate({ to: '/onboarding' })
+                } else {
+                    router.navigate({ to: '/' })
+                }
             } catch (e: any) {
                 console.error(e)
                 setError(e?.message ?? 'Unknown error')
@@ -74,7 +87,7 @@ function CallbackPage() {
         }
 
         void run()
-    }, [setSession])
+    }, [setSession, router])
 
     if (error) {
         return (

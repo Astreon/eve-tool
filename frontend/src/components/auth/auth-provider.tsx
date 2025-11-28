@@ -21,6 +21,7 @@ export type AuthSession = {
     accessToken: string
     refreshToken?: string
     expiresAt: number
+    onboardingCompleted: boolean
 }
 
 type AuthContextValue = {
@@ -108,6 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                         id: number
                         name: string
                         scopes: string[]
+                        onboardingCompleted?: boolean
                     }
                 }
 
@@ -123,6 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     accessToken: data.tokens.access_token,
                     refreshToken: data.tokens.refresh_token,
                     expiresAt: Date.now() + (data.tokens.expires_in ?? 1200) * 1000,
+                    onboardingCompleted: data.character.onboardingCompleted ?? false,
                 })
             } catch (err) {
                 console.error('Failed to complete login callback', err)
@@ -171,6 +174,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     id: number
                     name: string
                     scopes?: string[]
+                    onboardingCompleted?: boolean
                 }
             }
 
@@ -187,6 +191,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 accessToken: data.tokens.access_token,
                 refreshToken: data.tokens.refresh_token ?? prev?.refreshToken,
                 expiresAt: Date.now() + data.tokens.expires_in * 1000,
+                onboardingCompleted:
+                    data.character.onboardingCompleted ?? prev?.onboardingCompleted ?? false,
             }))
         } catch (e) {
             console.error('Refresh error', e)

@@ -34,14 +34,15 @@ model Character {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  characterId   Int      @unique
-  characterName String
-  scopes        String   @db.Text
-  refreshToken  String?  @db.Text
-  lastLoginAt   DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  characterId         Int      @unique
+  characterName       String
+  scopes              String   @db.Text
+  refreshToken        String?  @db.Text
+  lastLoginAt         DateTime
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  onboardingCompleted Boolean  @default(false)
 
   character Character @relation(fields: [characterId], references: [id])
 }

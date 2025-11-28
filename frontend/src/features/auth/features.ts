@@ -35,7 +35,7 @@ export const FEATURES: Feature[] = [
     {
         id: 'location',
         name: 'Live Location & Route',
-        description: 'Current position of ship type.',
+        description: "Allows reading of a character's active ship location and class.",
         scopes: ['esi-location.read_location.v1', 'esi-location.read_ship_type.v1'],
         icon: '🛰️',
         badge: 'Optional',

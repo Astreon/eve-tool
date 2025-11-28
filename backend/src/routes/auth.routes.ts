@@ -206,13 +206,19 @@ router.get('/callback', async (req, res, next) => {
 
         const nextScopesStr = nextScopesArray.join(' ')
 
-        await prisma.user.upsert({
+        const onboardingCompleted =
+            requestedScopes && requestedScopes.length > 0
+                ? true
+                : (existingUser?.onboardingCompleted ?? false)
+
+        const user = await prisma.user.upsert({
             where: { characterId },
             update: {
                 characterName,
                 scopes: nextScopesStr,
                 refreshToken: tokens.refresh_token ?? null,
                 lastLoginAt: new Date(),
+                onboardingCompleted,
             },
             create: {
                 characterId,
@@ -220,6 +226,7 @@ router.get('/callback', async (req, res, next) => {
                 scopes: nextScopesStr,
                 refreshToken: tokens.refresh_token ?? null,
                 lastLoginAt: new Date(),
+                onboardingCompleted,
             },
         })
 
@@ -230,6 +237,7 @@ router.get('/callback', async (req, res, next) => {
                 id: characterId,
                 name: characterName,
                 scopes: nextScopesArray,
+                onboardingCompleted: user.onboardingCompleted,
             },
         })
     } catch (e) {
@@ -286,6 +294,7 @@ router.post('/refresh', async (req, res, next) => {
                 id: characterId,
                 name: characterName,
                 scopes: user.scopes.split(' ').filter(Boolean),
+                onboardingCompleted: user.onboardingCompleted,
             },
         })
     } catch (e) {
