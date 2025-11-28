@@ -25,6 +25,12 @@ import type {
 const KNOWN_SPACE_MIN_ID = 10000000
 const KNOWN_SPACE_MAX_ID = 10999999
 
+function getRegionsCacheKey(knownSpaceOnly: boolean) {
+    const v = config.redis.cacheVersion
+    const scope = knownSpaceOnly ? 'known' : 'all'
+    return `regions:${v}:list:${scope}`
+}
+
 function getRegionGraphCacheKey(knownSpaceOnly: boolean) {
     const v = config.redis.cacheVersion
     const scope = knownSpaceOnly ? 'known' : 'all'
@@ -278,63 +284,6 @@ export async function getRegionMap(
     }
 }
 
-function getRegionLinksCacheKey() {
-    const v = config.redis.cacheVersion
-    return `regions:${v}:links`
-}
-
-export async function getRegionLinks(
-    _req: Request,
-    res: Response<ApiResponse<RegionLinkApi[]>>,
-    next: NextFunction,
-) {
-    try {
-        const cacheKey = getRegionLinksCacheKey()
-        const ttlSec = CACHE_THRESHOLDS.REGIONS
-
-        const cached = await redis.get(cacheKey)
-        if (cached) {
-            const data = JSON.parse(cached) as RegionLinkApi[]
-            return res.json({
-                success: true,
-                data,
-                meta: {
-                    source: 'redis',
-                    ttl: ttlSec,
-                    timestamp: new Date().toISOString(),
-                },
-            })
-        }
-
-        const rows = await prisma.regionLink.findMany({
-            select: {
-                fromRegionId: true,
-                toRegionId: true,
-            },
-        })
-
-        const data: RegionLinkApi[] = rows.map((r) => ({
-            fromRegionId: r.fromRegionId,
-            toRegionId: r.toRegionId,
-        }))
-
-        await redis.set(cacheKey, JSON.stringify(data), 'EX', ttlSec)
-
-        return res.json({
-            success: true,
-            data,
-            meta: {
-                source: 'db',
-                ttl: ttlSec,
-                timestamp: new Date().toISOString(),
-            },
-        })
-    } catch (err) {
-        next(err)
-        return
-    }
-}
-
 export async function getRegions(
     req: Request,
     res: Response<ApiResponse<RegionApiResponse[]>>,
@@ -346,7 +295,7 @@ export async function getRegions(
             req.query.knownSpaceOnly !== 'false' &&
             req.query.knownSpaceOnly !== '0'
 
-        const cacheKey = getRegionGraphCacheKey(knownSpaceOnly)
+        const cacheKey = getRegionsCacheKey(knownSpaceOnly)
 
         // 1) Redis Fast-Path
         const cachedStr = await redis.get(cacheKey)

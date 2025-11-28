@@ -6,7 +6,6 @@
 import { Router } from 'express'
 import {
     getRegions,
-    getRegionLinks,
     getRegionGraph,
     getRegionMap,
 } from '../controllers/region.controller.js'
@@ -14,9 +13,8 @@ import {
 const router = Router()
 
 router.get('/', getRegions) // ?knownSpaceOnly=true
-router.get('/links', getRegionLinks)
 
-router.get('/graph', getRegionGraph)
+router.get('/graph', getRegionGraph) // ?knownSpaceOnly=true
 router.get('/:regionId/map', getRegionMap)
 
 export default router
