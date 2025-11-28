@@ -253,6 +253,7 @@ function RegionNodeComponent({ data }: NodeProps) {
             <Handle
                 type="source"
                 position={Position.Top}
+                isConnectable={false}
                 style={{
                     opacity: 0,
                     width: 0,
@@ -260,11 +261,13 @@ function RegionNodeComponent({ data }: NodeProps) {
                     left: '50%',
                     top: '50%',
                     transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'none',
                 }}
             />
             <Handle
                 type="target"
                 position={Position.Top}
+                isConnectable={false}
                 style={{
                     opacity: 0,
                     width: 0,
@@ -272,6 +275,7 @@ function RegionNodeComponent({ data }: NodeProps) {
                     left: '50%',
                     top: '50%',
                     transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'none',
                 }}
             />
             <div className="max-w-[150px] truncate text-center font-semibold whitespace-nowrap">
