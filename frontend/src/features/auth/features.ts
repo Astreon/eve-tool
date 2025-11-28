@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-export type FeatureId = 'search' | 'structureSearch' | 'location'
+export type FeatureId = 'search' | 'structureSearch' | 'location' | 'mail'
 
 export type Feature = {
     id: FeatureId
@@ -38,6 +38,14 @@ export const FEATURES: Feature[] = [
         description: "Allows reading of a character's active ship location and class.",
         scopes: ['esi-location.read_location.v1', 'esi-location.read_ship_type.v1'],
         icon: '🛰️',
+        badge: 'Optional',
+    },
+    {
+        id: 'mail',
+        name: 'Mail Client',
+        description: 'To be defined',
+        scopes: ['esi-mail.read_mail.v1', 'esi-mail.send_mail.v1', 'esi-mail.organize_mail.v1'],
+        icon: '📨',
         badge: 'Optional',
     },
 ]

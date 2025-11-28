@@ -17,10 +17,16 @@ datasource db {
 model Character {
   id             Int       @id
   name           String    @unique
+  birthday       DateTime
   bloodlineId    Int
   corporationId  Int
+  allianceId     Int?
   raceId         Int
+  factionId      Int?
   securityStatus Float?
+  gender         String
+  title          String?
+  description    String?   @db.Text
   etag           String?   @db.Text
   lastModified   DateTime?
   expiresAt      DateTime?
@@ -28,6 +34,7 @@ model Character {
 
   User      User?
   bloodline Bloodline @relation(fields: [bloodlineId], references: [id])
+  faction   Faction?  @relation(fields: [factionId], references: [id])
   race      Race      @relation(fields: [raceId], references: [id])
 
   @@index([expiresAt])
@@ -93,6 +100,7 @@ model Faction {
   regions        Region[]
   constellations Constellation[]
   solarSystems   SolarSystem[]
+  Character      Character[]
 }
 
 model SolarSystem {

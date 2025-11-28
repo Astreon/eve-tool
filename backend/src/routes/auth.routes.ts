@@ -172,10 +172,16 @@ router.get('/callback', async (req, res, next) => {
                 create: {
                     id: characterId,
                     name: payload.name,
-                    corporationId: payload.corporation_id,
-                    raceId: payload.race_id,
+                    birthday: payload.birthday,
                     bloodlineId: payload.bloodline_id,
+                    corporationId: payload.corporation_id,
+                    allianceId: payload.alliance_id ?? null,
+                    raceId: payload.race_id,
+                    factionId: payload.faction_id ?? null,
                     securityStatus: payload.security_status ?? null,
+                    gender: payload.gender,
+                    title: payload.title ?? null,
+                    description: payload.description ?? null,
                     etag: esi.etag ?? null,
                     lastModified: esi.lastModified
                         ? new Date(esi.lastModified)
@@ -184,10 +190,16 @@ router.get('/callback', async (req, res, next) => {
                 },
                 update: {
                     name: payload.name,
-                    corporationId: payload.corporation_id,
-                    raceId: payload.race_id,
+                    birthday: payload.birthday,
                     bloodlineId: payload.bloodline_id,
+                    corporationId: payload.corporation_id,
+                    allianceId: payload.alliance_id ?? null,
+                    raceId: payload.race_id,
+                    factionId: payload.faction_id ?? null,
                     securityStatus: payload.security_status ?? null,
+                    gender: payload.gender,
+                    title: payload.title ?? null,
+                    description: payload.description ?? null,
                     etag: esi.etag ?? null,
                     lastModified: esi.lastModified
                         ? new Date(esi.lastModified)
