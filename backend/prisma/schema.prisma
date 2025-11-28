@@ -82,10 +82,19 @@ model ConstellationLink {
   @@schema("public")
 }
 
+enum SystemBorderType {
+  INTERNAL
+  CONSTELLATION
+  REGION
+
+  @@schema("public")
+}
+
 model SystemLink {
-  id           Int @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   fromSystemId Int
   toSystemId   Int
+  borderType   SystemBorderType @default(INTERNAL)
 
   fromSystem SolarSystem @relation("SystemLinkFrom", fields: [fromSystemId], references: [id])
   toSystem   SolarSystem @relation("SystemLinkTo", fields: [toSystemId], references: [id])
