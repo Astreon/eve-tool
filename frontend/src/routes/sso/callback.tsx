@@ -21,6 +21,7 @@ type CallbackResponse = {
         scopes?: string[]
         onboardingCompleted?: boolean
     }
+    redirectTo?: string | null
 }
 
 export const Route = createFileRoute('/sso/callback')({
@@ -60,6 +61,7 @@ function CallbackPage() {
                 const scopes = body.character.scopes ?? []
 
                 const onboardingCompleted = body.character.onboardingCompleted ?? false
+                const redirectTo = body.redirectTo ?? null
 
                 setSession({
                     accessToken: body.tokens.access_token,
@@ -77,6 +79,8 @@ function CallbackPage() {
 
                 if (!onboardingCompleted) {
                     router.navigate({ to: '/onboarding' })
+                } else if (redirectTo) {
+                    router.navigate({ to: redirectTo as any })
                 } else {
                     router.navigate({ to: '/' })
                 }

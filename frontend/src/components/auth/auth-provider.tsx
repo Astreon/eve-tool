@@ -228,7 +228,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             login: () => {
                 if (typeof window === 'undefined') return
 
-                const loginUrl = '/auth/login'
+                const url = new URL(window.location.href)
+                const redirect = url.pathname + url.search + url.hash
+
+                const loginUrl = `/auth/login?redirect=${encodeURIComponent(redirect)}`
 
                 void fetch(loginUrl)
                     .then(async (res) => {
@@ -247,6 +250,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                         console.error('Failed to start login', err)
                     })
             },
+
             logout: () => {
                 setSession(null)
             },

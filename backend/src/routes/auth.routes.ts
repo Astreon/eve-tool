@@ -30,6 +30,11 @@ router.get('/login', async (req, res, next) => {
         const rawScopes =
             typeof req.query.scopes === 'string' ? req.query.scopes : undefined
 
+        const rawRedirect =
+            typeof req.query.redirect === 'string'
+                ? req.query.redirect
+                : undefined
+
         if (rawScopes && rawScopes.trim() !== '') {
             const requested = rawScopes
                 .split(/[,\s]+/)
@@ -49,11 +54,12 @@ router.get('/login', async (req, res, next) => {
 
         const state = crypto.randomBytes(16).toString('hex')
 
-        const statePayload = JSON.stringify(
-            requestedScopesForState && requestedScopesForState.length > 0
+        const statePayload = JSON.stringify({
+            ...(requestedScopesForState && requestedScopesForState.length > 0
                 ? { scopes: requestedScopesForState }
-                : {},
-        )
+                : {}),
+            ...(rawRedirect ? { redirect: rawRedirect } : {}),
+        })
 
         await redis.set(stateKey(state), statePayload, 'EX', STATE_TTL_SECONDS)
 
@@ -90,13 +96,23 @@ router.get('/callback', async (req, res, next) => {
         await redis.del(key)
 
         let requestedScopes: string[] | null = null
+        let redirect: string | null = null
+
         try {
-            const parsed = JSON.parse(rawState) as { scopes?: unknown }
+            const parsed = JSON.parse(rawState) as {
+                scopes?: unknown
+                redirect?: unknown
+            }
+
             if (Array.isArray(parsed.scopes)) {
                 requestedScopes = parsed.scopes
                     .filter((s): s is string => typeof s === 'string')
                     .map((s) => s.trim())
                     .filter(Boolean)
+            }
+
+            if (typeof parsed.redirect === 'string') {
+                redirect = parsed.redirect
             }
         } catch {
             // ignore, just use the default scopes
@@ -239,6 +255,7 @@ router.get('/callback', async (req, res, next) => {
                 scopes: nextScopesArray,
                 onboardingCompleted: user.onboardingCompleted,
             },
+            redirectTo: redirect ?? null,
         })
     } catch (e) {
         next(e)

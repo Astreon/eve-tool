@@ -84,7 +84,11 @@ function OnboardingPage() {
 
     const handleLogin = async () => {
         try {
-            const resp = await fetch(`/auth/login?scopes=${encodeURIComponent(scopeString)}`)
+            const redirect = '/'
+
+            const resp = await fetch(
+                `/auth/login?scopes=${encodeURIComponent(scopeString)}&redirect=${encodeURIComponent(redirect)}`,
+            )
 
             if (!resp.ok) {
                 console.error('Failed to start login', await resp.text())
