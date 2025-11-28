@@ -6,17 +6,41 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { prisma } from '../../src/lib/prisma.js'
+import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
 import { Prisma } from '../../src/generated/client.js'
+import { sdeLogger } from '../lib/logger'
+import { createProgressBar } from '../lib/progress'
 
-export const importRaces = async (dryRun = false): Promise<ImportResult> => {
+async function countLines(filePath: string): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+        let count = 0
+        const stream = fs.createReadStream(filePath)
+        const rl = readline.createInterface({
+            input: stream,
+            crlfDelay: Infinity,
+        })
+
+        rl.on('line', () => {
+            count++
+        })
+        rl.on('close', () => resolve(count))
+        rl.on('error', (err) => reject(err))
+        stream.on('error', (err) => reject(err))
+    })
+}
+
+export const importRaces = async (
+    dryRun = false,
+    label: string,
+): Promise<ImportResult> => {
     const filePath = path.join(SDE_DIR, 'races.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
 
+    const totalLines = await countLines(filePath)
     const rl = readline.createInterface({
         input: fs.createReadStream(filePath),
         crlfDelay: Infinity,
@@ -27,8 +51,18 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
     let total = 0
     let errors = 0
 
+    const progress = createProgressBar({
+        label,
+        total: totalLines,
+        redrawEvery: 1_000,
+    })
+
     for await (const line of rl) {
         total++
+        progress.tick()
+
+        if (!line.trim()) continue
+
         try {
             const json = JSON.parse(line)
             const data: Prisma.RaceCreateManyInput = {
@@ -42,7 +76,7 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.race.upsert({
+                            sdePrisma.race.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -55,7 +89,7 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
             }
         } catch (err) {
             errors++
-            console.log(
+            sdeLogger.error(
                 `❌ Parse/DB error @line ${total}:`,
                 (err as Error).message,
             )
@@ -66,7 +100,7 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.race.upsert({
+                    sdePrisma.race.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,
@@ -76,6 +110,8 @@ export const importRaces = async (dryRun = false): Promise<ImportResult> => {
         }
         success += batch.length
     }
+
+    progress.done({ clear: true })
 
     return { success, total, errors }
 }

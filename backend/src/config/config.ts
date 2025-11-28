@@ -26,7 +26,7 @@ const Validator = z.object({
     ESI_BASE_URL: z
         .url('https://esi.evetech.net')
         .default('https://esi.evetech.net'),
-    ESI_COMPATIBILITY_DATE: z.string().default('2025-09-30'),
+    ESI_COMPATIBILITY_DATE: z.string().default('2025-11-06'),
     ESI_ACCEPT_LANGUAGE: z
         .string()
         .regex(/^[A-Za-z]{2}(-[A-Za-z]{2})?$/, 'invalid IETF language tag')

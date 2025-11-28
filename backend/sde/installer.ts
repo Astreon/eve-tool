@@ -23,8 +23,9 @@ import {
     type SdeVersion,
 } from './version.js'
 import { invalidateSdeCaches } from './cache.js'
-import { prisma } from '../src/lib/prisma.js'
-import { redis } from '../src/lib/redis.js'
+import { sdePrisma } from './lib/prisma.js'
+import { sdeRedis } from './lib/redis.js'
+import { sdeLogger } from './lib/logger.js'
 
 type Command =
     | 'install'
@@ -81,7 +82,7 @@ function parseArgs(argv: string[]): ParsedArgs {
         }
 
         if (arg.startsWith('-')) {
-            console.warn(`⚠️  Unknown option: ${arg}`)
+            sdeLogger.warn(`⚠️  Unknown option: ${arg}`)
             continue
         }
 
@@ -118,7 +119,7 @@ function printHelp(): void {
     const datasetList = IMPORT_TASKS.map((t) => t.id).join(', ')
     const calcList = CALCULATION_TASKS.map((t) => t.id).join(', ')
 
-    console.log(
+    sdeLogger.info(
         `
             EVE Tool – SDE INSTALLER
             
@@ -169,60 +170,60 @@ function formatVersion(label: string, v: SdeVersion | null): string {
 async function runInstall(options: GlobalOptions): Promise<void> {
     const { dryRun } = options
 
-    console.log('🚀 EVE Tool – SDE INSTALL (force full pipeline)')
+    sdeLogger.info('🚀 EVE Tool – SDE INSTALL (force full pipeline)')
     if (dryRun) {
-        console.log(
+        sdeLogger.info(
             '🧪 DRY-RUN: no download, no DB writes, no Redis invalidation.',
         )
     }
 
     if (!dryRun) {
-        console.log('🌐 Ensuring latest SDE is available on disk…')
+        sdeLogger.info('🌐 Ensuring latest SDE is available on disk…')
         await ensureLatestSdeOnDisk()
     } else {
-        console.log('🌵 Dry-run: skipping download.')
+        sdeLogger.info('🌵 Dry-run: skipping download.')
     }
 
     assertSdeDirOnThrow()
 
-    console.log('📄 Reading SDE version from file…')
+    sdeLogger.info('📄 Reading SDE version from file…')
     const fileVersion = await readSdeVersionFromFile()
-    console.log(formatVersion('   File version', fileVersion))
+    sdeLogger.info(formatVersion('   File version', fileVersion))
 
-    console.log('📥 Running full import of ALL datasets (force)…')
+    sdeLogger.info('📥 Running full import of ALL datasets (force)…')
     const importStart = performance.now()
     const stats = await importer(dryRun)
     const importDuration = ((performance.now() - importStart) / 1000).toFixed(1)
-    console.log(
+    sdeLogger.info(
         `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
     )
-    console.log(`✅ Import phase finished in ${importDuration}s.`)
+    sdeLogger.info(`✅ Import phase finished in ${importDuration}s.`)
 
-    console.log('🧮 Running ALL calculations (force)…')
+    sdeLogger.info('🧮 Running ALL calculations (force)…')
     const calcStart = performance.now()
     const calcStats = await runAllCalculations(dryRun)
     const calcDuration = ((performance.now() - calcStart) / 1000).toFixed(1)
-    console.log(
+    sdeLogger.info(
         `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
     )
-    console.log(`✅ Calculation phase finished in ${calcDuration}s.`)
+    sdeLogger.info(`✅ Calculation phase finished in ${calcDuration}s.`)
 
     if (dryRun) {
-        console.log(
+        sdeLogger.info(
             '🌵 Dry-run: skipping DB version update and Redis invalidation.',
         )
         return
     }
 
-    console.log('📝 Updating SDE version in database…')
+    sdeLogger.info('📝 Updating SDE version in database…')
     await upsertDbVersion(fileVersion)
-    console.log(
+    sdeLogger.info(
         `✅ Stored SDE version build=${fileVersion.buildNumber} in database.`,
     )
 
-    console.log('🧹 Invalidating Redis caches related to SDE/universe…')
+    sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
     await invalidateSdeCaches()
-    console.log('✅ Redis caches successfully invalidated.')
+    sdeLogger.info('✅ Redis caches successfully invalidated.')
 }
 
 // --- IMPORT – version-aware
@@ -231,15 +232,15 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
 
     assertSdeDirOnThrow()
 
-    console.log('🚀 EVE Tool – SDE IMPORT (version-aware)')
+    sdeLogger.info('🚀 EVE Tool – SDE IMPORT (version-aware)')
     if (dryRun) {
-        console.log('🧪 DRY-RUN: no DB writes, no Redis invalidation.')
+        sdeLogger.info('🧪 DRY-RUN: no DB writes, no Redis invalidation.')
     }
 
     const fileVersion = await readSdeVersionFromFile()
     const dbVersion = await getDbVersion()
-    console.log(formatVersion('   DB version', dbVersion))
-    console.log(formatVersion('   File version', fileVersion))
+    sdeLogger.info(formatVersion('   DB version', dbVersion))
+    sdeLogger.info(formatVersion('   File version', fileVersion))
 
     const versionMatches =
         dbVersion && dbVersion.buildNumber === fileVersion.buildNumber
@@ -247,13 +248,13 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
     if (!datasets || datasets.length === 0) {
         // Full Import
         if (versionMatches && !force) {
-            console.log(
+            sdeLogger.info(
                 '🆗 SDE already up to date and --force not set. Nothing to import.',
             )
             return
         }
 
-        console.log(
+        sdeLogger.info(
             force
                 ? '⬆️ Running FULL import with --force (ignoring version match)…'
                 : '⬆️ Running FULL import because file version differs…',
@@ -263,27 +264,27 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
         const stats = await importer(dryRun)
         const dur = ((performance.now() - start) / 1000).toFixed(1)
 
-        console.log(
+        sdeLogger.info(
             `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
         )
-        console.log(`✅ Full import finished in ${dur}s.`)
+        sdeLogger.info(`✅ Full import finished in ${dur}s.`)
 
         if (dryRun) {
-            console.log(
+            sdeLogger.info(
                 '🌵 Dry-run: skipping DB version update and Redis invalidation.',
             )
             return
         }
 
-        console.log('📝 Updating SDE version in database…')
+        sdeLogger.info('📝 Updating SDE version in database…')
         await upsertDbVersion(fileVersion)
-        console.log(
+        sdeLogger.info(
             `✅ Stored SDE version build=${fileVersion.buildNumber} in database.`,
         )
 
-        console.log('🧹 Invalidating Redis caches related to SDE/universe…')
+        sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
         await invalidateSdeCaches()
-        console.log('✅ Redis caches successfully invalidated.')
+        sdeLogger.info('✅ Redis caches successfully invalidated.')
         return
     }
 
@@ -294,24 +295,24 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
         if (name in IMPORT_TASKS_BY_ID) {
             ids.push(name as ImportDatasetId)
         } else {
-            console.warn(`⚠️  Unknown dataset "${name}" – skipping`)
+            sdeLogger.warn(`⚠️  Unknown dataset "${name}" – skipping`)
         }
     }
 
     if (ids.length === 0) {
-        console.error('❌ No valid datasets specified for import.')
+        sdeLogger.error('❌ No valid datasets specified for import.')
         process.exitCode = 1
         return
     }
 
     if (versionMatches && !force) {
-        console.log(
+        sdeLogger.info(
             '🆗 SDE already up to date and --force not set. Skipping partial import.',
         )
         return
     }
 
-    console.log(
+    sdeLogger.info(
         `⬆️ Running PARTIAL import for datasets: ${ids.join(', ')}${
             force ? ' (forced)' : ''
         }`,
@@ -325,24 +326,27 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
 
     for (const id of ids) {
         const task = IMPORT_TASKS_BY_ID[id]
-        console.log(`📦 Importing ${task.label}…`)
+        sdeLogger.info(`📦 Importing ${task.label}…`)
         const dsStart = performance.now()
 
         try {
-            const { success, total, errors } = await task.run(dryRun)
+            const { success, total, errors } = await task.run(
+                dryRun,
+                task.label,
+            )
             datasetSuccess++
             lineTotal += total
             lineSuccess += success
             errorCount += errors
 
             const dur = ((performance.now() - dsStart) / 1000).toFixed(1)
-            console.log(
+            sdeLogger.info(
                 `✅ Imported ${success}/${total} ${task.label} in ${dur}s (${errors} errors)`,
             )
         } catch (err) {
             errorCount++
             const dur = ((performance.now() - dsStart) / 1000).toFixed(1)
-            console.error(
+            sdeLogger.error(
                 `❌ Failed to import ${task.label} after ${dur}s:`,
                 (err as Error).message,
             )
@@ -350,25 +354,25 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
     }
 
     const totalDur = ((performance.now() - start) / 1000).toFixed(1)
-    console.log(
+    sdeLogger.info(
         `📊 Summary: ${lineSuccess}/${lineTotal} lines across ${datasetSuccess}/${ids.length} datasets in ${totalDur}s (${errorCount} total errors)`,
     )
 
     if (dryRun) {
-        console.log(
+        sdeLogger.info(
             '🌵 Dry-run: skipping DB version update and Redis invalidation.',
         )
         return
     }
 
     // Important: DB-Version if PARTIAL IMPORT => NO update
-    console.log(
+    sdeLogger.info(
         'ℹ️ Partial import completed. DB SDE version was not changed (only full import updates version).',
     )
 
-    console.log('🧹 Invalidating Redis caches related to SDE/universe…')
+    sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
     await invalidateSdeCaches()
-    console.log('✅ Redis caches successfully invalidated.')
+    sdeLogger.info('✅ Redis caches successfully invalidated.')
 }
 
 // --- CALCULATE – version-aware
@@ -386,7 +390,7 @@ async function runAllCalculations(dryRun: boolean): Promise<CalculationStats> {
     }
 
     for (const task of CALCULATION_TASKS) {
-        console.log(`🧮 Running calculation: ${task.label}…`)
+        sdeLogger.info(`🧮 Running calculation: ${task.label}…`)
         const start = performance.now()
 
         try {
@@ -394,11 +398,11 @@ async function runAllCalculations(dryRun: boolean): Promise<CalculationStats> {
             stats.taskSuccess++
 
             const dur = ((performance.now() - start) / 1000).toFixed(1)
-            console.log(`✅ Calculation ${task.label} finished in ${dur}s.`)
+            sdeLogger.info(`✅ Calculation ${task.label} finished in ${dur}s.`)
         } catch (err) {
             stats.errorCount++
             const dur = ((performance.now() - start) / 1000).toFixed(1)
-            console.error(
+            sdeLogger.error(
                 `❌ Calculation ${task.label} failed after ${dur}s:`,
                 (err as Error).message,
             )
@@ -420,7 +424,7 @@ async function runCalculationsSelected(
 
     for (const id of ids) {
         const task = CALCULATION_TASKS_BY_ID[id]
-        console.log(`🧮 Running calculation: ${task.label}…`)
+        sdeLogger.info(`🧮 Running calculation: ${task.label}…`)
         const start = performance.now()
 
         try {
@@ -428,11 +432,11 @@ async function runCalculationsSelected(
             stats.taskSuccess++
 
             const dur = ((performance.now() - start) / 1000).toFixed(1)
-            console.log(`✅ Calculation ${task.label} finished in ${dur}s.`)
+            sdeLogger.info(`✅ Calculation ${task.label} finished in ${dur}s.`)
         } catch (err) {
             stats.errorCount++
             const dur = ((performance.now() - start) / 1000).toFixed(1)
-            console.error(
+            sdeLogger.error(
                 `❌ Calculation ${task.label} failed after ${dur}s:`,
                 (err as Error).message,
             )
@@ -450,15 +454,15 @@ async function runCalculateCommand(
 
     assertSdeDirOnThrow()
 
-    console.log('🚀 EVE Tool – SDE CALCULATE (version-aware)')
+    sdeLogger.info('🚀 EVE Tool – SDE CALCULATE (version-aware)')
 
     const fileVersion = await readSdeVersionFromFile()
     const dbVersion = await getDbVersion()
-    console.log(formatVersion('   DB version', dbVersion))
-    console.log(formatVersion('   File version', fileVersion))
+    sdeLogger.info(formatVersion('   DB version', dbVersion))
+    sdeLogger.info(formatVersion('   File version', fileVersion))
 
     if (!dbVersion) {
-        console.log(
+        sdeLogger.info(
             'ℹ️ No SDE version in DB found. Nothing to calculate (run import/update first).',
         )
         return
@@ -467,85 +471,85 @@ async function runCalculateCommand(
     const versionMatches = dbVersion.buildNumber === fileVersion.buildNumber
 
     if (!versionMatches && !force) {
-        console.log(
+        sdeLogger.warn(
             '⚠️ DB and file SDE versions differ. Run `sde:update` or `sde:install`, or use --force to calculate anyway.',
         )
         return
     }
 
     if (dryRun) {
-        console.log(
+        sdeLogger.info(
             '🧪 DRY-RUN: calculations will not write to DB or invalidate Redis.',
         )
     }
 
     if (!subcommand) {
         const stats = await runAllCalculations(dryRun)
-        console.log(
+        sdeLogger.info(
             `📊 Calculations summary: ${stats.taskSuccess}/${stats.taskTotal} tasks (${stats.errorCount} errors)`,
         )
     } else {
         const id = subcommand.toLowerCase() as CalculationId
         if (!(id in CALCULATION_TASKS_BY_ID)) {
-            console.error(`❌ Unknown calculation "${subcommand}".`)
+            sdeLogger.error(`❌ Unknown calculation "${subcommand}".`)
             process.exitCode = 1
             return
         }
 
         const stats = await runCalculationsSelected([id], dryRun)
-        console.log(
+        sdeLogger.info(
             `📊 Calculations summary: ${stats.taskSuccess}/${stats.taskTotal} tasks (${stats.errorCount} errors)`,
         )
     }
 
     if (dryRun) {
-        console.log('🌵 Dry-run: skipping Redis invalidation.')
+        sdeLogger.info('🌵 Dry-run: skipping Redis invalidation.')
         return
     }
 
-    console.log('🧹 Invalidating Redis caches related to SDE/universe…')
+    sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
     await invalidateSdeCaches()
-    console.log('✅ Redis caches successfully invalidated.')
+    sdeLogger.info('✅ Redis caches successfully invalidated.')
 }
 
 // --- UPDATE – import and calculate if Version mismatch
 async function runUpdateCommand(options: GlobalOptions): Promise<void> {
     const { dryRun, force } = options
 
-    console.log(
+    sdeLogger.info(
         '🚀 EVE Tool – SDE UPDATE (import + calculate on version change)',
     )
     if (dryRun) {
-        console.log(
+        sdeLogger.info(
             '🧪 DRY-RUN: no download, no DB writes, no Redis invalidation.',
         )
     }
 
     if (!dryRun) {
-        console.log('🌐 Ensuring latest SDE is available on disk…')
+        sdeLogger.info('🌐 Ensuring latest SDE is available on disk…')
         await ensureLatestSdeOnDisk()
     } else {
-        console.log('🌵 Dry-run: skipping download.')
+        sdeLogger.info('🌵 Dry-run: skipping download.')
     }
 
     assertSdeDirOnThrow()
 
     const fileVersion = await readSdeVersionFromFile()
     const dbVersion = await getDbVersion()
-    console.log(formatVersion('   DB version', dbVersion))
-    console.log(formatVersion('   File version', fileVersion))
+    sdeLogger.info(formatVersion('   DB version', dbVersion))
+    sdeLogger.info(formatVersion('   File version', fileVersion))
 
     const versionMatches =
         dbVersion && dbVersion.buildNumber === fileVersion.buildNumber
 
     if (versionMatches && !force) {
-        console.log(
+        sdeLogger.info(
             '🆗 SDE already up to date and --force not set. Nothing to update.',
         )
         return
     }
 
-    console.log(
+    sdeLogger.info(
         force
             ? '⬆️ Running UPDATE pipeline with --force (import + calculate)…'
             : '⬆️ New SDE version detected – running UPDATE pipeline (import + calculate)…',
@@ -555,50 +559,50 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
     const importStart = performance.now()
     const stats = await importer(dryRun)
     const importDur = ((performance.now() - importStart) / 1000).toFixed(1)
-    console.log(
+    sdeLogger.info(
         `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
     )
-    console.log(`✅ Import phase finished in ${importDur}s.`)
+    sdeLogger.info(`✅ Import phase finished in ${importDur}s.`)
 
     // --- Calculations
     const calcStart = performance.now()
     const calcStats = await runAllCalculations(dryRun)
     const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
-    console.log(
+    sdeLogger.info(
         `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
     )
-    console.log(`✅ Calculation phase finished in ${calcDur}s.`)
+    sdeLogger.info(`✅ Calculation phase finished in ${calcDur}s.`)
 
     if (dryRun) {
-        console.log(
+        sdeLogger.info(
             '🌵 Dry-run: skipping DB version update and Redis invalidation.',
         )
         return
     }
 
-    console.log('📝 Updating SDE version in database…')
+    sdeLogger.info('📝 Updating SDE version in database…')
     await upsertDbVersion(fileVersion)
-    console.log(
+    sdeLogger.info(
         `✅ Stored SDE version build=${fileVersion.buildNumber} in database.`,
     )
 
-    console.log('🧹 Invalidating Redis caches related to SDE/universe…')
+    sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
     await invalidateSdeCaches()
-    console.log('✅ Redis caches successfully invalidated.')
+    sdeLogger.info('✅ Redis caches successfully invalidated.')
 }
 
 // --- DOWNLOAD – only .sde Files
 async function runDownloadCommand(options: GlobalOptions): Promise<void> {
     const { dryRun } = options
 
-    console.log('🚀 EVE Tool – SDE DOWNLOAD (.sde only)')
+    sdeLogger.info('🚀 EVE Tool – SDE DOWNLOAD (.sde only)')
     if (dryRun) {
-        console.log('🧪 DRY-RUN: skipping download.')
+        sdeLogger.info('🧪 DRY-RUN: skipping download.')
         return
     }
 
     await ensureLatestSdeOnDisk()
-    console.log('✅ SDE files are up to date on disk.')
+    sdeLogger.info('✅ SDE files are up to date on disk.')
 }
 
 // --- Main
@@ -639,17 +643,17 @@ async function runDownloadCommand(options: GlobalOptions): Promise<void> {
         printHelp()
         process.exitCode = 1
     } catch (err) {
-        console.error('❌ SDE Installer failed:', err)
+        sdeLogger.error('❌ SDE Installer failed:', err)
         process.exitCode = 1
     } finally {
         try {
-            await prisma.$disconnect()
+            await sdePrisma.$disconnect()
         } catch {
             // ignore
         }
 
         try {
-            await redis.quit()
+            await sdeRedis.quit()
         } catch {
             // ignore
         }

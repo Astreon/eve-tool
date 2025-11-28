@@ -22,7 +22,7 @@ export type ImportDatasetId =
     | 'factions'
     | 'regions'
     | 'constellations'
-    | 'solar-systems'
+    | 'solarsystems'
     | 'stargates'
     | 'planets'
     | 'moons'
@@ -30,7 +30,7 @@ export type ImportDatasetId =
 export interface ImportTask {
     id: ImportDatasetId
     label: string
-    run: (dryRun?: boolean) => Promise<ImportResult>
+    run: (dryRun: boolean, label: string) => Promise<ImportResult>
 }
 
 export const IMPORT_TASKS: ImportTask[] = [
@@ -43,7 +43,7 @@ export const IMPORT_TASKS: ImportTask[] = [
         label: 'Constellations',
         run: importConstellations,
     },
-    { id: 'solar-systems', label: 'Solar Systems', run: importSolarSystems },
+    { id: 'solarsystems', label: 'Solar Systems', run: importSolarSystems },
     { id: 'stargates', label: 'Stargates', run: importStargates },
     { id: 'planets', label: 'Planets', run: importPlanets },
     { id: 'moons', label: 'Moons', run: importMoons },

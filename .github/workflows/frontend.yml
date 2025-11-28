@@ -1,27 +1,27 @@
-name: Backend CI
+name: Frontend CI
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+      - 'frontend/**'
+      - 'frontend.yml'
   push:
     branches:
       - main
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+      - 'frontend/**'
+      - 'frontend.yml'
 
 jobs:
-  backend-checks:
-    name: backend-checks
+  frontend-checks:
+    name: Checks
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: backend
+        working-directory: frontend
 
     steps:
       - name: Checkout repository
@@ -32,15 +32,13 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Prisma client
-        run: npx prisma generate
-        env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+      - name: Generate TanStack Router types
+        run: npm run routes:gen
 
       - name: Type check
         run: npm run type-check

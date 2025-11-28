@@ -148,7 +148,7 @@ Backend (`backend/.env`)
   - `NODE_ENV` — `development` | `production`
 - ESI API
   - `ESI_BASE_URL` — base URL, default `https://esi.evetech.net`
-  - `ESI_COMPATIBILITY_DATE` — default `2025-09-30`
+  - `ESI_COMPATIBILITY_DATE` — default `2025-11-06`
   - `ESI_ACCEPT_LANGUAGE` — IETF language tag, default `en`
   - `ESI_FALLBACK_TTL_SECONDS` — default `86400`
 - ESI SSO (required for OAuth flows)
