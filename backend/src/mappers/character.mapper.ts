@@ -10,9 +10,15 @@ export const mapCharacterToApiResponse = (
     character: CharacterWithRelations,
 ): CharacterApiResponse => ({
     id: character.id,
+    allianceId: character.allianceId ?? null,
+    birthday: character.birthday,
     bloodline: character.bloodline.name,
     corporationId: character.corporationId,
+    description: character.description ?? null,
+    faction: character.faction?.name ?? null,
+    gender: character.gender as 'male' | 'female',
     name: character.name,
     race: character.race.name,
     securityStatus: character.securityStatus ?? null,
+    title: character.title ?? null,
 })

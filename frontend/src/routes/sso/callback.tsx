@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/auth/auth-provider'
 
@@ -14,13 +14,14 @@ type CallbackResponse = {
         access_token: string
         refresh_token?: string
         expires_in: number
-        token_type: 'Bearer'
     }
     character?: {
         id: number
         name: string
-        scopes: string[]
+        scopes?: string[]
+        onboardingCompleted?: boolean
     }
+    redirectTo?: string | null
 }
 
 export const Route = createFileRoute('/sso/callback')({
@@ -30,12 +31,11 @@ export const Route = createFileRoute('/sso/callback')({
 function CallbackPage() {
     const { setSession } = useAuth()
     const [error, setError] = useState<string | null>(null)
+    const router = useRouter()
 
     useEffect(() => {
-        async function run() {
+        const run = async () => {
             try {
-                if (typeof window === 'undefined') return
-
                 const url = new URL(window.location.href)
                 const code = url.searchParams.get('code')
                 const state = url.searchParams.get('state')
@@ -46,27 +46,44 @@ function CallbackPage() {
                 }
 
                 const res = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
+                    `/auth/callback?code=${encodeURIComponent(
+                        code,
+                    )}&state=${encodeURIComponent(state)}`,
                 )
 
                 const body = (await res.json()) as CallbackResponse
 
-                if (!res.ok || !body.success || !body.tokens) {
+                if (!res.ok || !body.success || !body.tokens || !body.character) {
                     throw new Error(body.message ?? `Callback failed (HTTP ${res.status})`)
                 }
 
                 const expiresAt = Date.now() + body.tokens.expires_in * 1000
-                const scopes = body.character?.scopes ?? []
+                const scopes = body.character.scopes ?? []
+
+                const onboardingCompleted = body.character.onboardingCompleted ?? false
+                const redirectTo = body.redirectTo ?? null
 
                 setSession({
                     accessToken: body.tokens.access_token,
+                    refreshToken: body.tokens.refresh_token ?? undefined,
                     characterId: body.character?.id ?? 0,
                     characterName: body.character?.name ?? 'Unknown',
                     scopes,
                     expiresAt,
+                    onboardingCompleted,
                 })
 
-                window.history.replaceState({}, '', '/')
+                url.searchParams.delete('code')
+                url.searchParams.delete('state')
+                window.history.replaceState({}, '', url.toString())
+
+                if (!onboardingCompleted) {
+                    router.navigate({ to: '/onboarding' })
+                } else if (redirectTo) {
+                    router.navigate({ to: redirectTo as any })
+                } else {
+                    router.navigate({ to: '/' })
+                }
             } catch (e: any) {
                 console.error(e)
                 setError(e?.message ?? 'Unknown error')
@@ -74,14 +91,14 @@ function CallbackPage() {
         }
 
         void run()
-    }, [setSession])
+    }, [setSession, router])
 
     if (error) {
         return (
             <div className="flex min-h-[50vh] items-center justify-center">
                 <div className="space-y-2 text-center">
                     <h1 className="text-xl font-semibold">Login failed</h1>
-                    <p className="text-muted-foreground max-w-md text-sm">{error}</p>
+                    <p className="text-muted-foreground text-sm">{error}</p>
                 </div>
             </div>
         )

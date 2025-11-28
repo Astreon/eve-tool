@@ -21,6 +21,7 @@ export type AuthSession = {
     accessToken: string
     refreshToken?: string
     expiresAt: number
+    onboardingCompleted: boolean
 }
 
 type AuthContextValue = {
@@ -35,12 +36,16 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const STORAGE_KEY = 'eve-tool.sso'
-const REFRESH_SKEW_MS = 60_000
+const REFRESH_SKEW_MS = 60_000 // 1 minute
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-    const hydrated = useHydrated()
+type AuthProviderProps = {
+    children: ReactNode
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
     const [session, setSession] = useState<AuthSession | null>(null)
     const [isReady, setIsReady] = useState(false)
+    const hydrated = useHydrated()
 
     useEffect(() => {
         if (!hydrated || typeof window === 'undefined') return
@@ -77,14 +82,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const code = url.searchParams.get('code')
         const state = url.searchParams.get('state')
-        if (!code || !state) return
+
+        if (!code || !state) {
+            return
+        }
 
         const run = async () => {
             try {
                 const resp = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(
-                        code,
-                    )}&state=${encodeURIComponent(state)}`,
+                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
                 )
 
                 if (!resp.ok) {
@@ -103,21 +109,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         id: number
                         name: string
                         scopes: string[]
+                        onboardingCompleted?: boolean
                     }
                 }
 
                 if (!data.success) {
-                    console.error('Login callback reported failure', data)
+                    console.error('Login callback returned error', data)
                     return
                 }
 
                 setSession({
                     characterId: data.character.id,
                     characterName: data.character.name,
-                    scopes: data.character.scopes ?? [],
+                    scopes: data.character.scopes,
                     accessToken: data.tokens.access_token,
                     refreshToken: data.tokens.refresh_token,
-                    expiresAt: Date.now() + data.tokens.expires_in * 1000,
+                    expiresAt: Date.now() + (data.tokens.expires_in ?? 1200) * 1000,
+                    onboardingCompleted: data.character.onboardingCompleted ?? false,
                 })
             } catch (err) {
                 console.error('Failed to complete login callback', err)
@@ -166,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: number
                     name: string
                     scopes?: string[]
+                    onboardingCompleted?: boolean
                 }
             }
 
@@ -182,6 +191,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 accessToken: data.tokens.access_token,
                 refreshToken: data.tokens.refresh_token ?? prev?.refreshToken,
                 expiresAt: Date.now() + data.tokens.expires_in * 1000,
+                onboardingCompleted:
+                    data.character.onboardingCompleted ?? prev?.onboardingCompleted ?? false,
             }))
         } catch (e) {
             console.error('Refresh error', e)
@@ -216,7 +227,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isReady,
             login: () => {
                 if (typeof window === 'undefined') return
-                void fetch('/auth/login')
+
+                const url = new URL(window.location.href)
+                const redirect = url.pathname + url.search + url.hash
+
+                const loginUrl = `/auth/login?redirect=${encodeURIComponent(redirect)}`
+
+                void fetch(loginUrl)
                     .then(async (res) => {
                         if (!res.ok) throw new Error(`HTTP ${res.status}`)
                         const body = (await res.json()) as {
@@ -233,6 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         console.error('Failed to start login', err)
                     })
             },
+
             logout: () => {
                 setSession(null)
             },

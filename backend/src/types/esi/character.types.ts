@@ -4,17 +4,17 @@
  */
 
 export interface EsiCharacter {
-    //alliance_id?: number
-    //birthday: string
+    alliance_id?: number | null
+    birthday: string
     bloodline_id: number
     corporation_id: number
-    //description?: string
-    //faction_id?: number
-    //gender: 'male' | 'female'
+    description?: string | null
+    faction_id?: number | null
+    gender: 'male' | 'female'
     name: string
     race_id: number
-    security_status: number | null
-    //title?: string
+    security_status?: number | null
+    title?: string | null
 }
 
 export interface EsiCharacterResponse {

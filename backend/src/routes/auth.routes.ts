@@ -24,13 +24,16 @@ const STATE_TTL_SECONDS = 60 * 10 // 10 minutes
 
 router.get('/login', async (req, res, next) => {
     try {
-        const state = crypto.randomBytes(16).toString('hex')
-        await redis.set(stateKey(state), '1', 'EX', STATE_TTL_SECONDS)
-
         let scopes: string[] = []
+        let requestedScopesForState: string[] | undefined
 
         const rawScopes =
             typeof req.query.scopes === 'string' ? req.query.scopes : undefined
+
+        const rawRedirect =
+            typeof req.query.redirect === 'string'
+                ? req.query.redirect
+                : undefined
 
         if (rawScopes && rawScopes.trim() !== '') {
             const requested = rawScopes
@@ -42,11 +45,23 @@ router.get('/login', async (req, res, next) => {
             const filtered = requested.filter((s) => allowed.has(s))
 
             scopes = Array.from(new Set(filtered))
+            requestedScopesForState = [...scopes]
         }
 
         if (!scopes.includes('publicData')) {
             scopes.push('publicData')
         }
+
+        const state = crypto.randomBytes(16).toString('hex')
+
+        const statePayload = JSON.stringify({
+            ...(requestedScopesForState && requestedScopesForState.length > 0
+                ? { scopes: requestedScopesForState }
+                : {}),
+            ...(rawRedirect ? { redirect: rawRedirect } : {}),
+        })
+
+        await redis.set(stateKey(state), statePayload, 'EX', STATE_TTL_SECONDS)
 
         const url = buildAuthUrl(state, scopes)
         res.json({ success: true, url })
@@ -70,20 +85,45 @@ router.get('/callback', async (req, res, next) => {
             return
         }
 
-        const stateExists = (await redis.exists(stateKey(state))) === 1
-        if (!stateExists) {
+        const key = stateKey(state)
+        const rawState = await redis.get(key)
+
+        if (!rawState) {
             next(new BadRequestError('Invalid or expired state', { state }))
             return
         }
-        await redis.del(stateKey(state))
+
+        await redis.del(key)
+
+        let requestedScopes: string[] | null = null
+        let redirect: string | null = null
+
+        try {
+            const parsed = JSON.parse(rawState) as {
+                scopes?: unknown
+                redirect?: unknown
+            }
+
+            if (Array.isArray(parsed.scopes)) {
+                requestedScopes = parsed.scopes
+                    .filter((s): s is string => typeof s === 'string')
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+            }
+
+            if (typeof parsed.redirect === 'string') {
+                redirect = parsed.redirect
+            }
+        } catch {
+            // ignore, just use the default scopes
+        }
 
         const tokens = await exchangeCodeForToken(code)
-
         const verify = await verifyToken(tokens.access_token)
 
         const characterId = Number(verify.CharacterID)
         const characterName = verify.CharacterName
-        const scopes = verify.Scopes?.split(' ').filter(Boolean) ?? []
+        const grantedScopes = verify.Scopes?.split(' ').filter(Boolean) ?? []
 
         const characterRow = await prisma.character.findUnique({
             where: { id: characterId },
@@ -132,10 +172,16 @@ router.get('/callback', async (req, res, next) => {
                 create: {
                     id: characterId,
                     name: payload.name,
-                    corporationId: payload.corporation_id,
-                    raceId: payload.race_id,
+                    birthday: payload.birthday,
                     bloodlineId: payload.bloodline_id,
+                    corporationId: payload.corporation_id,
+                    allianceId: payload.alliance_id ?? null,
+                    raceId: payload.race_id,
+                    factionId: payload.faction_id ?? null,
                     securityStatus: payload.security_status ?? null,
+                    gender: payload.gender,
+                    title: payload.title ?? null,
+                    description: payload.description ?? null,
                     etag: esi.etag ?? null,
                     lastModified: esi.lastModified
                         ? new Date(esi.lastModified)
@@ -144,10 +190,16 @@ router.get('/callback', async (req, res, next) => {
                 },
                 update: {
                     name: payload.name,
-                    corporationId: payload.corporation_id,
-                    raceId: payload.race_id,
+                    birthday: payload.birthday,
                     bloodlineId: payload.bloodline_id,
+                    corporationId: payload.corporation_id,
+                    allianceId: payload.alliance_id ?? null,
+                    raceId: payload.race_id,
+                    factionId: payload.faction_id ?? null,
                     securityStatus: payload.security_status ?? null,
+                    gender: payload.gender,
+                    title: payload.title ?? null,
+                    description: payload.description ?? null,
                     etag: esi.etag ?? null,
                     lastModified: esi.lastModified
                         ? new Date(esi.lastModified)
@@ -157,20 +209,52 @@ router.get('/callback', async (req, res, next) => {
             })
         }
 
-        await prisma.user.upsert({
+        const existingUser = await prisma.user.findUnique({
+            where: { characterId },
+        })
+
+        const existingScopesArray =
+            existingUser?.scopes?.split(' ').filter(Boolean) ?? []
+
+        let nextScopesArray: string[]
+
+        if (requestedScopes && requestedScopes.length > 0) {
+            const allowed = new Set(config.esiSso.esiSsoScopes)
+            nextScopesArray = Array.from(
+                new Set(requestedScopes.filter((s) => allowed.has(s))),
+            )
+            if (!nextScopesArray.includes('publicData')) {
+                nextScopesArray.push('publicData')
+            }
+        } else if (existingScopesArray.length > 0) {
+            nextScopesArray = existingScopesArray
+        } else {
+            nextScopesArray = grantedScopes
+        }
+
+        const nextScopesStr = nextScopesArray.join(' ')
+
+        const onboardingCompleted =
+            requestedScopes && requestedScopes.length > 0
+                ? true
+                : (existingUser?.onboardingCompleted ?? false)
+
+        const user = await prisma.user.upsert({
             where: { characterId },
             update: {
                 characterName,
-                scopes: scopes.join(' '),
+                scopes: nextScopesStr,
                 refreshToken: tokens.refresh_token ?? null,
                 lastLoginAt: new Date(),
+                onboardingCompleted,
             },
             create: {
                 characterId,
                 characterName,
-                scopes: scopes.join(' '),
+                scopes: nextScopesStr,
                 refreshToken: tokens.refresh_token ?? null,
                 lastLoginAt: new Date(),
+                onboardingCompleted,
             },
         })
 
@@ -180,8 +264,10 @@ router.get('/callback', async (req, res, next) => {
             character: {
                 id: characterId,
                 name: characterName,
-                scopes,
+                scopes: nextScopesArray,
+                onboardingCompleted: user.onboardingCompleted,
             },
+            redirectTo: redirect ?? null,
         })
     } catch (e) {
         next(e)
@@ -199,22 +285,32 @@ router.post('/refresh', async (req, res, next) => {
         const tokens = await refreshToken(rt)
         const verify = await verifyToken(tokens.access_token)
 
-        const scopes = verify.Scopes?.split(' ').filter(Boolean) ?? []
+        const scopesFromToken = verify.Scopes?.split(' ').filter(Boolean) ?? []
         const characterId = Number(verify.CharacterID)
         const characterName = verify.CharacterName
 
-        await prisma.user.upsert({
+        const existingUser = await prisma.user.findUnique({
+            where: { characterId },
+        })
+
+        const scopesStr =
+            existingUser?.scopes ??
+            (scopesFromToken.length > 0
+                ? scopesFromToken.join(' ')
+                : 'publicData')
+
+        const user = await prisma.user.upsert({
             where: { characterId },
             update: {
                 characterName,
-                scopes: scopes.join(' '),
+                scopes: scopesStr,
                 refreshToken: tokens.refresh_token ?? null,
                 lastLoginAt: new Date(),
             },
             create: {
                 characterId,
                 characterName,
-                scopes: scopes.join(' '),
+                scopes: scopesStr,
                 refreshToken: tokens.refresh_token ?? null,
                 lastLoginAt: new Date(),
             },
@@ -226,7 +322,8 @@ router.post('/refresh', async (req, res, next) => {
             character: {
                 id: characterId,
                 name: characterName,
-                scopes,
+                scopes: user.scopes.split(' ').filter(Boolean),
+                onboardingCompleted: user.onboardingCompleted,
             },
         })
     } catch (e) {

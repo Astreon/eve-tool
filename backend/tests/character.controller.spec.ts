@@ -1,4 +1,9 @@
 // @ts-nocheck
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { describe, it, beforeEach, expect, vi } from 'vitest'
 import express from 'express'
 import request from 'supertest'
