@@ -34,19 +34,51 @@ export interface ImportTask {
 }
 
 export const IMPORT_TASKS: ImportTask[] = [
-    { id: 'bloodlines', label: 'Bloodlines', run: importBloodlines },
-    { id: 'races', label: 'Races', run: importRaces },
-    { id: 'factions', label: 'Factions', run: importFactions },
-    { id: 'regions', label: 'Regions', run: importRegions },
+    {
+        id: 'bloodlines',
+        label: 'Bloodlines',
+        run: importBloodlines,
+    },
+    {
+        id: 'races',
+        label: 'Races',
+        run: importRaces,
+    },
+    {
+        id: 'factions',
+        label: 'Factions',
+        run: importFactions,
+    },
+    {
+        id: 'regions',
+        label: 'Regions',
+        run: importRegions,
+    },
     {
         id: 'constellations',
         label: 'Constellations',
         run: importConstellations,
     },
-    { id: 'solarsystems', label: 'Solar Systems', run: importSolarSystems },
-    { id: 'stargates', label: 'Stargates', run: importStargates },
-    { id: 'planets', label: 'Planets', run: importPlanets },
-    { id: 'moons', label: 'Moons', run: importMoons },
+    {
+        id: 'solarsystems',
+        label: 'Solar Systems',
+        run: importSolarSystems,
+    },
+    {
+        id: 'stargates',
+        label: 'Stargates',
+        run: importStargates,
+    },
+    {
+        id: 'planets',
+        label: 'Planets',
+        run: importPlanets,
+    },
+    {
+        id: 'moons',
+        label: 'Moons',
+        run: importMoons,
+    },
 ]
 
 export const IMPORT_TASKS_BY_ID: Record<ImportDatasetId, ImportTask> =
