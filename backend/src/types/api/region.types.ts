@@ -36,6 +36,9 @@ export interface RegionSystemNode {
     y: number
     z: number
     constellationId: number
+    regionId: number
+    regionName: string
+    isForeign: boolean
 }
 
 export interface RegionSystemEdge {

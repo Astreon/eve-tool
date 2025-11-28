@@ -33,6 +33,9 @@ export type RegionSystemNodeApi = {
     y: number
     z: number
     constellationId: number
+    regionId: number
+    regionName: string
+    isForeign: boolean
 }
 
 export type RegionSystemEdgeApi = {
@@ -87,7 +90,8 @@ function useRegionMap(regionId: number) {
 // --- Layout & Node Types
 type SystemNodeData = {
     label: string
-    constellationId: number
+    subLabel: string | null
+    isForeign: boolean
 }
 
 type SystemNode = FlowNode & {
@@ -167,9 +171,10 @@ function getEdgeColor(borderType: SystemBorderType, isDark: boolean): string {
 
 function SystemNodeComponent({ data }: NodeProps) {
     const d = data as SystemNodeData
+    const { label, subLabel, isForeign } = d
 
     return (
-        <div className="bg-background/90 ring-border rounded-sm px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
+        <div className="bg-background/90 ring-border rounded px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
             <Handle
                 type="source"
                 position={Position.Top}
@@ -195,11 +200,17 @@ function SystemNodeComponent({ data }: NodeProps) {
                 }}
             />
             <div className="max-w-[140px] truncate text-center font-medium whitespace-nowrap">
-                {d.label}
+                {label}
             </div>
-            <div className="text-muted-foreground mt-[1px] text-center text-[9px]">
-                Constellation {d.constellationId}
-            </div>
+            {subLabel && (
+                <div
+                    className={`mt-[1px] text-center text-[9px] ${
+                        isForeign ? 'text-purple-500' : 'text-muted-foreground'
+                    }`}
+                >
+                    {subLabel}
+                </div>
+            )}
         </div>
     )
 }
@@ -230,6 +241,8 @@ export function RegionMap({
             x2d: s.x,
             y2d: -s.z,
             constellationId: s.constellationId,
+            regionName: s.regionName,
+            isForeign: s.isForeign,
         }))
 
         const xs = projected.map((p) => p.x2d)
@@ -250,6 +263,8 @@ export function RegionMap({
             const x = (p.x2d - minX) * scale
             const y = (p.y2d - minY) * scale
 
+            const subLabel = p.isForeign ? p.regionName : `C${p.constellationId}`
+
             return {
                 id: p.id.toString(),
                 position: { x, y },
@@ -257,7 +272,8 @@ export function RegionMap({
                 type: 'system',
                 data: {
                     label: p.name,
-                    constellationId: p.constellationId,
+                    subLabel,
+                    isForeign: p.isForeign,
                 },
                 style: {
                     borderRadius: '0.25rem',

@@ -206,6 +206,7 @@ export async function getRegionMap(
                 y: true,
                 z: true,
                 constellationId: true,
+                regionId: true,
             },
             orderBy: { name: 'asc' },
         })
@@ -213,13 +214,25 @@ export async function getRegionMap(
         const systemIds = systems.map((s) => s.id)
 
         let edges: RegionSystemEdge[] = []
+        let foreignSystems: {
+            id: number
+            name: string
+            x: number
+            y: number
+            z: number
+            constellationId: number
+            regionId: number
+            region: { name: string }
+        }[] = []
 
         if (systemIds.length > 0) {
             // 4) SystemLinks, both Systems in the same Region
             const links = await prisma.systemLink.findMany({
                 where: {
-                    fromSystemId: { in: systemIds },
-                    toSystemId: { in: systemIds },
+                    OR: [
+                        { fromSystemId: { in: systemIds } },
+                        { toSystemId: { in: systemIds } },
+                    ],
                 },
                 select: {
                     fromSystemId: true,
@@ -228,6 +241,34 @@ export async function getRegionMap(
                 },
             })
 
+            const allSystemIds = new Set<number>()
+            for (const l of links) {
+                allSystemIds.add(l.fromSystemId)
+                allSystemIds.add(l.toSystemId)
+            }
+
+            const foreignIds = Array.from(allSystemIds).filter(
+                (id) => !systemIds.includes(id),
+            )
+
+            if (foreignIds.length > 0) {
+                foreignSystems = await prisma.solarSystem.findMany({
+                    where: { id: { in: foreignIds } },
+                    select: {
+                        id: true,
+                        name: true,
+                        x: true,
+                        y: true,
+                        z: true,
+                        constellationId: true,
+                        regionId: true,
+                        region: {
+                            select: { name: true },
+                        },
+                    },
+                })
+            }
+
             edges = links.map((l) => ({
                 fromSystemId: l.fromSystemId,
                 toSystemId: l.toSystemId,
@@ -235,14 +276,31 @@ export async function getRegionMap(
             }))
         }
 
-        const systemNodes: RegionSystemNode[] = systems.map((s) => ({
+        const localNodes: RegionSystemNode[] = systems.map((s) => ({
             id: s.id,
             name: s.name,
             x: s.x,
             y: s.y,
             z: s.z,
             constellationId: s.constellationId,
+            regionId: regionId,
+            regionName: region.name,
+            isForeign: false,
         }))
+
+        const foreignNodes: RegionSystemNode[] = foreignSystems.map((s) => ({
+            id: s.id,
+            name: s.name,
+            x: s.x,
+            y: s.y,
+            z: s.z,
+            constellationId: s.constellationId,
+            regionId: s.regionId,
+            regionName: s.region.name,
+            isForeign: true,
+        }))
+
+        const systemNodes = [...localNodes, ...foreignNodes]
 
         const regionNode: RegionApiResponse = {
             id: region.id,
@@ -274,6 +332,7 @@ export async function getRegionMap(
                 ttl,
                 regionId,
                 systemCount: systems.length,
+                foreignSystemCount: systemNodes.length - systems.length,
                 edgeCount: edges.length,
                 timestamp: new Date().toISOString(),
             },
