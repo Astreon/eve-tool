@@ -61,18 +61,19 @@ router.get('/callback', async (req, res, next) => {
         const state = req.query.state as string | undefined
 
         if (!code) {
-            return next(new BadRequestError('Missing code'))
+            next(new BadRequestError('Missing code'))
+            return
         }
 
         if (!state) {
-            return next(new BadRequestError('Missing state'))
+            next(new BadRequestError('Missing state'))
+            return
         }
 
         const stateExists = (await redis.exists(stateKey(state))) === 1
         if (!stateExists) {
-            return next(
-                new BadRequestError('Invalid or expired state', { state }),
-            )
+            next(new BadRequestError('Invalid or expired state', { state }))
+            return
         }
         await redis.del(stateKey(state))
 
@@ -92,18 +93,19 @@ router.get('/callback', async (req, res, next) => {
             const esi = await getCharacterInfo(characterId)
 
             if (!esi.data) {
-                return next(
+                next(
                     new AppError('ESI character payload missing', {
                         code: 'INTERNAL',
                         details: { characterId },
                     }),
                 )
+                return
             }
 
             const payload = esi.data
 
             if (payload.race_id == null || payload.bloodline_id == null) {
-                return next(
+                next(
                     new AppError(
                         'ESI returned null for required fields race_id/bloodline_id',
                         {
@@ -116,6 +118,7 @@ router.get('/callback', async (req, res, next) => {
                         },
                     ),
                 )
+                return
             }
 
             const fallbackTtl = config.esiApi.esiFallbackTtlSeconds
@@ -189,7 +192,8 @@ router.post('/refresh', async (req, res, next) => {
     try {
         const { refreshToken: rt } = req.body as { refreshToken?: string }
         if (!rt) {
-            return next(new BadRequestError('Missing refreshToken'))
+            next(new BadRequestError('Missing refreshToken'))
+            return
         }
 
         const tokens = await refreshToken(rt)

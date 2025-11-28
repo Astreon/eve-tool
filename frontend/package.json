@@ -7,6 +7,7 @@
     "scripts": {
         "dev": "vite dev --port 3005",
         "build": "vite build",
+        "routes:gen": "tsr generate",
         "type-check": "tsc --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
@@ -77,6 +78,7 @@
         "@eslint/js": "^9.39.1",
         "@tanstack/devtools-vite": "^0.3.11",
         "@tanstack/react-devtools": "^0.8.1",
+        "@tanstack/router-cli": "^1.139.10",
         "@types/node": "^24.10.1",
         "@types/react": "^19.2.6",
         "@types/react-dom": "^19.2.3",

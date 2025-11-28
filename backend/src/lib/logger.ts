@@ -1,6 +1,5 @@
 /*
  * SPDX-License-Identifier: CC-BY-NC-SA-4.0
- * File: C:/Users/Astreon/Code/webdev/eve-tool/backend/src/lib/logger.ts
  * Copyright (C) 2025 Astreon
  */
 
