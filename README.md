@@ -118,7 +118,7 @@ Backend (`backend/package.json`)
 - `type-check` — TypeScript type checks (app + tests config).
 - `lint` / `lint:fix` — Run ESLint (fix in place).
 - `test` — Run Vitest in CI mode.
-- `test:ui` — Run Vitest in watch/UI mode.
+- `test:watch` — Run Vitest in watch/UI mode.
 - `db:push` — Apply Prisma schema to database.
 - `sde:cli` — Invoke SDE CLI directly: `sde/installer.ts`.
 - `sde:install` — Download, import, and calculate SDE data (full pipeline).
@@ -186,7 +186,7 @@ Backend
   ```
 - Watch/UI mode:
   ```bash
-  npm run test:ui
+  npm run test:watch
   ```
 
 Frontend

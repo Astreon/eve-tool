@@ -5,12 +5,20 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 import { MapTool } from '@/components/xyflow/mapTool.tsx'
+import { seo } from '@/lib/seo.ts'
 
 export const Route = createFileRoute('/map/')({
-    component: RegionPage,
+    head: () => ({
+        meta: seo({
+            title: 'Map Tool',
+            description:
+                'Interactive EVE Online starmap with links and informations about the whole universe.',
+        }),
+    }),
+    component: MapToolPage,
 })
 
-function RegionPage() {
+function MapToolPage() {
     return (
         <div className="space-y-4">
             <div className="mb-4">

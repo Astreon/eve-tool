@@ -4,6 +4,7 @@
  */
 
 type ServiceStatus = 'Up' | 'Degraded' | 'Down' | 'Unknown'
+export type ApiStatus = 'Up' | 'Maintenance' | 'Down' | 'Unknown'
 
 export type EsiRouteHealth =
     | 'Unknown'
@@ -35,12 +36,17 @@ export interface EsiStatusRaw {
 
 export interface StatusApiResponse {
     api: {
-        status: 'Up' | 'Degraded' | 'Down' | 'Unknown'
+        status: ApiStatus
         uptimeMs: number
     }
     esi: {
         overallStatus: EsiRouteHealth
         global: EsiGlobalStatus
         routes: EsiRouteStatus[]
+    }
+    maintenance?: {
+        isOn: boolean
+        reason?: string
+        startedAt?: string
     }
 }

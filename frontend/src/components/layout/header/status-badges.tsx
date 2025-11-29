@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { ComponentProps } from 'react'
 
 type EsiRouteHealth = 'Unknown' | 'OK' | 'Degraded' | 'Down' | 'Recovering'
-type ApiStatus = 'Up' | 'Down'
+type ApiStatus = 'Up' | 'Maintenance' | 'Down' | 'Unknown'
 
 type StatusResponse = {
     success: boolean
@@ -20,7 +20,7 @@ type StatusResponse = {
         esi: {
             overallStatus: EsiRouteHealth
             global: {
-                status: ApiStatus | 'Unknown'
+                status: ApiStatus
                 players: number | null
                 serverVersion: string | null
                 startTime: string | null
@@ -32,6 +32,11 @@ type StatusResponse = {
                 path: string
                 status: EsiRouteHealth | string
             }[]
+        }
+        maintenance?: {
+            isOn: boolean
+            reason?: string
+            startedAt: string
         }
     }
     meta: {
@@ -83,14 +88,26 @@ function apiStatusToVariant(status: ApiStatus): ComponentProps<typeof Badge>['va
     switch (status) {
         case 'Up':
             return 'success'
+        case 'Maintenance':
+            return 'info'
         case 'Down':
-        default:
             return 'destructive'
+        case 'Unknown':
+        default:
+            return 'outline'
     }
 }
 
 function apiStatusToLabel(status: ApiStatus): string {
-    return status === 'Up' ? 'Online' : 'Offline'
+    switch (status) {
+        case 'Up':
+            return 'Online'
+        case 'Maintenance':
+            return 'Maintenance'
+        case 'Down':
+        default:
+            return 'Offline'
+    }
 }
 
 function StatusPill({

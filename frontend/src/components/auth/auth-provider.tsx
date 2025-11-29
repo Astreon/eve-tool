@@ -158,9 +158,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
             })
 
             if (!res.ok) {
-                console.error('Refresh failed', res.status, await res.text())
-                setSession(null)
-                return
+                let body: unknown
+
+                try {
+                    body = await res.json()
+                } catch {
+                    try {
+                        body = await res.text()
+                    } catch {
+                        body = '<unreadable>'
+                    }
+                }
+
+                console.error('Refresh failed', res.status, body ?? '<no body>')
             }
 
             const data = (await res.json()) as {

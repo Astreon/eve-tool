@@ -10,12 +10,14 @@ import {
     EsiRouteHealth,
     StatusApiResponse,
     EsiStatusRaw,
+    ApiStatus,
 } from '../types/api/status.types.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import { esiApi } from '../lib/axios.js'
 import { USED_ESI_ROUTES } from '../config/esiRoutes.js'
 import { logger } from '../lib/logger.js'
 import { ApiResponse } from '../types/apiResponse.js'
+import { getMaintenanceInfo } from '../lib/maintenance.js'
 
 let cachedGlobalStatus: EsiGlobalStatus | null = null
 let cachedGlobalStatusFetchedAt = 0
@@ -186,8 +188,12 @@ export async function getStatus(
     const esiOverall: EsiRouteHealth =
         esiGlobal.status === 'Down' ? 'Down' : aggregateEsiHealth(usedRoutes)
 
-    const api = {
-        status: 'Up' as const,
+    const maintenanceInfo = await getMaintenanceInfo()
+
+    const apiStatus: ApiStatus = maintenanceInfo.isOn ? 'Maintenance' : 'Up'
+
+    const api: StatusApiResponse['api'] = {
+        status: apiStatus,
         uptimeMs: Math.round(process.uptime() * 1000),
     }
 
@@ -199,6 +205,11 @@ export async function getStatus(
             overallStatus: esiOverall,
             global: esiGlobal,
             routes: usedRoutes,
+        },
+        maintenance: {
+            isOn: maintenanceInfo.isOn,
+            reason: maintenanceInfo.reason,
+            startedAt: maintenanceInfo.startedAt,
         },
     }
 

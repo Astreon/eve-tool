@@ -8,11 +8,15 @@ import routes from './routes/index.js'
 import { errorHandler } from './middlewares/errorHandler.js'
 import { NotFoundError } from './types/appError.js'
 import { httpLogger } from './middlewares/httpLogger.js'
+import { maintenanceGuard } from './middlewares/maintenance.js'
 
 const app = express()
 
 app.use(express.json())
 app.use(httpLogger)
+
+app.use(maintenanceGuard)
+
 app.use(routes)
 
 app.use((req, _res, next) => {

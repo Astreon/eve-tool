@@ -26,6 +26,8 @@ import { RouterTopLoadingBar } from '@/components/router-top-loading-bar'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/components/auth/auth-provider'
 import { AppReadyGate } from '@/components/app-ready-gate.tsx'
+import { MaintenanceOverlay } from '@/components/layout/maintenance.tsx'
+import { seo } from '@/lib/seo'
 
 const queryClient = new QueryClient()
 
@@ -39,9 +41,9 @@ export const Route = createRootRoute({
                 name: 'viewport',
                 content: 'width=device-width, initial-scale=1',
             },
-            {
-                title: 'EVE Toolkit',
-            },
+            ...seo({
+                description: 'EVE Toolkit - Your ultimative all-in-one EVE Online companion.',
+            }),
         ],
         links: [
             {
@@ -123,6 +125,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                                                     <Toaster position="top-center" richColors />
                                                 </div>
                                             </div>
+                                            <MaintenanceOverlay />
                                         </SidebarInset>
                                     </SidebarProvider>
                                 </AppReadyGate>

@@ -174,7 +174,7 @@ function SystemNodeComponent({ data }: NodeProps) {
     const { label, subLabel, isForeign } = d
 
     return (
-        <div className="bg-background/90 ring-border rounded px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
+        <div className="bg-background/90 ring-border rounded-sm px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
             <Handle
                 type="source"
                 position={Position.Top}
