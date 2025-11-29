@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express'
 import { getMaintenanceInfo } from '../lib/maintenance.js'
-import { ApiError, ApiErrorResponse } from '../types/apiResponse.js'
+import type { ApiErrorResponse } from '../types/apiResponse.js'
 
 const PUBLIC_PATHS = ['/api/status'] // is always online
 
@@ -14,10 +14,16 @@ export async function maintenanceGuard(
     res: Response,
     next: NextFunction,
 ) {
-    if (PUBLIC_PATHS.some((p) => req.path.startsWith(p))) return next()
+    if (PUBLIC_PATHS.some((p) => req.path.startsWith(p))) {
+        next()
+        return
+    }
 
     const info = await getMaintenanceInfo()
-    if (!info.isOn) return next()
+    if (!info.isOn) {
+        next()
+        return
+    }
 
     const payload: ApiErrorResponse = {
         success: false,
