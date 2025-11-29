@@ -13,7 +13,7 @@
         "lint:fix": "eslint --fix .",
         "prettier": "prettier --check .",
         "test": "vitest run",
-        "test:ui": "vitest",
+        "test:watch": "vitest",
         "db:push": "npx prisma db push",
         "sde:install": "npx tsx --env-file .env sde/installer.ts install",
         "sde:import": "npx tsx --env-file .env sde/installer.ts import",

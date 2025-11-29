@@ -8,8 +8,7 @@ on:
       - 'frontend/**'
       - 'frontend.yml'
   push:
-    branches:
-      - main
+    branches: [ main, develop ]
     paths:
       - 'frontend/**'
       - 'frontend.yml'
@@ -48,3 +47,6 @@ jobs:
 
       - name: Prettier check
         run: npm run prettier
+
+      - name: Build
+        run: npm run build
