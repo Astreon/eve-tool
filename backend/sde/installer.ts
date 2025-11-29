@@ -27,6 +27,7 @@ import { invalidateSdeCaches } from './cache.js'
 import { sdePrisma } from './lib/prisma.js'
 import { sdeRedis } from './lib/redis.js'
 import { sdeLogger } from './lib/logger.js'
+import { withMaintenance } from './lib/maintenance'
 
 type Command =
     | 'install'
@@ -480,46 +481,71 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
         return
     }
 
+    const reason = force
+        ? 'SDE Update (forced by Administrator) in Progress'
+        : 'SDE Update in progress'
+
     sdeLogger.info(
         force
             ? '⬆️ Running UPDATE pipeline with --force (import + calculate)…'
             : '⬆️ New SDE version detected – running UPDATE pipeline (import + calculate)…',
     )
 
-    // Import
-    const importStart = performance.now()
-    const stats = await importer(dryRun)
-    const importDur = ((performance.now() - importStart) / 1000).toFixed(1)
-    sdeLogger.info(
-        `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
-    )
-    sdeLogger.info(`✅ Import phase finished in ${importDur}s.`)
-
-    // --- Calculations
-    const calcStart = performance.now()
-    const calcStats = await calculator(dryRun)
-    const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
-    sdeLogger.info(
-        `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
-    )
-    sdeLogger.info(`✅ Calculation phase finished in ${calcDur}s.`)
-
     if (dryRun) {
+        sdeLogger.info(
+            '🧪 DRY-RUN: running UPDATE pipeline without maintenance mode.',
+        )
+        const importStart = performance.now()
+        const stats = await importer(dryRun)
+        const importDur = ((performance.now() - importStart) / 1000).toFixed(1)
+        sdeLogger.info(
+            `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
+        )
+        sdeLogger.info(`✅ Import phase finished in ${importDur}s.`)
+
+        const calcStart = performance.now()
+        const calcStats = await calculator(dryRun)
+        const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
+        sdeLogger.info(
+            `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
+        )
+        sdeLogger.info(`✅ Calculation phase finished in ${calcDur}s.`)
         sdeLogger.info(
             '🌵 Dry-run: skipping DB version update and Redis invalidation.',
         )
+
         return
     }
 
-    sdeLogger.info('📝 Updating SDE version in database…')
-    await upsertDbVersion(fileVersion)
-    sdeLogger.info(
-        `✅ Stored SDE version build=${fileVersion.buildNumber} in database.`,
-    )
+    await withMaintenance(reason, async () => {
+        // Import
+        const importStart = performance.now()
+        const stats = await importer(dryRun)
+        const importDur = ((performance.now() - importStart) / 1000).toFixed(1)
+        sdeLogger.info(
+            `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
+        )
+        sdeLogger.info(`✅ Import phase finished in ${importDur}s.`)
 
-    sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
-    await invalidateSdeCaches()
-    sdeLogger.info('✅ Redis caches successfully invalidated.')
+        // --- Calculations
+        const calcStart = performance.now()
+        const calcStats = await calculator(dryRun)
+        const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
+        sdeLogger.info(
+            `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
+        )
+        sdeLogger.info(`✅ Calculation phase finished in ${calcDur}s.`)
+
+        sdeLogger.info('📝 Updating SDE version in database…')
+        await upsertDbVersion(fileVersion)
+        sdeLogger.info(
+            `✅ Stored SDE version build=${fileVersion.buildNumber} in database.`,
+        )
+
+        sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
+        await invalidateSdeCaches()
+        sdeLogger.info('✅ Redis caches successfully invalidated.')
+    })
 }
 
 // --- DOWNLOAD – only .sde Files

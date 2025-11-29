@@ -10,8 +10,15 @@ import { FEATURES, type FeatureId } from '@/features/auth/features'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { seo } from '@/lib/seo.ts'
 
 export const Route = createFileRoute('/onboarding')({
+    head: () => ({
+        meta: seo({
+            title: 'Onboarding',
+            description: 'Start your journey with EVE Toolkit.',
+        }),
+    }),
     component: OnboardingPage,
 })
 
