@@ -8,6 +8,7 @@
 
 # TypeScript build output
 /dist
+.output
 
 # OS generated files
 .DS_Store
