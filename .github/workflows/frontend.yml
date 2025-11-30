@@ -105,6 +105,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-app
+          include-hidden-files: true
           path: |
             frontend/.output
             frontend/loader.cjs
