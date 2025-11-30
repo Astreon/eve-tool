@@ -1,6 +1,6 @@
 {
     "name": "eve-tool-frontend",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "type": "module",
     "description": "Frontend for Eve Tool",
     "main": "index.js",
@@ -16,7 +16,7 @@
     },
     "keywords": [],
     "author": "Astreon",
-    "license": "MIT",
+    "license": "CC-BY-NC-SA-4.0",
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",

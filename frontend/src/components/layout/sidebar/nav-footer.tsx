@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { APP_COPYRIGHT, APP_LICENCE, APP_NAME, APP_VERSION } from '@/lib/copyright.ts'
+import { APP_BUILD, APP_COPYRIGHT, APP_LICENCE, APP_NAME, APP_VERSION } from '@/lib/copyright.ts'
 
 export function NavFooter() {
     return (
@@ -16,7 +16,7 @@ export function NavFooter() {
                 <div className="flex items-center justify-between text-[0.5rem]">
                     <span className="font-medium">{APP_COPYRIGHT}</span>
                     <span className="font-medium">{APP_LICENCE}</span>
-                    <span className="tabular-nums">Build 00000</span>
+                    <span className="tabular-nums">Build {APP_BUILD}</span>
                 </div>
             </div>
         </div>
