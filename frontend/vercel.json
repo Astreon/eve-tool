@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "https://api.eve-toolkit.de/:path*"
+        },
+        {
+            "source": "/auth/:path*",
+            "destination": "https://api.eve-toolkit.de/:path*"
+        }
+    ]
+}
