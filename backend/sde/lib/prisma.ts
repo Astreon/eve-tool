@@ -5,8 +5,11 @@
 
 import { PrismaClient } from '../../src/generated/client.js'
 import { sdeLogger } from './logger.js'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-export const sdePrisma = new PrismaClient()
+const connectionString = `${process.env.DATABASE_URL}`
+const adapter = new PrismaPg({ connectionString })
+export const sdePrisma = new PrismaClient({ adapter })
 
 // Optional: kurzes Info-Log, aber KEIN Query-Spam
 sdePrisma
