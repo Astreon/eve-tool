@@ -140,7 +140,7 @@ export function StatusBadges() {
     const esiOverall: EsiRouteHealth =
         data?.data.esi.overallStatus ?? (isLoading ? 'Unknown' : 'Down')
 
-    const apiStatus: ApiStatus = data?.data.api.status ?? (isLoading ? 'Up' : 'Down')
+    const apiStatus: ApiStatus = data?.data.api.status ?? (isLoading ? 'Unknown' : 'Down')
 
     const players = data?.data.esi.global.players ?? null
 

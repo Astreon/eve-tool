@@ -92,7 +92,7 @@ export const navItems: NavGroup[] = [
         items: [
             {
                 title: 'Map Editor',
-                href: '/universe/editor',
+                href: '/map',
                 icon: Map,
                 isComing: true,
             },

@@ -2,11 +2,11 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://api.eve-toolkit.astreon.network/:path*"
+            "destination": "https://api.eve-toolkit.astreon.network/api/:path*"
         },
         {
             "source": "/auth/:path*",
-            "destination": "https://api.eve-toolkit.de.astreon.network/:path*"
+            "destination": "https://api.eve-toolkit.de.astreon.network/auth/:path*"
         }
     ]
 }
