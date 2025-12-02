@@ -7,12 +7,9 @@ import { Redis } from 'ioredis'
 import config from '../config/config.js'
 import { logger } from './logger.js'
 
-export const redis = new Redis({
-    host: config.redis.host,
-    port: config.redis.port,
-    password: config.redis.password,
-    db: 0,
-})
+const redisUrl = process.env.REDIS_URL
+
+export const redis = new Redis(redisUrl ?? 'localhost')
 
 redis.on('ready', () => {
     logger.info('REDIS', 'Connected to Redis', {

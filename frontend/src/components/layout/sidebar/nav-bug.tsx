@@ -24,7 +24,9 @@ export function NavBug() {
                             asChild
                         >
                             <a
-                                href={'https://github.com/Astreon/eve-tool/issues/new'}
+                                href={
+                                    'https://github.com/Astreon/eve-tool/issues/new?template=bug_report.md'
+                                }
                                 target="_blank"
                             >
                                 <BugIcon className="text-red-500" />

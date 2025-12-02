@@ -7,12 +7,9 @@ import { Redis } from 'ioredis'
 import config from '../../src/config/config.js'
 import { sdeLogger } from './logger.js'
 
-export const sdeRedis = new Redis({
-    host: config.redis.host,
-    port: config.redis.port,
-    password: config.redis.password,
-    db: 0,
-})
+const redisUrl = process.env.REDIS_URL
+
+export const sdeRedis = new Redis(redisUrl ?? 'localhost')
 
 sdeRedis.on('ready', () => {
     sdeLogger.info(

@@ -11,7 +11,11 @@ export function NavFooter() {
             <div className="text-muted-foreground flex w-full flex-col gap-2 px-2 text-[0.6rem]">
                 <div className="pb-1">
                     <div className="flex items-center justify-between">
-                        <a href="https://github.com/Astreon/eve-tool" className="font-medium">
+                        <a
+                            href="https://github.com/Astreon/eve-tool"
+                            target="_blank"
+                            className="font-medium"
+                        >
                             {APP_NAME}
                         </a>
                         <span className="tabular-nums">v{APP_VERSION}</span>
