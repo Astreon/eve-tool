@@ -23,6 +23,7 @@ import { NavUser } from '@/components/layout/sidebar/nav-user'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Logo from '@/components/layout/logo'
 import { NavFooter } from '@/components/layout/sidebar/nav-footer.tsx'
+import { NavBug } from '@/components/layout/sidebar/nav-bug.tsx'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const pathname = useLocation({ select: (location) => location.pathname })
@@ -64,6 +65,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </ScrollArea>
             </SidebarContent>
             <SidebarFooter>
+                <NavBug />
                 <NavUser />
             </SidebarFooter>
             <NavFooter />

@@ -7,16 +7,20 @@ import { APP_BUILD, APP_COPYRIGHT, APP_LICENCE, APP_NAME, APP_VERSION } from '@/
 
 export function NavFooter() {
     return (
-        <div className="text-muted-foreground flex w-full flex-col gap-2 px-2 text-[0.6rem]">
-            <div className="pb-1">
-                <div className="flex items-center justify-between">
-                    <span className="font-medium">{APP_NAME}</span>
-                    <span className="tabular-nums">v{APP_VERSION}</span>
-                </div>
-                <div className="flex items-center justify-between text-[0.5rem]">
-                    <span className="font-medium">{APP_COPYRIGHT}</span>
-                    <span className="font-medium">{APP_LICENCE}</span>
-                    <span className="tabular-nums">Build {APP_BUILD}</span>
+        <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
+            <div className="text-muted-foreground flex w-full flex-col gap-2 px-2 text-[0.6rem]">
+                <div className="pb-1">
+                    <div className="flex items-center justify-between">
+                        <a href="https://github.com/Astreon/eve-tool" className="font-medium">
+                            {APP_NAME}
+                        </a>
+                        <span className="tabular-nums">v{APP_VERSION}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[0.5rem]">
+                        <span className="font-medium">{APP_COPYRIGHT}</span>
+                        <span className="font-medium">{APP_LICENCE}</span>
+                        <span className="tabular-nums">Build {APP_BUILD}</span>
+                    </div>
                 </div>
             </div>
         </div>

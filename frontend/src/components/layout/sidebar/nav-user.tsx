@@ -44,7 +44,7 @@ export function NavUser() {
                 <img
                     src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-white-small.png"
                     alt="Log in with EVE Online"
-                    className="h-auto w-auto"
+                    className="h-auto w-auto overflow-hidden group-data-[collapsible=icon]:hidden"
                 />
             </Button>
         )

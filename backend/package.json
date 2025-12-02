@@ -19,13 +19,15 @@
         "sde:import": "npx tsx --env-file .env sde/installer.ts import",
         "sde:calculate": "npx tsx --env-file .env sde/installer.ts calculate",
         "sde:update": "npx tsx --env-file .env sde/installer.ts update",
-        "sde:download": "npx tsx --env-file .env sde/installer.ts download"
+        "sde:download": "npx tsx --env-file .env sde/installer.ts download",
+        "postinstall": "prisma generate"
     },
     "keywords": [],
     "author": "Astreon",
-    "license": "MIT",
+    "license": "CC-BY-NC-SA-4.0",
     "dependencies": {
-        "@prisma/client": "^6.18.0",
+        "@prisma/adapter-pg": "^7.0.1",
+        "@prisma/client": "^7.0.1",
         "axios": "^1.13.0",
         "dotenv": "^17.2.3",
         "express": "^5.1.0",
@@ -47,7 +49,7 @@
         "eslint-plugin-prettier": "^5.5.4",
         "nock": "^14.0.10",
         "prettier": "^3.6.2",
-        "prisma": "^6.18.0",
+        "prisma": "^7.0.1",
         "supertest": "^7.1.4",
         "tsx": "^4.20.6",
         "typescript": "^5.9.3",

@@ -5,15 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider      = "prisma-client"
-  output        = "../src/generated"
-  binaryTargets = ["native", "debian-openssl-1.0.x"]
+  provider = "prisma-client"
+  output   = "../src/generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  schemas  = ["public", "sde"]
+  schemas  = ["sde", "public"]
 }
 
 model Character {

@@ -6,6 +6,7 @@
 import { PrismaClient, Prisma } from '../generated/client.js'
 import config from '../config/config.js'
 import { logger } from './logger.js'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 const logConfig: Prisma.LogDefinition[] = [
     { level: 'error', emit: 'event' },
@@ -17,9 +18,9 @@ if (config.nodeEnv === 'development') {
     logConfig.push({ level: 'query', emit: 'event' })
 }
 
-export const prisma = new PrismaClient({
-    log: logConfig,
-})
+const connectionString = `${process.env.DATABASE_URL ?? 'localhost'}`
+const adapter = new PrismaPg({ connectionString })
+export const prisma = new PrismaClient({ adapter, log: logConfig })
 
 // --- Error
 prisma.$on('error', (event: Prisma.LogEvent) => {

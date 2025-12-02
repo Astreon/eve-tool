@@ -16,7 +16,15 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar'
-import { ChevronRight, Globe, type LucideIcon } from 'lucide-react'
+import {
+    BadgeDollarSign,
+    ChevronRight,
+    Map,
+    Globe,
+    Mail,
+    Play,
+    type LucideIcon,
+} from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useLocation } from '@tanstack/react-router'
@@ -46,12 +54,47 @@ type NavItem = {
 
 export const navItems: NavGroup[] = [
     {
-        title: 'Tools',
+        title: 'Dashboards',
         items: [
             {
-                title: 'Map Tool',
-                href: '/map',
+                title: 'Start',
+                href: '/',
+                icon: Play,
+                isComing: true,
+            },
+        ],
+    },
+    {
+        title: 'General Tools',
+        items: [
+            {
+                title: 'Universe',
+                href: '/universe',
                 icon: Globe,
+                isComing: true,
+            },
+            {
+                title: 'Market Browser',
+                href: '/market',
+                icon: BadgeDollarSign,
+                isComing: true,
+            },
+            {
+                title: 'Mail Manager',
+                href: '/mail',
+                icon: Mail,
+                isComing: true,
+            },
+        ],
+    },
+    {
+        title: 'Intel Tools',
+        items: [
+            {
+                title: 'Map Editor',
+                href: '/universe/editor',
+                icon: Map,
+                isComing: true,
             },
         ],
     },
