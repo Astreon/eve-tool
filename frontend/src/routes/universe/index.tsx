@@ -15,10 +15,10 @@ export const Route = createFileRoute('/universe/')({
                 'Interactive EVE Online starmap with links and informations about the whole universe.',
         }),
     }),
-    component: MapToolPage,
+    component: UniversePage,
 })
 
-function MapToolPage() {
+function UniversePage() {
     return (
         <div className="space-y-4">
             <div className="mb-4">
