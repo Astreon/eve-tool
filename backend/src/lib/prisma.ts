@@ -18,7 +18,7 @@ if (config.nodeEnv === 'development') {
     logConfig.push({ level: 'query', emit: 'event' })
 }
 
-const connectionString = `${process.env.DATABASE_URL ?? process.env.PSQL_POSTGRES_URL ?? 'localhost'}`
+const connectionString = `${process.env.DATABASE_URL ?? 'localhost'}`
 const adapter = new PrismaPg({ connectionString })
 export const prisma = new PrismaClient({ adapter, log: logConfig })
 
