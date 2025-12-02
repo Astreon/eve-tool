@@ -6,7 +6,7 @@
         },
         {
             "source": "/auth/:path*",
-            "destination": "https://api.eve-toolkit.de.astreon.network/auth/:path*"
+            "destination": "https://api.eve-toolkit.astreon.network/auth/:path*"
         }
     ]
 }
