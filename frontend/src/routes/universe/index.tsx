@@ -7,7 +7,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { MapTool } from '@/components/xyflow/mapTool.tsx'
 import { seo } from '@/lib/seo.ts'
 
-export const Route = createFileRoute('/map/')({
+export const Route = createFileRoute('/universe/')({
     head: () => ({
         meta: seo({
             title: 'Map Tool',

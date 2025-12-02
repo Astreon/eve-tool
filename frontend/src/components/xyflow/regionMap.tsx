@@ -73,7 +73,7 @@ async function fetchRegionMap(regionId: number): Promise<RegionMapApiResponse> {
     const body = (await res.json()) as ApiResponse<RegionMapApiResponse>
 
     if (!body.success) {
-        throw new Error(body.message || 'Failed to load region map')
+        throw new Error(body.message || 'Failed to load region universe')
     }
 
     return body.data
@@ -81,7 +81,7 @@ async function fetchRegionMap(regionId: number): Promise<RegionMapApiResponse> {
 
 function useRegionMap(regionId: number) {
     return useQuery({
-        queryKey: ['region-map', regionId],
+        queryKey: ['region-universe', regionId],
         queryFn: () => fetchRegionMap(regionId),
         staleTime: 60_000,
     })

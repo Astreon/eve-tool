@@ -19,7 +19,8 @@
         "sde:import": "npx tsx --env-file .env sde/installer.ts import",
         "sde:calculate": "npx tsx --env-file .env sde/installer.ts calculate",
         "sde:update": "npx tsx --env-file .env sde/installer.ts update",
-        "sde:download": "npx tsx --env-file .env sde/installer.ts download"
+        "sde:download": "npx tsx --env-file .env sde/installer.ts download",
+        "postinstall": "prisma generate"
     },
     "keywords": [],
     "author": "Astreon",
