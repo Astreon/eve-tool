@@ -20,8 +20,7 @@
         "sde:calculate": "npx tsx --env-file .env sde/installer.ts calculate",
         "sde:update": "npx tsx --env-file .env sde/installer.ts update",
         "sde:download": "npx tsx --env-file .env sde/installer.ts download",
-        "postinstall": "prisma generate",
-        "vercel": "prisma migrate deploy && tsc && npm run sde:update"
+        "postinstall": "prisma generate"
     },
     "keywords": [],
     "author": "Astreon",
