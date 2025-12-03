@@ -14,16 +14,6 @@ import { nitro } from 'nitro/vite'
 const config = defineConfig({
     server: {
         port: 3005,
-        proxy: {
-            '/api': {
-                target: 'http://localhost:3000',
-                changeOrigin: true,
-            },
-            '/auth': {
-                target: 'http://localhost:3000',
-                changeOrigin: true,
-            },
-        },
     },
     plugins: [
         devtools(),
