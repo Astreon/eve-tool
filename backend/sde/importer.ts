@@ -99,7 +99,7 @@ export async function importer(
     const globalProgress = isTty
         ? createProgressBar({
               label: 'Datasets',
-              total: IMPORT_TASKS.length,
+              total: selectedTasks.length,
               redrawEvery: 250,
           })
         : null
@@ -116,7 +116,7 @@ export async function importer(
         }
 
         sdeLogger.info(
-            `📦 (${index}/${IMPORT_TASKS.length}) Importing ${task.label} (${datasetId})...)`,
+            `📦 (${index}/${selectedTasks.length}) Importing ${task.label})`,
         )
 
         const datasetProgress = createProgressBar({

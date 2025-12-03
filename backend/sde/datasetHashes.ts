@@ -17,7 +17,7 @@ export const DATASET_FILES = {
     moons: 'mapMoons.jsonl',
     planets: 'mapPlanets.jsonl',
     regions: 'mapRegions.jsonl',
-    solarSystems: 'mapSolarSystems.jsonl',
+    solarsystems: 'mapSolarSystems.jsonl',
     stargates: 'mapStargates.jsonl',
     races: 'races.jsonl',
 } as const
