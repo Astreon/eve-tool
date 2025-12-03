@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import type { Edge as FlowEdge, Node as FlowNode, NodeChange } from '@xyflow/react'
 import { Background, Handle, NodeProps, Position, ReactFlow, applyNodeChanges } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -91,7 +91,7 @@ async function updateRegionLayoutApi(
     regionId: number,
     payload: UpdateRegionLayoutPayload,
 ): Promise<void> {
-    const res = await fetch(`/api/regions/${regionId}/layout`, {
+    const res = await fetch(`http://localhost:3000/api/regions/${regionId}/layout`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -99,13 +99,33 @@ async function updateRegionLayoutApi(
         body: JSON.stringify(payload),
     })
 
+    const rawText = await res.text()
+
     if (!res.ok) {
-        throw new Error(`Failed to update region layout (HTTP ${res.status})`)
+        let body: ApiResponse<unknown> | null = null
+        try {
+            body = JSON.parse(rawText) as ApiResponse<unknown>
+        } catch {
+            // ignore JSON parse error
+        }
+
+        const msg =
+            (body && !body.success && 'message' in body && body.message) ||
+            rawText ||
+            `Failed to update region layout (HTTP ${res.status})`
+        throw new Error(msg)
     }
 
-    const body = (await res.json()) as ApiResponse<unknown>
-    if (!body.success) {
-        throw new Error(body.message || 'Failed to update region layout')
+    if (rawText) {
+        let body: ApiResponse<unknown> | null = null
+        try {
+            body = JSON.parse(rawText) as ApiResponse<unknown>
+        } catch {
+            // ignore
+        }
+        if (body && !body.success) {
+            throw new Error(body.message || 'Failed to update region layout')
+        }
     }
 }
 
@@ -265,15 +285,16 @@ export function RegionMap({
     const isDark = getIsDarkMode()
 
     const [editMode, setEditMode] = useState(false)
-    const queryClient = useQueryClient()
+    //const queryClient = useQueryClient()
 
     const layoutMutation = useMutation({
         mutationFn: (vars: UpdateRegionLayoutPayload) => updateRegionLayoutApi(regionId, vars),
-        onSuccess: () => {
+        retry: false,
+        /*onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ['region-universe', regionId],
             })
-        },
+        },*/
     })
 
     // ReactFlow-Node-State
