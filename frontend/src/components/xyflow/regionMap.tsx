@@ -3,10 +3,10 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import type { Edge as FlowEdge, Node as FlowNode } from '@xyflow/react'
-import { Background, Handle, NodeProps, Position, ReactFlow } from '@xyflow/react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Edge as FlowEdge, Node as FlowNode, NodeChange } from '@xyflow/react'
+import { Background, Handle, NodeProps, Position, ReactFlow, applyNodeChanges } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
 // --- API Types (from Backend)
@@ -36,6 +36,8 @@ export type RegionSystemNodeApi = {
     regionId: number
     regionName: string
     isForeign: boolean
+    layoutX?: number | null
+    layoutY?: number | null
 }
 
 export type RegionSystemEdgeApi = {
@@ -79,6 +81,34 @@ async function fetchRegionMap(regionId: number): Promise<RegionMapApiResponse> {
     return body.data
 }
 
+type UpdateRegionLayoutPayload = {
+    systemId: number
+    x: number
+    y: number
+}
+
+async function updateRegionLayoutApi(
+    regionId: number,
+    payload: UpdateRegionLayoutPayload,
+): Promise<void> {
+    const res = await fetch(`/api/regions/${regionId}/layout`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+        throw new Error(`Failed to update region layout (HTTP ${res.status})`)
+    }
+
+    const body = (await res.json()) as ApiResponse<unknown>
+    if (!body.success) {
+        throw new Error(body.message || 'Failed to update region layout')
+    }
+}
+
 function useRegionMap(regionId: number) {
     return useQuery({
         queryKey: ['region-universe', regionId],
@@ -94,8 +124,7 @@ type SystemNodeData = {
     isForeign: boolean
 }
 
-type SystemNode = FlowNode & {
-    data: SystemNodeData
+type SystemNode = FlowNode<SystemNodeData> & {
     basePosition: { x: number; y: number }
 }
 
@@ -170,8 +199,7 @@ function getEdgeColor(borderType: SystemBorderType, isDark: boolean): string {
 }
 
 function SystemNodeComponent({ data }: NodeProps) {
-    const d = data as SystemNodeData
-    const { label, subLabel, isForeign } = d
+    const { label, subLabel, isForeign } = data as SystemNodeData
 
     return (
         <div className="bg-background/90 ring-border rounded-sm px-2 py-[2px] text-[10px] leading-tight shadow-sm ring-1">
@@ -236,10 +264,55 @@ export function RegionMap({
     const { data, isLoading, isError, error } = useRegionMap(regionId)
     const isDark = getIsDarkMode()
 
-    const nodes: SystemNode[] = useMemo(() => {
-        if (!data || data.systems.length === 0) return []
+    const [editMode, setEditMode] = useState(false)
+    const queryClient = useQueryClient()
 
-        const projected = data.systems.map((s) => ({
+    const layoutMutation = useMutation({
+        mutationFn: (vars: UpdateRegionLayoutPayload) => updateRegionLayoutApi(regionId, vars),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['region-universe', regionId],
+            })
+        },
+    })
+
+    // ReactFlow-Node-State
+    const [rfNodes, setRfNodes] = useState<SystemNode[]>([])
+
+    // Helper: Nodes aus API-Daten bauen
+    const buildNodesFromData = useCallback((d: RegionMapApiResponse | undefined): SystemNode[] => {
+        if (!d || d.systems.length === 0) return []
+
+        const hasLayout = d.systems.some((s) => s.layoutX != null && s.layoutY != null)
+
+        if (hasLayout) {
+            return d.systems.map((s) => {
+                const x = s.layoutX ?? 0
+                const y = s.layoutY ?? 0
+                const subLabel = s.isForeign ? s.regionName : `C${s.constellationId}`
+
+                return {
+                    id: s.id.toString(),
+                    position: { x, y },
+                    basePosition: { x, y },
+                    type: 'system',
+                    data: {
+                        label: s.name,
+                        subLabel,
+                        isForeign: s.isForeign,
+                    },
+                    style: {
+                        borderRadius: '0.25rem',
+                        border: '1px solid rgba(0,0,0,0.2)',
+                        padding: 0,
+                        backgroundColor: 'var(--background)',
+                    },
+                }
+            })
+        }
+
+        // Fallback: Autolayout aus SDE-Koordinaten
+        const projected = d.systems.map((s) => ({
             id: s.id,
             name: s.name,
             x2d: s.x,
@@ -289,12 +362,22 @@ export function RegionMap({
         })
 
         return relaxLayout(baseNodes)
-    }, [data])
+    }, [])
+
+    // Bei neuen Daten Nodes initial aufbauen
+    useEffect(() => {
+        if (!data) {
+            setRfNodes([])
+            return
+        }
+        const built = buildNodesFromData(data)
+        setRfNodes(built)
+    }, [data, buildNodesFromData])
 
     const edges: FlowEdge[] = useMemo(() => {
         if (!data) return []
 
-        const nodeIdSet = new Set(nodes.map((n) => n.id))
+        const nodeIdSet = new Set(rfNodes.map((n) => n.id))
 
         return (
             data.edges
@@ -320,7 +403,25 @@ export function RegionMap({
                     },
                 })) ?? []
         )
-    }, [data, nodes, isDark])
+    }, [data, rfNodes, isDark])
+
+    const handleNodesChange = useCallback((changes: NodeChange[]) => {
+        setRfNodes((nds) => applyNodeChanges(changes, nds) as SystemNode[])
+    }, [])
+
+    const handleNodeDragStop = useCallback(
+        (_: unknown, node: FlowNode) => {
+            if (!editMode) return
+            if (!node.id) return
+
+            layoutMutation.mutate({
+                systemId: Number(node.id),
+                x: node.position.x,
+                y: node.position.y,
+            })
+        },
+        [editMode, layoutMutation],
+    )
 
     const proOptions = { hideAttribution: true }
 
@@ -353,20 +454,33 @@ export function RegionMap({
                         <span className="text-muted-foreground">{data.region.faction.name}</span>
                     )}
                 </div>
-                {onBack && (
+                <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={onBack}
-                        className="text-muted-foreground hover:bg-accent rounded-sm border px-2 py-1 text-[11px]"
+                        onClick={() => setEditMode((v) => !v)}
+                        className={`rounded-sm border px-2 py-1 text-[11px] ${
+                            editMode
+                                ? 'bg-accent text-accent-foreground'
+                                : 'text-muted-foreground hover:bg-accent'
+                        }`}
                     >
-                        ← Back to universe
+                        {editMode ? 'Editing… (drag to save)' : 'Edit layout'}
                     </button>
-                )}
+                    {onBack && (
+                        <button
+                            type="button"
+                            onClick={onBack}
+                            className="text-muted-foreground hover:bg-accent rounded-sm border px-2 py-1 text-[11px]"
+                        >
+                            ← Back to universe
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="flex-1">
                 <ReactFlow
-                    nodes={nodes}
+                    nodes={rfNodes}
                     edges={edges}
                     nodeTypes={systemNodeTypes}
                     fitView
@@ -376,15 +490,18 @@ export function RegionMap({
                     className="h-full w-full"
                     minZoom={0.4}
                     maxZoom={2}
-                    panOnDrag
+                    panOnDrag={editMode ? [2] : true}
                     zoomOnScroll
                     zoomOnPinch
                     zoomOnDoubleClick={false}
-                    nodesDraggable={false}
+                    nodesDraggable={editMode}
                     nodesConnectable={false}
                     elementsSelectable={true}
+                    onNodesChange={handleNodesChange}
+                    onNodeDragStop={handleNodeDragStop}
                     onNodeClick={(_, node) => {
                         if (!data) return
+                        if (editMode) return
                         const sys = data.systems.find((s) => s.id === Number(node.id))
                         if (sys && onSystemSelect) {
                             onSystemSelect(sys)

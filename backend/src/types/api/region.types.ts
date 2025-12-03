@@ -28,6 +28,7 @@ export interface RegionGraphApiResponse {
 }
 
 export type SystemBorderType = 'INTERNAL' | 'CONSTELLATION' | 'REGION'
+export type RegionMapLayoutMode = 'optimized' | 'calculated'
 
 export interface RegionSystemNode {
     id: number
@@ -39,6 +40,9 @@ export interface RegionSystemNode {
     regionId: number
     regionName: string
     isForeign: boolean
+    layoutX?: number | null
+    layoutY?: number | null
+    layoutMode?: RegionMapLayoutMode | null
 }
 
 export interface RegionSystemEdge {
@@ -51,4 +55,19 @@ export interface RegionMapApiResponse {
     region: RegionApiResponse
     systems: RegionSystemNode[]
     edges: RegionSystemEdge[]
+}
+
+export interface UpdateRegionSystemLayoutRequest {
+    systemId: number
+    x: number
+    y: number
+    layoutMode?: RegionMapLayoutMode
+}
+
+export interface RegionSystemLayoutApi {
+    regionId: number
+    systemId: number
+    x: number
+    y: number
+    layoutMode: RegionMapLayoutMode
 }
