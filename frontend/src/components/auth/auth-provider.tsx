@@ -13,6 +13,7 @@ import {
     type ReactNode,
 } from 'react'
 import { useHydrated } from '@tanstack/react-router'
+import { AUTH_BASE } from '@/lib/env'
 
 export type AuthSession = {
     characterId: number
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const run = async () => {
             try {
                 const resp = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
+                    `${AUTH_BASE}/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
                 )
 
                 if (!resp.ok) {
@@ -151,7 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const refresh = useCallback(async () => {
         if (!session?.refreshToken) return
         try {
-            const res = await fetch('/auth/refresh', {
+            const res = await fetch(`${AUTH_BASE}/refresh`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refreshToken: session.refreshToken }),
@@ -241,7 +242,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 const url = new URL(window.location.href)
                 const redirect = url.pathname + url.search + url.hash
 
-                const loginUrl = `/auth/login?redirect=${encodeURIComponent(redirect)}`
+                const loginUrl = `${AUTH_BASE}/login?redirect=${encodeURIComponent(redirect)}`
 
                 void fetch(loginUrl)
                     .then(async (res) => {

@@ -7,6 +7,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import type { Edge as FlowEdge, Node as FlowNode, NodeChange } from '@xyflow/react'
 import { Background, Handle, NodeProps, Position, ReactFlow, applyNodeChanges } from '@xyflow/react'
+import { API_BASE } from '@/lib/env'
 import '@xyflow/react/dist/style.css'
 
 // --- API Types (from Backend)
@@ -67,7 +68,7 @@ type ApiResponse<T> = ApiSuccess<T> | ApiError
 
 // --- Fetch / Query ---
 async function fetchRegionMap(regionId: number): Promise<RegionMapApiResponse> {
-    const res = await fetch(`/api/regions/${regionId}/map`)
+    const res = await fetch(`${API_BASE}/regions/${regionId}/map`)
     if (!res.ok) {
         throw new Error(`Failed to fetch region map (HTTP ${res.status})`)
     }
@@ -91,7 +92,7 @@ async function updateRegionLayoutApi(
     regionId: number,
     payload: UpdateRegionLayoutPayload,
 ): Promise<void> {
-    const res = await fetch(`http://localhost:3000/api/regions/${regionId}/layout`, {
+    const res = await fetch(`${API_BASE}/regions/${regionId}/layout`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Edge as FlowEdge, Node as FlowNode } from '@xyflow/react'
 import { Background, Handle, NodeProps, Position, ReactFlow } from '@xyflow/react'
+import { API_BASE } from '@/lib/env'
 import '@xyflow/react/dist/style.css'
 
 type RegionFactionApi = {
@@ -60,7 +61,7 @@ type ApiError = {
 type ApiResponse<T> = ApiSuccess<T> | ApiError
 
 async function fetchRegionGraph(): Promise<RegionGraphApiResponse> {
-    const res = await fetch('/api/regions/graph')
+    const res = await fetch(`${API_BASE}/regions/graph`)
     if (!res.ok) {
         throw new Error(`Failed to fetch region graph (HTTP ${res.status})`)
     }
