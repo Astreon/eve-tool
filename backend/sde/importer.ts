@@ -6,6 +6,13 @@
 import { IMPORT_TASKS } from './tasks/importTasks.js'
 import { sdeLogger } from './lib/logger'
 import { createProgressBar } from './lib/progress'
+import { assertSdeDirOnThrow } from './config'
+import {
+    DATASET_FILES,
+    getDatasetsNeedingImport,
+    markDatasetAsImported,
+    type DatasetId,
+} from './datasetHashes'
 
 export interface ImportResult {
     success: number
@@ -16,17 +23,74 @@ export interface ImportResult {
 export interface ImporterStats {
     datasetTotal: number
     datasetSuccess: number
+    datasetError: number
     lineTotal: number
     lineSuccess: number
+    lineError: number
     errorCount: number
 }
 
-export async function importer(dryRun = false): Promise<ImporterStats> {
+export interface ImporterOptions {
+    only?: DatasetId[]
+    changedOnly?: boolean
+}
+
+export async function importer(
+    dryRun = false,
+    options: ImporterOptions = {},
+): Promise<ImporterStats> {
+    assertSdeDirOnThrow()
+
+    const allTasks = IMPORT_TASKS
+
+    // 1) Choose Datasets to Import
+    let selectedIds: DatasetId[] = (
+        allTasks.map((t) => t.id) as DatasetId[]
+    ).filter((id) => id in DATASET_FILES)
+
+    if (options.only && options.only.length > 0) {
+        const onlySet = new Set(options.only)
+        selectedIds = selectedIds.filter((id) => onlySet.has(id))
+    }
+
+    // 2) Only Datasets, which have changed since last import
+    if (options.changedOnly) {
+        const changed = await getDatasetsNeedingImport(selectedIds)
+        const changedSet = new Set(changed)
+
+        sdeLogger.info(
+            `[SDE] Changed-only import active – ${changed.length}/${selectedIds.length} datasets have changed since last import.`,
+        )
+
+        selectedIds = selectedIds.filter((id) => changedSet.has(id))
+
+        if (selectedIds.length === 0) {
+            sdeLogger.info(
+                '[SDE] No Datasets changed since last import. Skipping import.',
+            )
+            return {
+                datasetTotal: 0,
+                datasetSuccess: 0,
+                datasetError: 0,
+                lineTotal: 0,
+                lineSuccess: 0,
+                lineError: 0,
+                errorCount: 0,
+            }
+        }
+    }
+
+    const selectedTasks = allTasks.filter((task) =>
+        (selectedIds as string[]).includes(task.id),
+    )
+
     const stats: ImporterStats = {
         datasetTotal: IMPORT_TASKS.length,
         datasetSuccess: 0,
+        datasetError: 0,
         lineTotal: 0,
         lineSuccess: 0,
+        lineError: 0,
         errorCount: 0,
     }
 
@@ -42,42 +106,63 @@ export async function importer(dryRun = false): Promise<ImporterStats> {
 
     let index = 0
 
-    for (const task of IMPORT_TASKS) {
+    for (const task of selectedTasks) {
         index++
+
+        const datasetId = task.id as DatasetId
 
         if (globalProgress) {
             globalProgress.done({ clear: true })
         }
 
         sdeLogger.info(
-            `📦 (${index}/${IMPORT_TASKS.length}) Importing ${task.label}`,
+            `📦 (${index}/${IMPORT_TASKS.length}) Importing ${task.label} (${datasetId})...)`,
         )
+
+        const datasetProgress = createProgressBar({
+            label: `[SDE] ${task.label}`,
+        })
 
         const start = performance.now()
 
         try {
-            const result = await task.run(dryRun, task.label)
+            const result: ImportResult = await task.run(dryRun, task.label)
 
-            stats.datasetSuccess++
             stats.lineTotal += result.total
             stats.lineSuccess += result.success
+            stats.lineError += result.errors
             stats.errorCount += result.errors
+
+            if (result.errors === 0) {
+                stats.datasetSuccess += 1
+
+                if (!dryRun) {
+                    await markDatasetAsImported(datasetId)
+                }
+            } else {
+                stats.datasetError += 1
+            }
 
             const duration = ((performance.now() - start) / 1000).toFixed(1)
             sdeLogger.info(
                 `✅ Imported ${result.success}/${result.total} ${task.label} in ${duration}s (${result.errors} errors)`,
             )
         } catch (err) {
-            stats.errorCount++
+            stats.datasetError += 1
+            stats.errorCount += 1
+
             const duration = ((performance.now() - start) / 1000).toFixed(1)
             sdeLogger.error(
-                `❌ Failed to import ${task.label} after ${duration}s:`,
+                `❌ Failed to import ${task.label} (${datasetId}) after ${duration}s:`,
                 (err as Error).message,
             )
 
             if (globalProgress) {
                 globalProgress.tick(1)
             }
+        } finally {
+            datasetProgress.done({ clear: true })
+            globalProgress.tick()
         }
     }
 

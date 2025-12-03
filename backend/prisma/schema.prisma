@@ -113,6 +113,15 @@ model Version {
   @@schema("sde")
 }
 
+model VersionDataset {
+  id        String   @id
+  fileName  String
+  fileHash  String
+  updatedAt DateTime @updatedAt
+
+  @@schema("sde")
+}
+
 model Bloodline {
   id          Int     @id
   name        String  @unique

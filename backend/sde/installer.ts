@@ -496,7 +496,10 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
             '🧪 DRY-RUN: running UPDATE pipeline without maintenance mode.',
         )
         const importStart = performance.now()
-        const stats = await importer(dryRun)
+        const stats = await importer(dryRun, {
+            changedOnly: true,
+        })
+
         const importDur = ((performance.now() - importStart) / 1000).toFixed(1)
         sdeLogger.info(
             `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
@@ -520,7 +523,10 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
     await withMaintenance(reason, async () => {
         // Import
         const importStart = performance.now()
-        const stats = await importer(dryRun)
+        const stats = await importer(dryRun, {
+            changedOnly: true,
+        })
+
         const importDur = ((performance.now() - importStart) / 1000).toFixed(1)
         sdeLogger.info(
             `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
