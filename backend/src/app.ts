@@ -26,7 +26,7 @@ app.use(
     }),
 )
 
-app.get('/favicon.ico', (req, res) => res.status(204))
+app.get('/favicon.ico', (req, res) => res.send(204))
 app.use(routes)
 
 app.use((req, _res, next) => {
