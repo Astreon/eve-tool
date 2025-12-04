@@ -519,6 +519,8 @@ export function RegionMap({
                     nodesDraggable={editMode}
                     nodesConnectable={false}
                     elementsSelectable={true}
+                    snapToGrid={editMode}
+                    snapGrid={[25, 25]}
                     onNodesChange={handleNodesChange}
                     onNodeDragStop={handleNodeDragStop}
                     onNodeClick={(_, node) => {
@@ -530,7 +532,7 @@ export function RegionMap({
                         }
                     }}
                 >
-                    <Background />
+                    <Background gap={25} size={1} />
                 </ReactFlow>
             </div>
         </div>
