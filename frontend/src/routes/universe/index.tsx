@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { MapTool } from '@/components/xyflow/mapTool.tsx'
+import { UniverseTool } from '@/components/xyflow/universeTool.tsx'
 import { seo } from '@/lib/seo.ts'
 
 export const Route = createFileRoute('/universe/')({
@@ -25,7 +25,7 @@ function UniversePage() {
                 <h1 className="text-2xl font-bold">Universe</h1>
             </div>
             <div className="h-[calc(100vh-var(--header-height)-6rem)]">
-                <MapTool />
+                <UniverseTool />
             </div>
         </div>
     )

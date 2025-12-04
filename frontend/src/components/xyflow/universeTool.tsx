@@ -15,7 +15,7 @@ type SelectedSystem = {
     constellationId: number
 }
 
-export function MapTool() {
+export function UniverseTool() {
     const [mode, setMode] = useState<ViewMode>('universe')
     const [activeRegionId, setActiveRegionId] = useState<number | null>(null)
     const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null)
@@ -64,18 +64,6 @@ export function MapTool() {
                     <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                         {mode === 'universe' ? 'Universe overview' : 'Region details'}
                     </div>
-                    {mode === 'region' && activeRegionId !== null && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setMode('universe')
-                                setSelectedSystem(null)
-                            }}
-                            className="text-muted-foreground hover:bg-accent rounded-sm border px-2 py-1 text-[11px]"
-                        >
-                            ← Back to universe
-                        </button>
-                    )}
                 </div>
 
                 {mode === 'universe' && (

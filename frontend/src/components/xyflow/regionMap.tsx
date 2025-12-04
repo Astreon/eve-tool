@@ -305,6 +305,13 @@ export function RegionMap({
 
     const [rfNodes, setRfNodes] = useState<SystemNode[]>([])
 
+    const [dragInfo, setDragInfo] = useState<{
+        id: number
+        name: string
+        x: number
+        y: number
+    } | null>(null)
+
     function computeRegionProjection(systems: RegionSystemNodeApi[]) {
         const xs: number[] = []
         const zs: number[] = []
@@ -490,6 +497,29 @@ export function RegionMap({
         [editMode],
     )
 
+    const handleNodeDrag = useCallback(
+        (_: unknown, node: FlowNode) => {
+            if (!editMode) return
+            if (!node.id) return
+
+            const GRID = 25
+            const snap = (v: number) => Math.round(v / GRID) * GRID
+
+            const snappedX = snap(node.position.x)
+            const snappedY = snap(node.position.y)
+
+            const sys = data?.systems.find((s) => s.id === Number(node.id))
+
+            setDragInfo({
+                id: Number(node.id),
+                name: sys?.name ?? String(node.id),
+                x: snappedX,
+                y: snappedY,
+            })
+        },
+        [editMode, data],
+    )
+
     const handleNodeDragStop = useCallback(
         (_: unknown, node: FlowNode) => {
             if (!editMode) return
@@ -500,6 +530,8 @@ export function RegionMap({
                 x: node.position.x,
                 y: node.position.y,
             })
+
+            setDragInfo(null)
         },
         [editMode, layoutMutation],
     )
@@ -545,7 +577,7 @@ export function RegionMap({
                                 : 'text-muted-foreground hover:bg-accent'
                         }`}
                     >
-                        {editMode ? 'Editing… (drag to save)' : 'Edit layout'}
+                        {editMode ? 'Editing... (drag to save)' : 'Edit layout'}
                     </button>
                     {onBack && (
                         <button
@@ -581,6 +613,7 @@ export function RegionMap({
                     snapToGrid={editMode}
                     snapGrid={[SNAP_STEP, SNAP_STEP]}
                     onNodesChange={handleNodesChange}
+                    onNodeDrag={handleNodeDrag}
                     onNodeDragStop={handleNodeDragStop}
                     onNodeClick={(_, node) => {
                         if (!data) return
@@ -592,6 +625,15 @@ export function RegionMap({
                     }}
                 >
                     <Background gap={GRID} size={1} />
+
+                    {editMode && dragInfo && (
+                        <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
+                            <div className="font-medium">Position</div>
+                            <div className="mt-[1px] tabular-nums">
+                                x: {dragInfo.x} · y: {dragInfo.y}
+                            </div>
+                        </div>
+                    )}
                 </ReactFlow>
             </div>
         </div>
