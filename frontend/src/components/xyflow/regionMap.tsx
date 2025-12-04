@@ -7,7 +7,8 @@ import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import type { Edge as FlowEdge, Node as FlowNode, NodeChange } from '@xyflow/react'
 import { Background, Handle, NodeProps, Position, ReactFlow, applyNodeChanges } from '@xyflow/react'
-import { API_BASE } from '@/lib/env'
+import { ADMIN_ID, API_BASE } from '@/lib/env'
+import { useAuth } from '@/components/auth/auth-provider'
 import '@xyflow/react/dist/style.css'
 
 const REGION_WIDTH = 1600
@@ -289,9 +290,17 @@ export function RegionMap({
 }) {
     const { data, isLoading, isError, error } = useRegionMap(regionId)
     const isDark = getIsDarkMode()
+    const { session } = useAuth()
+    const canEditLayout = ADMIN_ID != null && session?.characterId === ADMIN_ID
 
     const [editMode, setEditMode] = useState(false)
     //const queryClient = useQueryClient()
+
+    useEffect(() => {
+        if (!canEditLayout && editMode) {
+            setEditMode(false)
+        }
+    }, [canEditLayout, editMode])
 
     const layoutMutation = useMutation({
         mutationFn: (vars: UpdateRegionLayoutPayload) => updateRegionLayoutApi(regionId, vars),
@@ -469,7 +478,7 @@ export function RegionMap({
             setRfNodes((prevNodes) => {
                 let next = applyNodeChanges(changes, prevNodes) as SystemNode[]
 
-                if (!editMode) return next
+                if (!editMode || !canEditLayout) return next
 
                 const movedIds = new Set(
                     changes.filter((c) => c.type === 'position').map((c) => c.id),
@@ -496,12 +505,12 @@ export function RegionMap({
                 return next
             })
         },
-        [editMode],
+        [editMode, canEditLayout],
     )
 
     const handleNodeDrag = useCallback(
         (_: unknown, node: FlowNode) => {
-            if (!editMode) return
+            if (!editMode || !canEditLayout) return
             if (!node.id) return
 
             const GRID = 25
@@ -519,12 +528,12 @@ export function RegionMap({
                 y: snappedY,
             })
         },
-        [editMode, data],
+        [editMode, canEditLayout, data],
     )
 
     const handleNodeDragStop = useCallback(
         (_: unknown, node: FlowNode) => {
-            if (!editMode) return
+            if (!editMode || !canEditLayout) return
             if (!node.id) return
 
             layoutMutation.mutate({
@@ -535,7 +544,7 @@ export function RegionMap({
 
             setDragInfo(null)
         },
-        [editMode, layoutMutation],
+        [editMode, canEditLayout, layoutMutation],
     )
 
     const proOptions = { hideAttribution: true }
@@ -570,17 +579,19 @@ export function RegionMap({
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setEditMode((v) => !v)}
-                        className={`rounded-sm border px-2 py-1 text-[11px] ${
-                            editMode
-                                ? 'bg-accent text-accent-foreground'
-                                : 'text-muted-foreground hover:bg-accent'
-                        }`}
-                    >
-                        {editMode ? 'Editing... (drag to save)' : 'Edit layout'}
-                    </button>
+                    {canEditLayout && (
+                        <button
+                            type="button"
+                            onClick={() => setEditMode((v) => !v)}
+                            className={`rounded-sm border px-2 py-1 text-[11px] ${
+                                editMode
+                                    ? 'bg-accent text-accent-foreground'
+                                    : 'text-muted-foreground hover:bg-accent'
+                            }`}
+                        >
+                            {editMode ? 'Editing... (drag to save)' : 'Edit layout'}
+                        </button>
+                    )}
                     {onBack && (
                         <button
                             type="button"
@@ -605,21 +616,21 @@ export function RegionMap({
                     className="h-full w-full"
                     minZoom={0.4}
                     maxZoom={2}
-                    panOnDrag={editMode ? [2] : true}
+                    panOnDrag={editMode && canEditLayout ? [2] : true}
                     zoomOnScroll
                     zoomOnPinch
                     zoomOnDoubleClick={false}
-                    nodesDraggable={editMode}
+                    nodesDraggable={editMode && canEditLayout}
                     nodesConnectable={false}
                     elementsSelectable={true}
-                    snapToGrid={editMode}
+                    snapToGrid={editMode && canEditLayout}
                     snapGrid={[SNAP_STEP, SNAP_STEP]}
                     onNodesChange={handleNodesChange}
                     onNodeDrag={handleNodeDrag}
                     onNodeDragStop={handleNodeDragStop}
                     onNodeClick={(_, node) => {
                         if (!data) return
-                        if (editMode) return
+                        if (editMode && canEditLayout) return
                         const sys = data.systems.find((s) => s.id === Number(node.id))
                         if (sys && onSystemSelect) {
                             onSystemSelect(sys)
@@ -628,7 +639,7 @@ export function RegionMap({
                 >
                     <Background gap={GRID} size={1} />
 
-                    {editMode && dragInfo && (
+                    {editMode && editMode && dragInfo && (
                         <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
                             <div className="font-medium">Position</div>
                             <div className="mt-[1px] tabular-nums">
