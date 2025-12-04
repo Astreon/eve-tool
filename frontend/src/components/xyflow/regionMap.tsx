@@ -391,7 +391,7 @@ export function RegionMap({
                         isForeign: s.isForeign,
                     },
                     style: {
-                        width: 74,
+                        width: 75,
                         height: 30,
                         borderRadius: '0.25rem',
                         border: '1px solid rgba(0,0,0,0.2)',
