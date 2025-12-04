@@ -8,7 +8,7 @@
         "dev": "tsx --watch --env-file .env src/server.ts",
         "start": "node --env-file .env dist/server.js",
         "build": "tsc",
-        "type-check": "tsc --noEmit && tsc -p tests/.tsconfig.json --noEmit",
+        "type-check": "tsc --noEmit && tsc -p tests/.tsconfig.json --noEmit && tsc -p sde/.tsconfig.json --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "prettier": "prettier --check .",
@@ -20,6 +20,8 @@
         "sde:calculate": "npx tsx --env-file .env sde/installer.ts calculate",
         "sde:update": "npx tsx --env-file .env sde/installer.ts update",
         "sde:download": "npx tsx --env-file .env sde/installer.ts download",
+        "sde:export": "npx tsx --env-file .env sde/layoutSeed.ts export",
+        "sde:layouts:import": "npx tsx --env-file .env sde/layoutSeed.ts import",
         "postinstall": "prisma generate"
     },
     "keywords": [],
