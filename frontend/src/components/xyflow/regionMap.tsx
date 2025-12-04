@@ -10,6 +10,11 @@ import { Background, Handle, NodeProps, Position, ReactFlow, applyNodeChanges } 
 import { API_BASE } from '@/lib/env'
 import '@xyflow/react/dist/style.css'
 
+const REGION_WIDTH = 1600
+const REGION_HEIGHT = 900
+const GRID = 25
+const SNAP_STEP = GRID
+
 // --- API Types (from Backend)
 type RegionFactionApi = {
     id: number
@@ -298,19 +303,65 @@ export function RegionMap({
         },*/
     })
 
-    // ReactFlow-Node-State
     const [rfNodes, setRfNodes] = useState<SystemNode[]>([])
 
-    // Helper: Nodes aus API-Daten bauen
+    function computeRegionProjection(systems: RegionSystemNodeApi[]) {
+        const xs: number[] = []
+        const zs: number[] = []
+
+        for (const s of systems) {
+            xs.push(s.x)
+            zs.push(s.z)
+        }
+
+        const minX = Math.min(...xs)
+        const maxX = Math.max(...xs)
+        const minZ = Math.min(...zs)
+        const maxZ = Math.max(...zs)
+
+        const spanX = maxX - minX || 1
+        const spanZ = maxZ - minZ || 1
+
+        const scale = Math.min(REGION_WIDTH / spanX, REGION_HEIGHT / spanZ)
+
+        const marginX = (REGION_WIDTH - spanX * scale) / 2
+        const marginY = (REGION_HEIGHT - spanZ * scale) / 2
+
+        const coords = new Map<number, { x: number; y: number }>()
+
+        for (const s of systems) {
+            const x2d = (s.x - minX) * scale + marginX
+            const y2d = -(s.z - minZ) * scale + marginY
+
+            coords.set(s.id, { x: x2d, y: y2d })
+        }
+
+        return coords
+    }
+
     const buildNodesFromData = useCallback((d: RegionMapApiResponse | undefined): SystemNode[] => {
         if (!d || d.systems.length === 0) return []
 
-        const hasLayout = d.systems.some((s) => s.layoutX != null && s.layoutY != null)
+        const systemsWithLayout = d.systems.filter((s) => s.layoutX != null && s.layoutY != null)
+        const hasAnyLayout = systemsWithLayout.length > 0
 
-        if (hasLayout) {
+        if (hasAnyLayout) {
+            let fallbackIndex = 0
+            const fallbackGapX = 120
+            const fallbackGapY = 80
+
             return d.systems.map((s) => {
-                const x = s.layoutX ?? 0
-                const y = s.layoutY ?? 0
+                let x = s.layoutX ?? null
+                let y = s.layoutY ?? null
+
+                if (x == null || y == null) {
+                    const col = fallbackIndex % 10
+                    const row = Math.floor(fallbackIndex / 10)
+                    x = col * fallbackGapX
+                    y = row * fallbackGapY
+                    fallbackIndex++
+                }
+
                 const subLabel = s.isForeign ? s.regionName : `C${s.constellationId}`
 
                 return {
@@ -333,46 +384,24 @@ export function RegionMap({
             })
         }
 
-        // Fallback: Autolayout aus SDE-Koordinaten
-        const projected = d.systems.map((s) => ({
-            id: s.id,
-            name: s.name,
-            x2d: s.x,
-            y2d: -s.z,
-            constellationId: s.constellationId,
-            regionName: s.regionName,
-            isForeign: s.isForeign,
-        }))
+        const projected = computeRegionProjection(d.systems)
 
-        const xs = projected.map((p) => p.x2d)
-        const ys = projected.map((p) => p.y2d)
+        const baseNodes: SystemNode[] = d.systems.map((s) => {
+            const proj = projected.get(s.id)!
+            const x = proj.x
+            const y = proj.y
 
-        const minX = Math.min(...xs)
-        const maxX = Math.max(...xs)
-        const minY = Math.min(...ys)
-        const maxY = Math.max(...ys)
-
-        const rangeX = maxX - minX || 1
-        const rangeY = maxY - minY || 1
-
-        const size = 1200
-        const scale = size / Math.max(rangeX, rangeY)
-
-        const baseNodes: SystemNode[] = projected.map((p) => {
-            const x = (p.x2d - minX) * scale
-            const y = (p.y2d - minY) * scale
-
-            const subLabel = p.isForeign ? p.regionName : `C${p.constellationId}`
+            const subLabel = s.isForeign ? s.regionName : `C${s.constellationId}`
 
             return {
-                id: p.id.toString(),
+                id: s.id.toString(),
                 position: { x, y },
                 basePosition: { x, y },
                 type: 'system',
                 data: {
-                    label: p.name,
+                    label: s.name,
                     subLabel,
-                    isForeign: p.isForeign,
+                    isForeign: s.isForeign,
                 },
                 style: {
                     borderRadius: '0.25rem',
@@ -386,7 +415,6 @@ export function RegionMap({
         return relaxLayout(baseNodes)
     }, [])
 
-    // Bei neuen Daten Nodes initial aufbauen
     useEffect(() => {
         if (!data) {
             setRfNodes([])
@@ -427,9 +455,40 @@ export function RegionMap({
         )
     }, [data, rfNodes, isDark])
 
-    const handleNodesChange = useCallback((changes: NodeChange[]) => {
-        setRfNodes((nds) => applyNodeChanges(changes, nds) as SystemNode[])
-    }, [])
+    const handleNodesChange = useCallback(
+        (changes: NodeChange[]) => {
+            setRfNodes((prevNodes) => {
+                let next = applyNodeChanges(changes, prevNodes) as SystemNode[]
+
+                if (!editMode) return next
+
+                const movedIds = new Set(
+                    changes.filter((c) => c.type === 'position').map((c) => c.id),
+                )
+
+                if (movedIds.size === 0) return next
+
+                next = next.map((n) => {
+                    if (!movedIds.has(n.id)) return n
+
+                    const snappedX = Math.round(n.position.x / SNAP_STEP) * SNAP_STEP
+                    const snappedY = Math.round(n.position.y / SNAP_STEP) * SNAP_STEP
+
+                    if (snappedX === n.position.x && snappedY === n.position.y) {
+                        return n
+                    }
+
+                    return {
+                        ...n,
+                        position: { x: snappedX, y: snappedY },
+                    }
+                })
+
+                return next
+            })
+        },
+        [editMode],
+    )
 
     const handleNodeDragStop = useCallback(
         (_: unknown, node: FlowNode) => {
@@ -520,7 +579,7 @@ export function RegionMap({
                     nodesConnectable={false}
                     elementsSelectable={true}
                     snapToGrid={editMode}
-                    snapGrid={[25, 25]}
+                    snapGrid={[SNAP_STEP, SNAP_STEP]}
                     onNodesChange={handleNodesChange}
                     onNodeDragStop={handleNodeDragStop}
                     onNodeClick={(_, node) => {
@@ -532,7 +591,7 @@ export function RegionMap({
                         }
                     }}
                 >
-                    <Background gap={25} size={1} />
+                    <Background gap={GRID} size={1} />
                 </ReactFlow>
             </div>
         </div>

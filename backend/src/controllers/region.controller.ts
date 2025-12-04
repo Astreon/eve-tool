@@ -421,8 +421,8 @@ export async function updateRegionLayout(
 
         const body = req.body as Partial<UpdateRegionSystemLayoutRequest>
         const systemId = Number(body.systemId)
-        const x = Number(body.x)
-        const y = Number(body.y)
+        let x = Number(body.x)
+        let y = Number(body.y)
         const layoutMode: RegionMapLayoutMode = body.layoutMode ?? 'optimized'
 
         if (
@@ -436,6 +436,11 @@ export async function updateRegionLayout(
                 y: body.y,
             })
         }
+
+        const GRID = 25
+        const snapToGrid = (val: number) => Math.round(val / GRID) * GRID
+        x = snapToGrid(x)
+        y = snapToGrid(y)
 
         const system = await prisma.solarSystem.findUnique({
             where: { id: systemId },

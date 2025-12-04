@@ -10,7 +10,7 @@ import { seo } from '@/lib/seo.ts'
 export const Route = createFileRoute('/universe/')({
     head: () => ({
         meta: seo({
-            title: 'Map Tool',
+            title: 'Universe',
             description:
                 'Interactive EVE Online starmap with links and informations about the whole universe.',
         }),
@@ -22,7 +22,7 @@ function UniversePage() {
     return (
         <div className="space-y-4">
             <div className="mb-4">
-                <h1 className="text-2xl font-bold">Map Tool</h1>
+                <h1 className="text-2xl font-bold">Universe</h1>
             </div>
             <div className="h-[calc(100vh-var(--header-height)-6rem)]">
                 <MapTool />

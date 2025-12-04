@@ -22,7 +22,7 @@ export function MapTool() {
     const [selectedSystem, setSelectedSystem] = useState<SelectedSystem | null>(null)
 
     return (
-        <div className="grid h-full grid-cols-[minmax(0,3fr)_minmax(0,1.4fr)] gap-4">
+        <div className="grid h-full grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)] gap-4">
             {/* Linke Seite: Canvas */}
             <div className="border-border overflow-hidden rounded-lg border">
                 {mode === 'universe' && (
@@ -48,7 +48,6 @@ export function MapTool() {
                             setSelectedSystem(null)
                         }}
                         onSystemSelect={(system) => {
-                            // system kommt von RegionMap, wir picken nur das, was wir brauchen
                             setSelectedSystem({
                                 id: system.id,
                                 name: system.name,
