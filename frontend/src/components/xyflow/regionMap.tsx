@@ -257,7 +257,7 @@ function SystemNodeComponent({ data }: NodeProps) {
                     pointerEvents: 'none',
                 }}
             />
-            <div className="max-w-[140px] truncate text-center font-medium whitespace-nowrap">
+            <div className="max-w-[74px] truncate text-center font-medium whitespace-nowrap">
                 {label}
             </div>
             {subLabel && (
@@ -382,6 +382,8 @@ export function RegionMap({
                         isForeign: s.isForeign,
                     },
                     style: {
+                        width: 74,
+                        height: 30,
                         borderRadius: '0.25rem',
                         border: '1px solid rgba(0,0,0,0.2)',
                         padding: 0,
