@@ -211,6 +211,8 @@ model SolarSystem {
   stargates            Stargate[]
   planets              Planet[]
   moons                Moon[]
+  Star                 Star[]
+  AstreoidBelt         AsteroidBelt[]
   regionSystemLayouts  RegionSystemLayout[]
   SystemActivitySample SystemActivitySample[]
   region               Region                 @relation(fields: [regionId], references: [id])
@@ -332,6 +334,126 @@ model Moon {
   z              Float
 
   solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+
+  @@schema("sde")
+}
+
+model AsteroidBelt {
+  id             Int      @id
+  celestialIndex Int
+  orbitId        Int
+  orbitIndex     Int
+  solarSystemId  Int
+  typeId         Int
+  radius         Int?
+  name           String?
+  density        Float?
+  eccentricity   Float?
+  escapeVelocity Float?
+  locked         Boolean?
+  massDust       Float?
+  massGas        Float?
+  orbitPeriod    Float?
+  orbitRadius    BigInt?
+  rotationRate   Float?
+  spectralClass  String?
+  surfaceGravity Float?
+  temperature    Float?
+  x              Float
+  y              Float
+  z              Float
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+  type        Type        @relation(fields: [typeId], references: [id])
+
+  @@schema("sde")
+}
+
+model Type {
+  id                    Int      @id
+  name                  String
+  description           String?
+  groupId               Int?
+  metaGroupId           Int?
+  marketGroupId         Int?
+  iconId                Int?
+  graphicId             Int?
+  capacity              Float?
+  mass                  Float?
+  basePrice             Float?
+  published             Boolean?
+  radius                Float?
+  portionSize           Int?
+  volume                Float?
+  raceId                Int?
+  variationParentTypeId Int?
+
+  Star         Star[]
+  AstreoidBelt AsteroidBelt[]
+  Station      NpcStation[]
+
+  @@schema("sde")
+}
+
+model Star {
+  id            Int    @id
+  radius        BigInt
+  solarSystemId Int
+  age           BigInt
+  life          BigInt
+  luminosity    Float
+  spectralClass String
+  temperature   Int
+  typeId        Int
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+  type        Type        @relation(fields: [typeId], references: [id])
+
+  @@schema("sde")
+}
+
+model NpcStation {
+  id                       Int     @id
+  celestialIndex           Int?
+  operationId              Int
+  orbitId                  Int
+  orbitIndex               Int?
+  npcCorporationId         Int
+  solarSystemId            Int
+  typeId                   Int
+  reprocessingEfficiency   Float
+  reprocessingHangarFlag   Int
+  reprocessingStationsTake Float
+  useOperationName         Boolean
+  x                        Float
+  y                        Float
+  z                        Float
+
+  type Type @relation(fields: [typeId], references: [id])
+
+  @@schema("sde")
+}
+
+model StationService {
+  id   Int    @id
+  name String
+
+  @@schema("sde")
+}
+
+model StationOperation {
+  id                  Int     @id
+  activityId          Int
+  border              Float
+  corridor            Float
+  name                String
+  description         String?
+  fringe              Float
+  hub                 Float
+  manufacturingFactor Float
+  ratio               Float
+  researchFactor      Float
+  services            Int[]
 
   @@schema("sde")
 }

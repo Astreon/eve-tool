@@ -128,13 +128,19 @@ async function copyJsonlFromExtractedTmp(tmpDir: string): Promise<void> {
         '_sde.jsonl',
         'bloodlines.jsonl',
         'factions.jsonl',
+        'mapAsteroidBelts.jsonl',
         'mapConstellations.jsonl',
         'mapMoons.jsonl',
         'mapPlanets.jsonl',
         'mapRegions.jsonl',
         'mapSolarSystems.jsonl',
         'mapStargates.jsonl',
+        'mapStars.jsonl',
+        'npcStations.jsonl',
         'races.jsonl',
+        'stationOperations.jsonl',
+        'stationServices.jsonl',
+        'types.jsonl',
     ]
 
     await clearSdeJsonlFiles()

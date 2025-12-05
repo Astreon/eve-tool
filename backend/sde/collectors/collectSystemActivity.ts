@@ -3,6 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
+// TODO: Run this every hour, at 30 minutes
+
 import { sdePrisma } from '../lib/prisma'
 import { getSystemActivitySnapshot } from '../../src/services/esi'
 import { sdeLogger } from '../lib/logger'
