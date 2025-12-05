@@ -640,7 +640,7 @@ export function RegionMap({
                     <Background gap={GRID} size={1} />
 
                     {editMode && editMode && dragInfo && (
-                        <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
+                        <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded-sm bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
                             <div className="font-medium">Position</div>
                             <div className="mt-[1px] tabular-nums">
                                 x: {dragInfo.x} · y: {dragInfo.y}
