@@ -179,6 +179,7 @@ model SolarSystem {
   id              Int    @id
   name            String @unique
   securityStatus  Float
+  securityClass   String @default("")
   constellationId Int
   regionId        Int
   factionId       Int?

@@ -4,8 +4,10 @@
  */
 
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { UniverseMap } from '@/components/xyflow/universeMap.tsx'
 import { RegionMap } from '@/components/xyflow/regionMap.tsx'
+import { API_BASE } from '@/lib/env'
 
 type ViewMode = 'universe' | 'region'
 
@@ -15,11 +17,81 @@ type SelectedSystem = {
     constellationId: number
 }
 
+type SystemOverviewIndex = {
+    id: number
+    name: string
+    securityStatus: number
+    securityClass: string | null //TODO: Implement Security Colorcoding from FIGMA -> EVE Online
+    region: {
+        id: number
+        name: string
+    }
+    constellation: {
+        id: number
+        name: string
+    }
+    faction: {
+        id: number
+        name: string
+    } | null
+    planetsCount: number
+    moonsCount: number
+}
+
+type SystemOverviewActivity = {
+    window: 'last_hour'
+    jumps: number | null
+    npcKills: number | null
+    shipKills: number | null
+    podKills: number | null
+}
+
+type SystemOverviewApiResponse = {
+    system: SystemOverviewIndex
+    activity: SystemOverviewActivity
+}
+
+type ApiSuccess<T> = {
+    success: true
+    data: T
+}
+
+type ApiError = {
+    success: false
+    message: string
+    code?: string
+}
+
+type ApiResponse<T> = ApiSuccess<T> | ApiError
+
+async function fetchSystemOverview(systemId: number): Promise<SystemOverviewApiResponse> {
+    const res = await fetch(`${API_BASE}/systems/${systemId}/overview`)
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch system overview (HTTP ${res.status})`)
+    }
+
+    const body = (await res.json()) as ApiResponse<SystemOverviewApiResponse>
+
+    if (!body.success) {
+        throw new Error(body.message || 'Failed to load system overview')
+    }
+
+    return body.data
+}
+
 export function UniverseTool() {
     const [mode, setMode] = useState<ViewMode>('universe')
     const [activeRegionId, setActiveRegionId] = useState<number | null>(null)
     const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null)
     const [selectedSystem, setSelectedSystem] = useState<SelectedSystem | null>(null)
+
+    const systemOverviewQuery = useQuery({
+        queryKey: ['system-overview', selectedSystem?.id],
+        queryFn: () => fetchSystemOverview(selectedSystem!.id),
+        enabled: mode === 'region' && !!selectedSystem,
+        staleTime: 60_000,
+    })
 
     return (
         <div className="grid h-full grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)] gap-4">
@@ -111,20 +183,135 @@ export function UniverseTool() {
                         </div>
 
                         {selectedSystem ? (
-                            <div className="space-y-1">
-                                <div className="font-medium">Ausgewähltes System</div>
-                                <div>
-                                    Name: <span className="font-mono">{selectedSystem.name}</span>
+                            <div className="space-y-3">
+                                <div className="space-y-1">
+                                    <div className="font-medium">Ausgewähltes System</div>
+                                    <div>
+                                        Name:{' '}
+                                        <span className="font-mono">{selectedSystem.name}</span>
+                                    </div>
+                                    <div>
+                                        ID: <span className="font-mono">{selectedSystem.id}</span>
+                                    </div>
+                                    <div>
+                                        Constellation:{' '}
+                                        <span className="font-mono">
+                                            {selectedSystem.constellationId}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    ID: <span className="font-mono">{selectedSystem.id}</span>
-                                </div>
-                                <div>
-                                    Constellation:{' '}
-                                    <span className="font-mono">
-                                        {selectedSystem.constellationId}
-                                    </span>
-                                </div>
+
+                                {/* System-Overview */}
+                                {systemOverviewQuery.isLoading && (
+                                    <p className="text-muted-foreground text-xs">
+                                        Lade Systeminformationen…
+                                    </p>
+                                )}
+
+                                {systemOverviewQuery.isError && (
+                                    <p className="text-destructive text-xs">
+                                        Konnte Systeminformationen nicht laden.
+                                    </p>
+                                )}
+
+                                {systemOverviewQuery.isSuccess && (
+                                    <div className="grid grid-cols-1 gap-3 text-xs md:grid-cols-2">
+                                        {/* Allgemeine Infos */}
+                                        <div className="space-y-1">
+                                            <div className="font-medium">Allgemein</div>
+                                            <div>
+                                                Region:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system.region.name} (
+                                                    {systemOverviewQuery.data.system.region.id})
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Constellation:{' '}
+                                                <span className="font-mono">
+                                                    {
+                                                        systemOverviewQuery.data.system
+                                                            .constellation.name
+                                                    }{' '}
+                                                    (
+                                                    {
+                                                        systemOverviewQuery.data.system
+                                                            .constellation.id
+                                                    }
+                                                    )
+                                                </span>
+                                            </div>
+                                            {systemOverviewQuery.data.system.faction && (
+                                                <div>
+                                                    Faction:{' '}
+                                                    <span className="font-mono">
+                                                        {
+                                                            systemOverviewQuery.data.system.faction
+                                                                .name
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div>
+                                                Security:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system.securityStatus.toFixed(
+                                                        2,
+                                                    )}{' '}
+                                                    {systemOverviewQuery.data.system.securityClass
+                                                        ? `(${systemOverviewQuery.data.system.securityClass})`
+                                                        : ''}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Planeten:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system.planetsCount}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Monde:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system.moonsCount}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Aktivität */}
+                                        <div className="space-y-1">
+                                            <div className="font-medium">
+                                                Aktivität (letzte Stunde)
+                                            </div>
+                                            <div>
+                                                Jumps:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.activity.jumps ?? '0'}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                NPC Kills:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.activity.npcKills ??
+                                                        '0'}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Ship Kills:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.activity.shipKills ??
+                                                        '0'}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Pod Kills:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.activity.podKills ??
+                                                        '0'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <p className="text-muted-foreground">

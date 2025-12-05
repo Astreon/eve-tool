@@ -28,7 +28,6 @@ import { sdePrisma } from './lib/prisma.js'
 import { sdeRedis } from './lib/redis.js'
 import { sdeLogger } from './lib/logger.js'
 import { withMaintenance } from './lib/maintenance'
-import { importRegionLayoutsFromSeed } from './layoutSeed.js'
 
 type Command =
     | 'install'
@@ -210,8 +209,6 @@ async function runInstall(options: GlobalOptions): Promise<void> {
         `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
     )
     sdeLogger.info(`✅ Calculation phase finished in ${calcDuration}s.`)
-
-    await importRegionLayoutsFromSeed()
 
     if (dryRun) {
         sdeLogger.info(

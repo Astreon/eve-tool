@@ -9,6 +9,8 @@ export const USED_ESI_ROUTES: { method: string; path: string }[] = [
     { method: 'GET', path: '/characters/{character_id}/search' },
     { method: 'GET', path: '/meta/status' },
     { method: 'GET', path: '/status' },
+    { method: 'GET', path: '/universe/system_jumps' },
+    { method: 'GET', path: '/universe/system_kills' },
 
     // --- POST
     { method: 'POST', path: '/universe/names' },
