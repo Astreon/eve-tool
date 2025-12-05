@@ -70,7 +70,7 @@ export const importStationOperations = async (
                 activityId: json.activityID,
                 border: json.border,
                 corridor: json.corridor,
-                name: json.name?.en,
+                name: json.operationName?.en,
                 description: json.description?.en ?? null,
                 fringe: json.fringe,
                 hub: json.hub,

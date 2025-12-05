@@ -67,7 +67,7 @@ export const importStationServices = async (
             const json = JSON.parse(line)
             const data: Prisma.StationServiceCreateManyInput = {
                 id: json._key,
-                name: json.name?.en,
+                name: json.serviceName?.en,
             }
             batch.push(data)
 
