@@ -33,10 +33,19 @@ export async function getSystemOverview(
                 region: true,
                 constellation: true,
                 faction: true,
+                star: {
+                    include: {
+                        type: {
+                            select: { name: true },
+                        },
+                    },
+                },
                 _count: {
                     select: {
                         planets: true,
                         moons: true,
+                        npcStations: true,
+                        asteroidBelts: true,
                     },
                 },
             },
@@ -55,20 +64,30 @@ export async function getSystemOverview(
             shipKills: null,
         }
 
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        const since48 = new Date(Date.now() - 48 * 60 * 60 * 1000)
 
-        const agg = await prisma.systemActivitySample.aggregate({
-            where: {
-                systemId,
-                timestamp: { gte: since },
-            },
-            _sum: {
-                jumps: true,
-                npcKills: true,
-                podKills: true,
-                shipKills: true,
-            },
-        })
+        const [agg, samples] = await Promise.all([
+            prisma.systemActivitySample.aggregate({
+                where: {
+                    systemId,
+                    timestamp: { gte: since24 },
+                },
+                _sum: {
+                    jumps: true,
+                    npcKills: true,
+                    shipKills: true,
+                    podKills: true,
+                },
+            }),
+            prisma.systemActivitySample.findMany({
+                where: {
+                    systemId,
+                    timestamp: { gte: since48 },
+                },
+                orderBy: { timestamp: 'asc' },
+            }),
+        ])
 
         const last24h =
             agg._sum.jumps !== null
@@ -79,6 +98,31 @@ export async function getSystemOverview(
                       shipKills: agg._sum.shipKills ?? 0,
                   }
                 : undefined
+
+        const timeline48h =
+            samples.length > 0
+                ? samples.map((s) => ({
+                      timestamp: s.timestamp.toISOString(),
+                      jumps: s.jumps,
+                      npcKills: s.npcKills,
+                      shipKills: s.shipKills,
+                      podKills: s.podKills,
+                  }))
+                : undefined
+
+        const starInfo = system.star
+            ? {
+                  spectralClass: system.star.spectralClass,
+                  temperature: system.star.temperature,
+                  radius: Number(system.star.radius),
+                  typeName: system.star.type?.name ?? null,
+              }
+            : {
+                  spectralClass: '',
+                  temperature: 0,
+                  radius: 0,
+                  typeName: null,
+              }
 
         const data: SystemOverviewApiResponse = {
             system: {
@@ -102,6 +146,9 @@ export async function getSystemOverview(
                     : null,
                 planetsCount: system._count.planets,
                 moonsCount: system._count.moons,
+                beltsCount: system._count.asteroidBelts,
+                npcStationsCount: system._count.npcStations,
+                star: starInfo,
             },
             activity: {
                 window: 'last_hour',
@@ -110,6 +157,7 @@ export async function getSystemOverview(
                 shipKills: activity.shipKills,
                 podKills: activity.podKills,
                 last24h,
+                timeline48h,
             },
         }
 

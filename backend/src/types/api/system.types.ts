@@ -22,6 +22,9 @@ export interface SystemOverviewIndex {
     } | null
     planetsCount: number
     moonsCount: number
+    beltsCount?: number
+    npcStationsCount?: number
+    star: SystemOverviewStar
 }
 
 export interface SystemOverviewActivityWindows {
@@ -38,6 +41,7 @@ export interface SystemOverviewActivity {
     shipKills: number | null
     podKills: number | null
     last24h?: SystemOverviewActivityWindows
+    timeline48h?: SystemActivityPoint[]
 }
 
 export interface SystemOverviewMeta {
@@ -48,4 +52,19 @@ export interface SystemOverviewMeta {
 export interface SystemOverviewApiResponse {
     system: SystemOverviewIndex
     activity: SystemOverviewActivity
+}
+
+export interface SystemActivityPoint {
+    timestamp: string
+    jumps: number
+    npcKills: number
+    shipKills: number
+    podKills: number
+}
+
+export interface SystemOverviewStar {
+    spectralClass: string
+    temperature: number
+    radius: number
+    typeName: string | null
 }

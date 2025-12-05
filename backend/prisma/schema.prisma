@@ -208,11 +208,12 @@ model SolarSystem {
   y               Float
   z               Float
 
+  star                 Star?
   stargates            Stargate[]
   planets              Planet[]
   moons                Moon[]
-  Star                 Star[]
-  AstreoidBelt         AsteroidBelt[]
+  asteroidBelts        AsteroidBelt[]
+  npcStations          NpcStation[]
   regionSystemLayouts  RegionSystemLayout[]
   SystemActivitySample SystemActivitySample[]
   region               Region                 @relation(fields: [regionId], references: [id])
@@ -389,8 +390,8 @@ model Type {
   variationParentTypeId Int?
 
   Star         Star[]
-  AstreoidBelt AsteroidBelt[]
-  Station      NpcStation[]
+  asteroidBelt AsteroidBelt[]
+  npcStation   NpcStation[]
 
   @@schema("sde")
 }
@@ -398,7 +399,7 @@ model Type {
 model Star {
   id            Int    @id
   radius        BigInt
-  solarSystemId Int
+  solarSystemId Int    @unique
   age           BigInt
   life          BigInt
   luminosity    Float
@@ -429,7 +430,8 @@ model NpcStation {
   y                        Float
   z                        Float
 
-  type Type @relation(fields: [typeId], references: [id])
+  type        Type        @relation(fields: [typeId], references: [id])
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
 
   @@schema("sde")
 }

@@ -3,11 +3,18 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { UniverseMap } from '@/components/xyflow/universeMap.tsx'
 import { RegionMap } from '@/components/xyflow/regionMap.tsx'
 import { API_BASE } from '@/lib/env'
+import {
+    ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+} from '@/components/ui/chart'
+import { CartesianGrid, Line, LineChart, XAxis } from 'recharts'
 
 type ViewMode = 'universe' | 'region'
 
@@ -52,6 +59,15 @@ type SystemOverviewActivity = {
     shipKills: number | null
     podKills: number | null
     last24h?: SystemOverviewActivityWindow
+    timeline48h?: SystemActivityPoint[]
+}
+
+type SystemActivityPoint = {
+    timestamp: string
+    jumps: number
+    npcKills: number
+    shipKills: number
+    podKills: number
 }
 
 type SystemOverviewApiResponse = {
@@ -100,6 +116,36 @@ export function UniverseTool() {
         enabled: mode === 'region' && !!selectedSystem,
         staleTime: 60_000,
     })
+
+    const activity = systemOverviewQuery.data?.activity
+
+    const chartData =
+        activity?.timeline48h?.map((point, index) => ({
+            hour: index,
+            jumps: point.jumps,
+            npcKills: point.npcKills,
+            shipKills: point.shipKills,
+            podKills: point.podKills,
+        })) ?? []
+
+    const chartConfig = {
+        jumps: {
+            label: 'Jumps',
+            color: 'var(--chart-1)',
+        },
+        npcKills: {
+            label: 'NPC Kills',
+            color: 'var(--chart-2)',
+        },
+        shipKills: {
+            label: 'Ship Kills',
+            color: 'var(--chart-3)',
+        },
+        podKills: {
+            label: 'Pod Kills',
+            color: 'var(--chart-4)',
+        },
+    } satisfies ChartConfig
 
     return (
         <div className="grid h-full grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)] gap-4">
