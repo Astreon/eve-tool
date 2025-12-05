@@ -22,6 +22,7 @@
         "sde:download": "npx tsx --env-file .env sde/installer.ts download",
         "sde:export": "npx tsx --env-file .env sde/layoutSeed.ts export",
         "sde:layouts:import": "npx tsx --env-file .env sde/layoutSeed.ts import",
+        "metrics:collect:systemactivity": "npx tsx --env-file .env sde/collectors/collectSystemActivity.ts",
         "postinstall": "prisma generate"
     },
     "keywords": [],

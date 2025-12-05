@@ -11,7 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["sde", "public"]
+  schemas  = ["sde", "public", "data"]
 }
 
 model Character {
@@ -121,6 +121,26 @@ model RegionSystemLayout {
 }
 
 /**
+ * Data Collector
+ */
+model SystemActivitySample {
+  id        Int      @id @default(autoincrement())
+  systemId  Int
+  timestamp DateTime
+
+  jumps     Int
+  npcKills  Int
+  podKills  Int
+  shipKills Int
+
+  system SolarSystem @relation(fields: [systemId], references: [id])
+
+  @@unique([systemId, timestamp], map: "systemId_timestamp")
+  @@index([systemId, timestamp(sort: Desc)])
+  @@schema("data")
+}
+
+/**
  * SDE Export from CCP
  */
 model Version {
@@ -188,13 +208,14 @@ model SolarSystem {
   y               Float
   z               Float
 
-  stargates           Stargate[]
-  planets             Planet[]
-  moons               Moon[]
-  regionSystemLayouts RegionSystemLayout[]
-  region              Region               @relation(fields: [regionId], references: [id])
-  faction             Faction?             @relation(fields: [factionId], references: [id])
-  constellation       Constellation        @relation(fields: [constellationId], references: [id])
+  stargates            Stargate[]
+  planets              Planet[]
+  moons                Moon[]
+  regionSystemLayouts  RegionSystemLayout[]
+  SystemActivitySample SystemActivitySample[]
+  region               Region                 @relation(fields: [regionId], references: [id])
+  faction              Faction?               @relation(fields: [factionId], references: [id])
+  constellation        Constellation          @relation(fields: [constellationId], references: [id])
 
   linksFrom SystemLink[] @relation("SystemLinkFrom")
   linksTo   SystemLink[] @relation("SystemLinkTo")

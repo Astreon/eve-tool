@@ -51,9 +51,34 @@ export async function getSystemOverview(
             systemId,
             jumps: null,
             npcKills: null,
-            shipKills: null,
             podKills: null,
+            shipKills: null,
         }
+
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+
+        const agg = await prisma.systemActivitySample.aggregate({
+            where: {
+                systemId,
+                timestamp: { gte: since },
+            },
+            _sum: {
+                jumps: true,
+                npcKills: true,
+                podKills: true,
+                shipKills: true,
+            },
+        })
+
+        const last24h =
+            agg._sum.jumps !== null
+                ? {
+                      jumps: agg._sum.jumps ?? 0,
+                      npcKills: agg._sum.npcKills ?? 0,
+                      podKills: agg._sum.podKills ?? 0,
+                      shipKills: agg._sum.shipKills ?? 0,
+                  }
+                : undefined
 
         const data: SystemOverviewApiResponse = {
             system: {
@@ -84,6 +109,7 @@ export async function getSystemOverview(
                 npcKills: activity.npcKills,
                 shipKills: activity.shipKills,
                 podKills: activity.podKills,
+                last24h,
             },
         }
 

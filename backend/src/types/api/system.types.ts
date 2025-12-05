@@ -24,12 +24,20 @@ export interface SystemOverviewIndex {
     moonsCount: number
 }
 
+export interface SystemOverviewActivityWindows {
+    jumps: number
+    npcKills: number
+    shipKills: number
+    podKills: number
+}
+
 export interface SystemOverviewActivity {
     window: 'last_hour'
     jumps: number | null
     npcKills: number | null
     shipKills: number | null
     podKills: number | null
+    last24h?: SystemOverviewActivityWindows
 }
 
 export interface SystemOverviewMeta {

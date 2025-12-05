@@ -38,12 +38,20 @@ type SystemOverviewIndex = {
     moonsCount: number
 }
 
+type SystemOverviewActivityWindow = {
+    jumps: number
+    npcKills: number
+    shipKills: number
+    podKills: number
+}
+
 type SystemOverviewActivity = {
     window: 'last_hour'
     jumps: number | null
     npcKills: number | null
     shipKills: number | null
     podKills: number | null
+    last24h?: SystemOverviewActivityWindow
 }
 
 type SystemOverviewApiResponse = {
@@ -277,7 +285,7 @@ export function UniverseTool() {
                                             </div>
                                         </div>
 
-                                        {/* Aktivität */}
+                                        {/* Activity */}
                                         <div className="space-y-1">
                                             <div className="font-medium">
                                                 Aktivität (letzte Stunde)
@@ -310,6 +318,42 @@ export function UniverseTool() {
                                                 </span>
                                             </div>
                                         </div>
+
+                                        {systemOverviewQuery.data.activity.last24h && (
+                                            <div className="mt-3 space-y-1">
+                                                <div className="font-medium">
+                                                    Aktivität (letzte 24h)
+                                                </div>
+                                                <div>
+                                                    Jumps:{' '}
+                                                    <span className="font-mono">
+                                                        {systemOverviewQuery.data.activity.last24h
+                                                            .jumps ?? '0'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    NPC Kills:{' '}
+                                                    <span className="font-mono">
+                                                        {systemOverviewQuery.data.activity.last24h
+                                                            .npcKills ?? '0'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    Ship Kills:{' '}
+                                                    <span className="font-mono">
+                                                        {systemOverviewQuery.data.activity.last24h
+                                                            .shipKills ?? '0'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    Pod Kills:{' '}
+                                                    <span className="font-mono">
+                                                        {systemOverviewQuery.data.activity.last24h
+                                                            .podKills ?? '0'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
