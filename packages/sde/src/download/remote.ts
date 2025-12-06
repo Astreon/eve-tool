@@ -5,9 +5,9 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import { SDE_DIR } from './config'
+import { SDE_DIR } from '../config'
 import { getDbVersion, type SdeVersion } from './version'
-import { sdeLogger } from './lib/logger'
+import { logger } from '../lib/logger'
 
 const LATEST_META_URL =
     'https://developers.eveonline.com/static-data/tranquility/latest.jsonl'
@@ -89,7 +89,7 @@ async function downloadSdeZip(
         `eve-online-static-data-${buildNumber}-jsonl.zip`,
     )
 
-    sdeLogger.info(`🌐 Downloading SDE from ${zipUrl}`)
+    logger.info(`🌐 Downloading SDE from ${zipUrl}`)
 
     const res = await fetchFn(zipUrl)
     if (!res.ok)
@@ -148,7 +148,7 @@ async function copyJsonlFromExtractedTmp(tmpDir: string): Promise<void> {
     for (const name of expectedFiles) {
         const found = await findFileRecursive(tmpDir, name)
         if (!found) {
-            sdeLogger.warn(`⚠️ Could not find ${name} in extracted SDE ZIP.`)
+            logger.warn(`⚠️ Could not find ${name} in extracted SDE ZIP.`)
             continue
         }
 
@@ -178,12 +178,12 @@ export async function downloadAndPrepareSde(
 
     const zipPath = await downloadSdeZip(buildNumber, tmpDir)
 
-    sdeLogger.info('📦 Extracting SDE ZIP…')
+    logger.info('📦 Extracting SDE ZIP…')
     await extractZip(zipPath, tmpDir)
 
     await fs.promises.rm(zipPath, { force: true })
 
-    sdeLogger.info('📁 Copying JSONL files into .sde directory…')
+    logger.info('📁 Copying JSONL files into .sde directory…')
     await copyJsonlFromExtractedTmp(tmpDir)
 
     await fs.promises.rm(tmpDir, { recursive: true, force: true })
@@ -201,7 +201,7 @@ export async function ensureLatestSdeOnDisk(): Promise<SdeVersion> {
         dbVersion.buildNumber === remote.buildNumber &&
         hasLocalVersionFile
     ) {
-        sdeLogger.info(
+        logger.info(
             `🆗 SDE in DB already up to date (build ${dbVersion.buildNumber}, release ${dbVersion.releaseDate.toISOString()}).`,
         )
         return remote
@@ -212,11 +212,11 @@ export async function ensureLatestSdeOnDisk(): Promise<SdeVersion> {
         dbVersion.buildNumber === remote.buildNumber &&
         !hasLocalVersionFile
     ) {
-        sdeLogger.info(
+        logger.info(
             '⚠️ DB has latest SDE version but local .sde folder is missing. Re-downloading SDE for this build…',
         )
     } else {
-        sdeLogger.info(
+        logger.info(
             `⬆️ New or missing SDE version detected. Remote build ${remote.buildNumber}, local build ${
                 dbVersion?.buildNumber ?? 'none'
             }.`,
@@ -225,9 +225,7 @@ export async function ensureLatestSdeOnDisk(): Promise<SdeVersion> {
 
     await downloadAndPrepareSde(remote.buildNumber)
 
-    sdeLogger.info(
-        `✅ Downloaded and prepared SDE build ${remote.buildNumber}.`,
-    )
+    logger.info(`✅ Downloaded and prepared SDE build ${remote.buildNumber}.`)
 
     return remote
 }

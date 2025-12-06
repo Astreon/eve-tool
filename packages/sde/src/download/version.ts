@@ -6,8 +6,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as readline from 'readline'
-import { sdePrisma } from './lib/prisma'
-import { SDE_DIR } from './config'
+import { prisma } from '../lib/prisma'
+import { SDE_DIR } from '../config'
 
 export interface SdeVersion {
     key: 'sde'
@@ -71,14 +71,14 @@ export async function readSdeVersionFromFile(): Promise<SdeVersion> {
 }
 
 export async function getDbVersion(): Promise<SdeVersion | null> {
-    const v = await sdePrisma.version.findUnique({ where: { key: 'sde' } })
+    const v = await prisma.version.findUnique({ where: { key: 'sde' } })
     return v
         ? { key: 'sde', buildNumber: v.buildNumber, releaseDate: v.releaseDate }
         : null
 }
 
 export async function upsertDbVersion(v: SdeVersion) {
-    await sdePrisma.version.upsert({
+    await prisma.version.upsert({
         where: { key: 'sde' },
         create: {
             key: 'sde',

@@ -7,9 +7,9 @@ import {
     CALCULATION_TASKS,
     CALCULATION_TASKS_BY_ID,
     type CalculationId,
-} from './tasks/calculateTasks.js'
-import { sdeLogger } from './lib/logger.js'
-import { createProgressBar } from './lib/progress'
+} from './tasks'
+import { logger } from '../lib/logger'
+import { createProgressBar } from '../lib/progress'
 
 export interface CalculationStats {
     taskTotal: number
@@ -46,7 +46,7 @@ export async function runCalculations(
     for (const task of tasks) {
         index++
 
-        sdeLogger.info(
+        logger.info(
             `🧮 (${index}/${tasks.length}) Running calculation: ${task.label}`,
         )
 
@@ -58,7 +58,7 @@ export async function runCalculations(
             stats.taskSuccess++
 
             const duration = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.info(
+            logger.info(
                 dryRun
                     ? `✅ Dry-run completed for ${task.label} in ${duration}s`
                     : `✅ Finished ${task.label} in ${duration}s`,
@@ -71,7 +71,7 @@ export async function runCalculations(
             stats.errorCount++
 
             const duration = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.error(
+            logger.error(
                 `❌ Failed to run ${task.label} after ${duration}s:`,
                 (err as Error).message,
             )
@@ -86,7 +86,7 @@ export async function runCalculations(
         globalProgress.done({ clear: true })
     }
 
-    sdeLogger.info(
+    logger.info(
         `🏁 Completed ${stats.taskSuccess}/${stats.taskTotal} calculation tasks (${stats.errorCount} total errors)`,
     )
 
@@ -97,7 +97,7 @@ if (process.argv[1]?.endsWith('calculator.ts')) {
     runCalculations()
         .then(() => process.exit(0))
         .catch((err) => {
-            sdeLogger.error(err, '❌ SDE calculations failed')
+            logger.error(err, '❌ SDE calculations failed')
             process.exit(1)
         })
 }

@@ -3,10 +3,10 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { IMPORT_TASKS } from './tasks/importTasks.js'
-import { sdeLogger } from './lib/logger'
-import { createProgressBar } from './lib/progress'
-import { assertSdeDirOnThrow } from './config'
+import { logger } from '../lib/logger'
+import { IMPORT_TASKS } from './tasks'
+import { assertSdeDirOnThrow } from '../config'
+import { createProgressBar } from '../lib/progress'
 import {
     DATASET_FILES,
     getDatasetsNeedingImport,
@@ -58,14 +58,14 @@ export async function importer(
         const changed = await getDatasetsNeedingImport(selectedIds)
         const changedSet = new Set(changed)
 
-        sdeLogger.info(
+        logger.info(
             `[SDE] Changed-only import active – ${changed.length}/${selectedIds.length} datasets have changed since last import.`,
         )
 
         selectedIds = selectedIds.filter((id) => changedSet.has(id))
 
         if (selectedIds.length === 0) {
-            sdeLogger.info(
+            logger.info(
                 '[SDE] No Datasets changed since last import. Skipping import.',
             )
             return {
@@ -115,7 +115,7 @@ export async function importer(
             globalProgress.done({ clear: true })
         }
 
-        sdeLogger.info(
+        logger.info(
             `📦 (${index}/${selectedTasks.length}) Importing ${task.label})`,
         )
 
@@ -144,7 +144,7 @@ export async function importer(
             }
 
             const duration = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.info(
+            logger.info(
                 `✅ Imported ${result.success}/${result.total} ${task.label} in ${duration}s (${result.errors} errors)`,
             )
         } catch (err) {
@@ -152,7 +152,7 @@ export async function importer(
             stats.errorCount += 1
 
             const duration = ((performance.now() - start) / 1000).toFixed(1)
-            sdeLogger.error(
+            logger.error(
                 `❌ Failed to import ${task.label} (${datasetId}) after ${duration}s:`,
                 (err as Error).message,
             )
@@ -173,7 +173,7 @@ export async function importer(
         globalProgress.done({ clear: true })
     }
 
-    sdeLogger.info(
+    logger.info(
         `🏁 Imported ${stats.lineSuccess}/${stats.lineTotal} lines in ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} total errors)`,
     )
 

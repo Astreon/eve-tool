@@ -7,8 +7,8 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { SDE_DIR } from '../config'
-import { sdePrisma } from '../lib/prisma'
-import { sdeLogger } from '../lib/logger'
+import { prisma } from '../lib/prisma'
+import { logger } from '../lib/logger'
 
 type SolarSystemRow = {
     _key: number
@@ -29,7 +29,7 @@ type BorderType = 'INTERNAL' | 'CONSTELLATION' | 'REGION'
 
 export async function computeSystemLinks(dryRun = false) {
     if (dryRun) {
-        sdeLogger.info('🧪 Dry-run: would compute system links.')
+        logger.info('🧪 Dry-run: would compute system links.')
         return
     }
 
@@ -112,11 +112,11 @@ export async function computeSystemLinks(dryRun = false) {
     })
 
     // 4) Save to DB
-    await sdePrisma.systemLink.deleteMany()
-    await sdePrisma.systemLink.createMany({
+    await prisma.systemLink.deleteMany()
+    await prisma.systemLink.createMany({
         data: links,
         skipDuplicates: true,
     })
 
-    sdeLogger.info(`✅ Stored ${links.length} system links`)
+    logger.info(`✅ Stored ${links.length} system links`)
 }

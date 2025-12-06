@@ -35,7 +35,7 @@ function shouldLog(level: SdeLogLevel): boolean {
     return LEVEL_ORDER[level] >= LEVEL_ORDER[CURRENT_LEVEL]
 }
 
-export const sdeLogger = {
+export const logger = {
     debug(...args: unknown[]): void {
         if (!shouldLog('debug')) return
         console.log(...args)

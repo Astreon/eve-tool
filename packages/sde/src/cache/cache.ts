@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { sdeRedis } from './lib/redis.js'
-import { sdeLogger } from './lib/logger.js'
+import { redis } from '../lib/redis'
+import { logger } from '../lib/logger'
 
 const REGION_CACHE_PREFIX = 'regions'
 const CACHE_VERSION = process.env.CACHE_VERSION
@@ -14,19 +14,17 @@ export async function invalidateSdeCaches() {
 
     for (const pattern of patterns) {
         try {
-            const keys = await sdeRedis.keys(pattern)
+            const keys = await redis.keys(pattern)
             if (keys.length > 0) {
-                await sdeRedis.del(...keys)
-                sdeLogger.info(
+                await redis.del(...keys)
+                logger.info(
                     `[SDE] Cleared ${keys.length} Redis keys for pattern "${pattern}"`,
                 )
             } else {
-                sdeLogger.info(
-                    `[SDE] No Redis keys matched pattern "${pattern}"`,
-                )
+                logger.info(`[SDE] No Redis keys matched pattern "${pattern}"`)
             }
         } catch (err) {
-            sdeLogger.error(
+            logger.error(
                 `[SDE] Failed to clear Redis keys for pattern "${pattern}":`,
                 err,
             )

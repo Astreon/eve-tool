@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { sdeRedis } from './redis.js'
-import { sdeLogger } from './logger'
+import { redis } from './redis.js'
+import { logger } from './logger'
 
 const MAINTENANCE_KEY = 'runtime:maintenance'
 
@@ -18,13 +18,13 @@ export async function withMaintenance<T>(
         source: 'sde',
     })
 
-    await sdeRedis.set(MAINTENANCE_KEY, payload)
-    sdeLogger.info('🚧 Maintenance Guard active')
+    await redis.set(MAINTENANCE_KEY, payload)
+    logger.info('🚧 Maintenance Guard active')
 
     try {
         return await fn()
     } finally {
-        await sdeRedis.del(MAINTENANCE_KEY)
-        sdeLogger.info('🚧 Maintenance Guard deactivated')
+        await redis.del(MAINTENANCE_KEY)
+        logger.info('🚧 Maintenance Guard deactivated')
     }
 }

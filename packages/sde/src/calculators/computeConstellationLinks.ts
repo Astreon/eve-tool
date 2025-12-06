@@ -7,8 +7,8 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { SDE_DIR } from '../config'
-import { sdePrisma } from '../lib/prisma'
-import { sdeLogger } from '../lib/logger'
+import { prisma } from '../lib/prisma'
+import { logger } from '../lib/logger'
 
 type SolarSystemRow = {
     _key: number
@@ -26,7 +26,7 @@ type StargateRow = {
 
 export async function computeConstellationLinks(dryRun = false) {
     if (dryRun) {
-        sdeLogger.info('🧪 Dry-run: would compute constellation links.')
+        logger.info('🧪 Dry-run: would compute constellation links.')
         return
     }
 
@@ -88,11 +88,11 @@ export async function computeConstellationLinks(dryRun = false) {
     })
 
     // 4) Safe to DB
-    await sdePrisma.constellationLink.deleteMany()
-    await sdePrisma.constellationLink.createMany({
+    await prisma.constellationLink.deleteMany()
+    await prisma.constellationLink.createMany({
         data: links,
         skipDuplicates: true,
     })
 
-    sdeLogger.info(`✅ Stored ${links.length} constellation links`)
+    logger.info(`✅ Stored ${links.length} constellation links`)
 }

@@ -7,8 +7,8 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { SDE_DIR } from '../config'
-import { sdePrisma } from '../lib/prisma'
-import { sdeLogger } from '../lib/logger'
+import { prisma } from '../lib/prisma'
+import { logger } from '../lib/logger'
 
 type SolarSystemRow = {
     _key: number
@@ -26,7 +26,7 @@ type StargateRow = {
 
 export async function computeRegionLinks(dryRun = false) {
     if (dryRun) {
-        sdeLogger.info('🧪 Dry-run: would compute region links.')
+        logger.info('🧪 Dry-run: would compute region links.')
         return
     }
 
@@ -82,11 +82,11 @@ export async function computeRegionLinks(dryRun = false) {
     })
 
     // 4) Safe to DB
-    await sdePrisma.regionLink.deleteMany()
-    await sdePrisma.regionLink.createMany({
+    await prisma.regionLink.deleteMany()
+    await prisma.regionLink.createMany({
         data: links,
         skipDuplicates: true,
     })
 
-    sdeLogger.info(`✅ Stored ${links.length} region links`)
+    logger.info(`✅ Stored ${links.length} region links`)
 }

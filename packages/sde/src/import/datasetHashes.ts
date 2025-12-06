@@ -6,9 +6,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { createHash } from 'crypto'
-import { SDE_DIR } from './config'
-import { sdePrisma } from './lib/prisma'
-import { sdeLogger } from './lib/logger'
+import { SDE_DIR } from '../config'
+import { prisma } from '../lib/prisma'
+import { logger } from '../lib/logger'
 
 export const DATASET_FILES = {
     bloodlines: 'bloodlines.jsonl',
@@ -37,7 +37,7 @@ export async function computeDatasetFileHash(
     const fullPath = path.join(SDE_DIR, fileName)
 
     if (!fs.existsSync(fullPath)) {
-        sdeLogger.warn(
+        logger.warn(
             `[SDE] Dataset "${datasetId}" – File "${fileName}" not found in (${fullPath}).`,
         )
         return null
@@ -59,7 +59,7 @@ export async function computeDatasetFileHash(
 }
 
 export async function getStoredDatasetVersion(datasetId: DatasetId) {
-    return sdePrisma.versionDataset.findUnique({
+    return prisma.versionDataset.findUnique({
         where: { id: datasetId },
     })
 }
@@ -71,7 +71,7 @@ export async function upsertDatasetVersion(params: {
 }) {
     const { datasetId, fileName, fileHash } = params
 
-    await sdePrisma.versionDataset.upsert({
+    await prisma.versionDataset.upsert({
         where: { id: datasetId },
         create: { id: datasetId, fileName, fileHash },
         update: { fileName, fileHash },

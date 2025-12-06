@@ -6,11 +6,11 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { sdePrisma } from '../lib/prisma.js'
-import { ImportResult } from '../importer.js'
+import { prisma } from '../lib/prisma'
+import { ImportResult } from '../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../config'
 import { Prisma } from '@eve-toolkit/db'
-import { sdeLogger } from '../lib/logger'
+import { logger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
 async function countLines(filePath: string): Promise<number> {
@@ -95,7 +95,7 @@ export const importPlanets = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.planet.upsert({
+                            prisma.planet.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -108,7 +108,7 @@ export const importPlanets = async (
             }
         } catch (err) {
             errors++
-            sdeLogger.error(
+            logger.error(
                 `❌ Parse/DB error @line ${total}:`,
                 (err as Error).message,
             )
@@ -119,7 +119,7 @@ export const importPlanets = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.planet.upsert({
+                    prisma.planet.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

@@ -3,7 +3,6 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { sdeLogger } from './lib/logger.js'
 import {
     runInstall,
     runImport,
@@ -12,60 +11,80 @@ import {
     runUpdate,
     type SdeGlobalOptions,
     type InstallerCommand,
-} from './installer.js'
-import { exportLayouts, importLayouts } from './layoutSeed.js'
-import { invalidateSdeCaches } from './cache.js'
+} from './installer'
+import { logger } from './lib/logger'
+import { invalidateSdeCaches } from './cache/cache'
+import { exportLayouts, importLayouts } from './layouts/layoutSeed'
 
-export type { InstallerCommand, SdeGlobalOptions } from './installer.js'
+export type { SdeGlobalOptions, InstallerCommand }
 
 /**
  * Installs SDE from scratch:
- * - Download
- * - Import all Datasets
- * - Calculations
- * - Cache-Invalidation
+ * - Download (ensureLatestSdeOnDisk)
+ * - Import (all Datasets)
+ * - Calculations (all Tasks)
+ * - Redis-Cache invalidation
  */
-export async function installAllStaticData(options: SdeGlobalOptions = {}) {
-    sdeLogger.info(
-        '🚀 installAllStaticData() – full SDE install via runInstall()',
-    )
-    await runDownload(options)
+export async function installAllStaticData(
+    options: SdeGlobalOptions = {},
+): Promise<void> {
+    logger.info('🚀 installAllStaticData()')
     await runInstall(options)
 }
 
 /**
  * Version-aware Update:
- * - check version
+ * - get the actual version from SDE (ensureLatestSdeOnDisk)
  * - import changed datasets (if any)
  * - rerun calculations if necessary
- * - invalidate Caches
  */
-export async function updateStaticData(options: SdeGlobalOptions = {}) {
-    sdeLogger.info('⬆️ updateStaticData() – delegating to runUpdate()')
+export async function updateStaticData(
+    options: SdeGlobalOptions = {},
+): Promise<void> {
+    logger.info('🚀 updateStaticData()')
     await runUpdate(options)
 }
 
 /**
- * Execute only CCP SDE-Imports (without calculations).
+ * Only import:
+ * - Version-aware (or with`force`)
+ * - Allows partial import via `options.datasets`
  */
-export async function importCcpSde(options: SdeGlobalOptions = {}) {
-    sdeLogger.info('📥 importCcpSde() – delegating to runImport()')
+export async function importCcpSde(
+    options: SdeGlobalOptions = {},
+): Promise<void> {
+    logger.info('🚀 importCcpSde()')
     await runImport(options)
 }
 
 /**
- * Execute only SDE-Calculations (without importing).
+ * Only calculations:
+ * - Version-aware (or with`force`)
+ * - Runs all calculations (no separate task subcommand)
  */
-export async function calculateStaticData(options: SdeGlobalOptions = {}) {
-    sdeLogger.info('🧮 calculateStaticData() – delegating to runCalculate()')
+export async function calculateStaticData(
+    options: SdeGlobalOptions = {},
+): Promise<void> {
+    logger.info('🚀 calculateStaticData()')
     await runCalculate(undefined, options)
 }
 
 /**
- * Export current map layouts from database to static files.
+ * Download:
+ * - Ensure latest .sde files on disk
  */
-export async function exportMapLayouts() {
-    sdeLogger.info('🗺️ exportMapLayouts()')
+export async function downloadStaticData(
+    options: SdeGlobalOptions = {},
+): Promise<void> {
+    logger.info('🚀 downloadStaticData()')
+    await runDownload(options)
+}
+
+/**
+ * Export map layouts to static files from the database.
+ */
+export async function exportMapLayouts(): Promise<void> {
+    logger.info('🚀 exportMapLayouts()')
     await exportLayouts()
 }
 
@@ -73,7 +92,7 @@ export async function exportMapLayouts() {
  * Import map layouts from static files to the database.
  */
 export async function importMapLayouts() {
-    sdeLogger.info('🗺️ importMapLayouts()')
+    logger.info('🚀 importMapLayouts()')
     await importLayouts()
 }
 

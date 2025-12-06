@@ -20,7 +20,7 @@ import {
     importStationServices,
     importStationOperations,
 } from '../importers'
-import type { ImportResult } from '../importer.js'
+import type { ImportResult } from './importer'
 
 export type ImportDatasetId =
     | 'bloodlines'
