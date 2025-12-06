@@ -24,7 +24,7 @@ function UniversePage() {
             <div className="mb-4">
                 <h1 className="text-2xl font-bold">Universe</h1>
             </div>
-            <div className="h-[calc(100vh-var(--header-height)-6rem)]">
+            <div className="min-h-[calc(100vh-var(--header-height)-6rem)] lg:h-[calc(100vh-var(--header-height)-6rem)]">
                 <UniverseTool />
             </div>
         </div>

@@ -183,9 +183,9 @@ export function UniverseTool() {
     }
 
     return (
-        <div className="grid h-full grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)] gap-4">
+        <div className="grid gap-4 lg:h-full lg:grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)]">
             {/* Left: Canvas */}
-            <div className="border-border overflow-hidden rounded-lg border">
+            <div className="border-border h-[60vh] min-h-[320px] overflow-hidden rounded-lg border lg:h-full">
                 {mode === 'universe' && (
                     <UniverseMap
                         onRegionClick={(id) => {
@@ -220,7 +220,7 @@ export function UniverseTool() {
             </div>
 
             {/* Right: Info panel */}
-            <div className="border-border flex flex-col gap-3 rounded-lg border p-3 text-sm">
+            <div className="border-border flex flex-col gap-3 rounded-lg border p-3 text-sm lg:max-h-full lg:overflow-y-auto">
                 <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                         {mode === 'universe' ? 'Universe overview' : 'Region details'}
@@ -259,13 +259,8 @@ export function UniverseTool() {
                                 Region <span className="font-mono">{activeRegionId}</span>
                             </div>
                             <p className="text-muted-foreground">
-                                You are in the system view of this region. Edge colors:
+                                You are in the system view of this region.
                             </p>
-                            <ul>
-                                <li>Black/white: connection within the same constellation</li>
-                                <li>Red: connection to a system in another constellation</li>
-                                <li>Purple: connection to a system in another region</li>
-                            </ul>
                         </div>
 
                         {selectedSystem ? (
@@ -302,7 +297,7 @@ export function UniverseTool() {
                                 )}
 
                                 {systemOverviewQuery.isSuccess && (
-                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                                         {/* General */}
                                         <div className="bg-muted/40 space-y-1 rounded-md p-2">
                                             <div className="font-medium">General</div>
@@ -638,9 +633,16 @@ export function UniverseTool() {
                                 )}
                             </div>
                         ) : (
-                            <p className="text-muted-foreground">
-                                Click a system in the canvas to show its details here.
-                            </p>
+                            <div>
+                                <p className="text-muted-foreground">
+                                    Click a system in the canvas to show its details here.
+                                </p>
+                                <ul>
+                                    <li>Black/white: connection within the same constellation</li>
+                                    <li>Red: connection to a system in another constellation</li>
+                                    <li>Purple: connection to a system in another region</li>
+                                </ul>
+                            </div>
                         )}
                     </div>
                 )}
