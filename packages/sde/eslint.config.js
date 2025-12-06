@@ -34,6 +34,7 @@ export default tseslint.config(
             '@typescript-eslint/prefer-promise-reject-errors': 'off',
             '@typescript-eslint/no-floating-promises': 'off',
             '@typescript-eslint/no-unsafe-return': 'off',
+            '@typescript-eslint/no-unused-vars': 'warn',
         },
     },
 )
