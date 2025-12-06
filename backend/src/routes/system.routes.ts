@@ -4,7 +4,7 @@
  */
 
 import { Router } from 'express'
-import { getSystemOverview } from '../controllers/system.controller'
+import { getSystemOverview } from '../controllers/system.controller.js'
 
 const router = Router()
 
