@@ -125,7 +125,8 @@
 @theme inline {
     --scroll-animation-duration: 40s;
     --scroll-animation-direction: forwards;
-    --animate-scroll: scroll var(--scroll-animation-duration) var(--scroll-animation-direction) linear infinite;
+    --animate-scroll: scroll var(--scroll-animation-duration) var(--scroll-animation-direction)
+        linear infinite;
 
     @keyframes scroll {
         to {
