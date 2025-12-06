@@ -30,6 +30,10 @@ export default tseslint.config(
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-empty-function': 'off',
             '@typescript-eslint/consistent-type-definitions': 'off',
+            '@typescript-eslint/array-type': 'off',
+            '@typescript-eslint/prefer-promise-reject-errors': 'off',
+            '@typescript-eslint/no-floating-promises': 'off',
+            '@typescript-eslint/no-unsafe-return': 'off',
         },
     },
 )

@@ -124,7 +124,6 @@ function printHelp() {
           --force         Ignore version match and run anyway
           --datasets=a,b  Only import selected datasets (for "import")
         `
-    // eslint-disable-next-line no-console
     console.log(msg)
 }
 

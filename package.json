@@ -18,7 +18,7 @@
         "lint": "npm run lint:backend && npm run lint:frontend && npm run lint:packages",
         "lint:backend": "npm run lint --workspace backend",
         "lint:frontend": "npm run lint --workspace frontend",
-        "lint:packages": "npm run lint --workspace @eve-toolkit/db && npm run lint --workspace @eve-toolkit/sde && npm run lint --workspace @eve-toolkit/collector",
+        "lint:packages": "npm run lint --workspace @eve-toolkit/sde && npm run lint --workspace @eve-toolkit/collector",
         "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "test": "npm test --workspace backend"

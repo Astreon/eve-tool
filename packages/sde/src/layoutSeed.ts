@@ -116,7 +116,7 @@ export async function importLayouts(opts?: {
     try {
         files = await fs.readdir(LAYOUT_SEED_DIR)
     } catch (err: any) {
-        if (err && err.code === 'ENOENT') {
+        if (err?.code === 'ENOENT') {
             sdeLogger.warn(
                 `📁 Layout seed directory does not exist: ${LAYOUT_SEED_DIR} (nothing to import)`,
             )
