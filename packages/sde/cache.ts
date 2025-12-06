@@ -4,15 +4,13 @@
  */
 
 import { sdeRedis } from './lib/redis.js'
-import config from '../src/config/config.js'
 import { sdeLogger } from './lib/logger'
 
 const REGION_CACHE_PREFIX = 'regions'
+const CACHE_VERSION = process.env.CACHE_VERSION
 
 export async function invalidateSdeCaches() {
-    const v = config.redis.cacheVersion
-
-    const patterns = [`${REGION_CACHE_PREFIX}:${v}:*`]
+    const patterns = [`${REGION_CACHE_PREFIX}:${CACHE_VERSION}:*`]
 
     for (const pattern of patterns) {
         try {

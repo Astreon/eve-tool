@@ -6,7 +6,7 @@
 // TODO: Run this every hour, at 30 minutes
 
 import { sdePrisma } from '../lib/prisma'
-import { getSystemActivitySnapshot } from '../../src/services/esi'
+import { getSystemActivitySnapshot } from '../../../backend/src/services/esi'
 import { sdeLogger } from '../lib/logger'
 
 function getCurrentHourBucket(): Date {
