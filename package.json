@@ -1,0 +1,19 @@
+{
+    "name": "eve-toolkit",
+    "private": true,
+    "workspaces": [
+        "backend",
+        "frontend",
+        "worker",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "npm run dev:backend",
+        "dev:backend": "npm run dev --workspace backend",
+        "dev:frontend": "npm run dev --workspace frontend",
+        "type-check": "npm run type-check --workspace backend && npm run type-check --workspace frontend",
+        "lint": "npm run lint --workspace backend && npm run lint --workspace frontend",
+        "prettier": "npm run prettier --workspace backend && npm run prettier --workspace frontend",
+        "test": "npm test --workspace backend"
+    }
+}
