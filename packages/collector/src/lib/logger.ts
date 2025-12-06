@@ -5,7 +5,7 @@
 
 import { pino } from 'pino'
 
-export const collectorLogger = pino({
+export const logger = pino({
     name: 'collector',
     level: process.env.LOG_LEVEL ?? 'info',
 })

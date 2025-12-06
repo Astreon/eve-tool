@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@eve-toolkit/db'
-import { collectorLogger } from './logger.js'
+import { logger } from './logger.js'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 const connectionString = `${process.env.DATABASE_URL}`
@@ -14,8 +14,8 @@ export const prisma = new PrismaClient({ adapter })
 prisma
     .$connect()
     .then(() => {
-        collectorLogger.info('🗄️ Connected to PostgreSQL via Prisma (SDE)')
+        logger.info('🗄️ Connected to PostgreSQL via Prisma (SDE)')
     })
     .catch((err) => {
-        collectorLogger.error('❌ Failed to connect Prisma (SDE):', err)
+        logger.error('❌ Failed to connect Prisma (SDE):', err)
     })

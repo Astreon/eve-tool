@@ -5,8 +5,8 @@
 
 // TODO: Run this every hour, at 30 minutes
 
-import { collectorLogger } from '../lib/logger.js'
-import { prisma } from '../lib/prisma.js'
+import { logger } from '../lib/logger'
+import { prisma } from '../lib/prisma'
 import { getSystemActivitySnapshot } from '../../../../backend/src/services/esi'
 
 export type SystemActivityCollectorOptions = {
@@ -24,20 +24,16 @@ export async function systemActivity(
 ) {
     const { dryRun } = options
 
-    collectorLogger.info(
-        '📊 Collector – fetching system activity snapshot from ESI...',
-    )
+    logger.info('📊 Collector fetching system activity snapshot from ESI...')
 
     const bucket = getCurrentHourBucket()
     const snapshot = await getSystemActivitySnapshot()
     const rows = Array.from(snapshot.data.values())
 
-    collectorLogger.info(
-        `Collector – received ${rows.length} system activity entries`,
-    )
+    logger.info(`Collector received ${rows.length} system activity entries`)
 
     if (dryRun) {
-        collectorLogger.info(
+        logger.info(
             '🧪 DRY-RUN: skipping persistence of system activity snapshot.',
         )
         return
@@ -68,16 +64,5 @@ export async function systemActivity(
         })
     }
 
-    collectorLogger.info(
-        `✅ Collector – persisted ${rows.length} system activity entries`,
-    )
-}
-
-if (process.argv[1]?.endsWith('systemActivity.ts')) {
-    systemActivity()
-        .then(() => process.exit(0))
-        .catch((err) => {
-            collectorLogger.error(err, '❌ Collector – system activity failed')
-            process.exit(1)
-        })
+    logger.info(`✅ Collector persisted ${rows.length} system activity entries`)
 }

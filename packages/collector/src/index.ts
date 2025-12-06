@@ -3,8 +3,12 @@
  * Copyright (C) 2025 Astreon
  */
 
-export { systemActivity } from './jobs/systemActivity.js'
+export { systemActivity } from './jobs/systemActivity'
 
-export type CollectorOptions = {
-    dryRun?: boolean
-}
+// Public-Typen & Job-Registry
+export {
+    COLLECTOR_JOBS,
+    type CollectorJobFn,
+    type CollectorJobId,
+    type CollectorOptions,
+} from './jobs/index'
