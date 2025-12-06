@@ -1,11 +1,6 @@
 {
-    "include": [
-        "**/*.ts",
-        "**/*.tsx",
-        "eslint.config.js",
-        "prettier.config.js",
-        "vite.config.js"
-    ],
+    "extends": "../tsconfig.base.json",
+    "include": ["**/*.ts", "**/*.tsx", "eslint.config.js", "vite.config.js"],
     "compilerOptions": {
         "target": "ES2022",
         "jsx": "react-jsx",
@@ -18,8 +13,6 @@
         "verbatimModuleSyntax": false,
         "noEmit": true,
         /* Linting */
-        "skipLibCheck": true,
-        "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
