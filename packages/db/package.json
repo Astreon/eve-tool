@@ -3,10 +3,9 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "src/generated/client.js",
+    "types": "src/generated/client.d.ts",
     "scripts": {
-        "build": "tsc -p tsconfig.json",
         "prisma:generate": "prisma generate"
     },
     "dependencies": {

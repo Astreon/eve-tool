@@ -22,13 +22,13 @@
         "sde:download": "npx tsx --env-file .env sde/installer.ts download",
         "sde:export": "npx tsx --env-file .env sde/layoutSeed.ts export",
         "sde:layouts:import": "npx tsx --env-file .env sde/layoutSeed.ts import",
-        "metrics:collect:systemactivity": "npx tsx --env-file .env sde/collectors/collectSystemActivity.ts",
-        "postinstall": "prisma generate"
+        "metrics:collect:systemactivity": "npx tsx --env-file .env sde/collectors/collectSystemActivity.ts"
     },
     "keywords": [],
     "author": "Astreon",
     "license": "CC-BY-NC-SA-4.0",
     "dependencies": {
+        "@eve-toolkit/db": "0.0.1",
         "@prisma/adapter-pg": "^7.0.1",
         "@prisma/client": "^7.1.0",
         "axios": "^1.13.0",
