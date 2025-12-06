@@ -9,6 +9,7 @@ import {
     type CollectorJobId,
     type CollectorOptions,
 } from '../jobs'
+import { runCollectorJob } from '../index'
 
 type ParsedArgs = {
     jobId: CollectorJobId
@@ -55,14 +56,14 @@ function parseArgs(argv: string[]): ParsedArgs {
 
 function printHelp() {
     const msg = `
-Usage: collector <job> [options]
-
-Jobs:
-  system-activity    Collects system activity snapshot from ESI and persists it
-
-Options:
-  --dry-run          Do not write to the database, just log actions
-`
+        Usage: collector <job> [options]
+        
+        Jobs:
+          system-activity    Collects system activity snapshot from ESI and persists it
+        
+        Options:
+          --dry-run          Do not write to the database, just log actions
+    `
     console.log(msg)
 }
 
@@ -70,18 +71,14 @@ void (async () => {
     try {
         const { jobId, options } = parseArgs(process.argv.slice(2))
 
-        const job = COLLECTOR_JOBS[jobId]
-
-        if (!job) {
+        if (!Object.prototype.hasOwnProperty.call(COLLECTOR_JOBS, jobId)) {
             logger.error({ jobId }, '❌ Unknown collector job')
             printHelp()
             process.exitCode = 1
             return
         }
 
-        logger.info({ jobId, options }, '🚀 Starting collector job')
-        await job(options)
-        logger.info({ jobId }, '✅ Collector job finished')
+        await runCollectorJob(jobId, options)
     } catch (err) {
         logger.error(err, '❌ Collector CLI failed')
         process.exitCode = 1
