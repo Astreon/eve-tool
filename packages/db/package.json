@@ -6,6 +6,9 @@
     "main": "src/generated/client.js",
     "types": "src/generated/client.d.ts",
     "scripts": {
+        "type-check": "tsc -p tsconfig.json --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix .",
         "prisma:generate": "prisma generate"
     },
     "dependencies": {

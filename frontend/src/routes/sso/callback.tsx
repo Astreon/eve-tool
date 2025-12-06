@@ -54,14 +54,22 @@ function CallbackPage() {
 
                 const body = (await res.json()) as CallbackResponse
 
-                if (!res.ok || !body.success || !body.tokens || !body.character) {
-                    throw new Error(body.message ?? `Callback failed (HTTP ${res.status})`)
+                if (
+                    !res.ok ||
+                    !body.success ||
+                    !body.tokens ||
+                    !body.character
+                ) {
+                    throw new Error(
+                        body.message ?? `Callback failed (HTTP ${res.status})`,
+                    )
                 }
 
                 const expiresAt = Date.now() + body.tokens.expires_in * 1000
                 const scopes = body.character.scopes ?? []
 
-                const onboardingCompleted = body.character.onboardingCompleted ?? false
+                const onboardingCompleted =
+                    body.character.onboardingCompleted ?? false
                 const redirectTo = body.redirectTo ?? null
 
                 setSession({
@@ -108,9 +116,12 @@ function CallbackPage() {
     return (
         <div className="flex min-h-[50vh] items-center justify-center">
             <div className="space-y-2 text-center">
-                <h1 className="text-xl font-semibold">You will be logged in...</h1>
+                <h1 className="text-xl font-semibold">
+                    You will be logged in...
+                </h1>
                 <p className="text-muted-foreground text-sm">
-                    Please wait a moment, the connection to EVE SSO is being completed.
+                    Please wait a moment, the connection to EVE SSO is being
+                    completed.
                 </p>
             </div>
         </div>

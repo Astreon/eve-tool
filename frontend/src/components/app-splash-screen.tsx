@@ -21,7 +21,9 @@ export function AppSplashScreen({ fadingOut = false }: AppSplashScreenProps) {
         >
             <div className="flex flex-col items-center gap-4">
                 <Logo size={256} className="me-0 drop-shadow-xl" />
-                <p className="text-muted-foreground text-2xl">Preparing EVE Toolkit</p>
+                <p className="text-muted-foreground text-2xl">
+                    Preparing EVE Toolkit
+                </p>
             </div>
         </div>
     )

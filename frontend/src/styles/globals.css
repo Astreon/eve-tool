@@ -84,8 +84,10 @@
     --fc-page-bg-color: var(--muted);
     --fc-today-bg-color: var(--muted);
 
-    --text-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --display-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --text-family:
+        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --display-family:
+        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .dark {
@@ -125,8 +127,8 @@
 @theme inline {
     --scroll-animation-duration: 40s;
     --scroll-animation-direction: forwards;
-    --animate-scroll: scroll var(--scroll-animation-duration) var(--scroll-animation-direction)
-        linear infinite;
+    --animate-scroll: scroll var(--scroll-animation-duration)
+        var(--scroll-animation-direction) linear infinite;
 
     @keyframes scroll {
         to {

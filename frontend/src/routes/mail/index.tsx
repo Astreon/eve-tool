@@ -4,7 +4,13 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card.tsx'
 import { AlertCircleIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/mail/')({
@@ -41,7 +47,8 @@ function MailPage() {
                             <h1 className="text-xl">Mail Manager</h1>
                         </CardTitle>
                         <CardDescription>
-                            A flexible mail manager for EVE Online, will be created in the future.
+                            A flexible mail manager for EVE Online, will be
+                            created in the future.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="border-t pt-4">

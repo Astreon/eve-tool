@@ -54,7 +54,9 @@ export function MaintenanceOverlay() {
                         'The EVE Tool is temporarily unavailable while data updates are running.'}
                 </p>
                 {startedAt && (
-                    <p className="text-muted-foreground text-xs">Started at {startedAt}</p>
+                    <p className="text-muted-foreground text-xs">
+                        Started at {startedAt}
+                    </p>
                 )}
                 <Button
                     size="sm"

@@ -11,7 +11,6 @@
         "type-check": "tsc --noEmit && tsc -p tests/.tsconfig.json --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
-        "prettier": "prettier --check .",
         "test": "vitest run",
         "test:watch": "vitest",
         "sde:install": "npx tsx --env-file .env ../packages/sde/src/installer.ts install",

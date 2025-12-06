@@ -11,7 +11,10 @@ import {
 
 export type AppThemeProviderProps = PropsWithChildren<BaseThemeProviderProps>
 
-export const AppThemeProvider: React.FC<AppThemeProviderProps> = ({ children, ...props }) => {
+export const AppThemeProvider: React.FC<AppThemeProviderProps> = ({
+    children,
+    ...props
+}) => {
     return <BaseThemeProvider {...props}>{children}</BaseThemeProvider>
 }
 

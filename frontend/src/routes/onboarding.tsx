@@ -27,7 +27,9 @@ const BASE_FEATURE_ID: FeatureId = 'search'
 
 function OnboardingPage() {
     const { isAuthenticated, isReady, session } = useAuth()
-    const label = isAuthenticated ? 'Verify with EVE Online' : 'Login with EVE Online'
+    const label = isAuthenticated
+        ? 'Verify with EVE Online'
+        : 'Login with EVE Online'
 
     const currentScopes = (session?.scopes ?? []).slice()
 
@@ -125,11 +127,11 @@ function OnboardingPage() {
             <div className="mb-4">
                 <h1 className="text-2xl font-bold">Onboarding</h1>
                 <p className="text-muted-foreground mt-1 text-sm">
-                    Select the features you want to use. We will then calculate the required ESI
-                    permissions (scopes).
+                    Select the features you want to use. We will then calculate
+                    the required ESI permissions (scopes).
                     <br />
-                    You can repeat this onboarding at any time to expand or restrict your
-                    permissions.
+                    You can repeat this onboarding at any time to expand or
+                    restrict your permissions.
                 </p>
             </div>
 
@@ -147,14 +149,20 @@ function OnboardingPage() {
                                 'flex h-full flex-col items-stretch rounded-md border p-4 text-left transition',
                                 isBase ? 'cursor-default' : 'cursor-pointer',
                                 'hover:border-primary',
-                                isSelected ? 'border-primary bg-primary/5' : 'border-muted',
+                                isSelected
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-muted',
                             )}
                         >
                             <div className="flex items-start justify-between gap-2">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xl">{feature.icon}</span>
-                                        <h2 className="text-sm font-semibold">{feature.name}</h2>
+                                        <span className="text-xl">
+                                            {feature.icon}
+                                        </span>
+                                        <h2 className="text-sm font-semibold">
+                                            {feature.name}
+                                        </h2>
                                     </div>
                                     <p className="text-muted-foreground mt-1 text-xs">
                                         {feature.description}
@@ -163,10 +171,13 @@ function OnboardingPage() {
                                 <div className="flex flex-col items-end gap-1">
                                     {feature.badge && (
                                         <Badge
-                                            variant={isBase ? 'default' : 'outline'}
+                                            variant={
+                                                isBase ? 'default' : 'outline'
+                                            }
                                             className={cn(
                                                 'text-[10px]',
-                                                isBase && 'bg-primary text-primary-foreground',
+                                                isBase &&
+                                                    'bg-primary text-primary-foreground',
                                             )}
                                         >
                                             {feature.badge}
@@ -194,7 +205,11 @@ function OnboardingPage() {
             <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="font-medium">Selected scopes:</span>
                 {scopes.map((scope) => (
-                    <Badge key={scope} variant="outline" className="font-mono text-[10px]">
+                    <Badge
+                        key={scope}
+                        variant="outline"
+                        className="font-mono text-[10px]"
+                    >
                         {scope}
                     </Badge>
                 ))}
@@ -202,8 +217,8 @@ function OnboardingPage() {
 
             <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-muted-foreground text-xs">
-                    After logging in, you will be redirected to EVE Online to confirm your selected
-                    scopes.
+                    After logging in, you will be redirected to EVE Online to
+                    confirm your selected scopes.
                 </p>
                 <div className="flex justify-end gap-2">
                     <Button variant="outline" asChild>

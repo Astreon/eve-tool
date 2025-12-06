@@ -48,7 +48,12 @@ export default function Search() {
                     <div className="bg-muted/40 h-9 w-full rounded-md border" />
                 </div>
                 <div className="block lg:hidden">
-                    <Button size="icon" variant="ghost" tabIndex={-1} aria-hidden="true">
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                    >
                         <SearchIcon />
                     </Button>
                 </div>
@@ -72,7 +77,11 @@ export default function Search() {
                 </div>
             </div>
             <div className="block lg:hidden">
-                <Button size="icon" variant="ghost" onClick={() => setOpen(true)}>
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setOpen(true)}
+                >
                     <SearchIcon />
                 </Button>
             </div>

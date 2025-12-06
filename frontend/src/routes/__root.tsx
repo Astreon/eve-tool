@@ -6,7 +6,13 @@
 // noinspection HtmlRequiredTitleElement
 
 import React, { ReactNode } from 'react'
-import { Outlet, createRootRoute, HeadContent, Scripts, Link } from '@tanstack/react-router'
+import {
+    Outlet,
+    createRootRoute,
+    HeadContent,
+    Scripts,
+    Link,
+} from '@tanstack/react-router'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
@@ -42,7 +48,8 @@ export const Route = createRootRoute({
                 content: 'width=device-width, initial-scale=1',
             },
             ...seo({
-                description: 'EVE Toolkit - Your ultimative all-in-one EVE Online companion.',
+                description:
+                    'EVE Toolkit - Your ultimative all-in-one EVE Online companion.',
             }),
         ],
         links: [
@@ -111,8 +118,10 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                                         defaultOpen={true}
                                         style={
                                             {
-                                                '--sidebar-width': 'calc(var(--spacing) * 64)',
-                                                '--header-height': 'calc(var(--spacing) * 14)',
+                                                '--sidebar-width':
+                                                    'calc(var(--spacing) * 64)',
+                                                '--header-height':
+                                                    'calc(var(--spacing) * 14)',
                                             } as React.CSSProperties
                                         }
                                     >
@@ -122,7 +131,10 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                                             <div className="flex flex-1 flex-col">
                                                 <div className="@container/main p-4 xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
                                                     {children}
-                                                    <Toaster position="top-center" richColors />
+                                                    <Toaster
+                                                        position="top-center"
+                                                        richColors
+                                                    />
                                                 </div>
                                             </div>
                                             <MaintenanceOverlay />
@@ -160,7 +172,9 @@ function NotFoundPage() {
     return (
         <div className="bg-background grid h-[calc(100vh-var(--header-height)-3rem)] items-center justify-center pb-8 lg:grid-cols-2 lg:pb-0">
             <div className="text-center">
-                <p className="text-muted-foreground text-base font-semibold">404</p>
+                <p className="text-muted-foreground text-base font-semibold">
+                    404
+                </p>
                 <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl lg:text-7xl">
                     Page not found
                 </h1>

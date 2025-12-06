@@ -6,7 +6,7 @@
 // TODO: Run this every hour, at 30 minutes
 
 import { collectorLogger } from '../lib/logger.js'
-import { prisma } from '../../../../backend/src/lib/prisma.js'
+import { prisma } from '../lib/prisma.js'
 import { getSystemActivitySnapshot } from '../../../../backend/src/services/esi'
 
 export type SystemActivityCollectorOptions = {

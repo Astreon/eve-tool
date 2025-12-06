@@ -30,7 +30,9 @@ export function NavUser() {
     const { isAuthenticated, isReady, session, login, logout } = useAuth()
 
     if (!isReady) {
-        return <div className="bg-muted/60 h-8 w-24 animate-pulse rounded-full" />
+        return (
+            <div className="bg-muted/60 h-8 w-24 animate-pulse rounded-full" />
+        )
     }
 
     if (!isAuthenticated) {
@@ -50,7 +52,9 @@ export function NavUser() {
         )
     }
 
-    const initials = session?.characterName ? session.characterName.slice(0, 2).toUpperCase() : 'CC'
+    const initials = session?.characterName
+        ? session.characterName.slice(0, 2).toUpperCase()
+        : 'CC'
 
     const portraitUrl = session?.characterId
         ? `https://images.evetech.net/characters/${session.characterId}/portrait?size=64`
@@ -67,9 +71,14 @@ export function NavUser() {
                         >
                             <Avatar className="rounded-full">
                                 {portraitUrl && (
-                                    <AvatarImage src={portraitUrl} alt={session?.characterName} />
+                                    <AvatarImage
+                                        src={portraitUrl}
+                                        alt={session?.characterName}
+                                    />
                                 )}
-                                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+                                <AvatarFallback className="rounded-lg">
+                                    {initials}
+                                </AvatarFallback>
                             </Avatar>
 
                             <div className="grid flex-1 text-left text-sm leading-tight">

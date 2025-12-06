@@ -4,7 +4,13 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card.tsx'
 import { AlertCircleIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/map/')({
@@ -41,9 +47,10 @@ function MapPage() {
                             <h1 className="text-xl">Map Editor</h1>
                         </CardTitle>
                         <CardDescription>
-                            A multi-purpose map editor for EVE Online, will be created in the
-                            future. It will enable you to create your own maps, edit existing ones
-                            and style for your needs.
+                            A multi-purpose map editor for EVE Online, will be
+                            created in the future. It will enable you to create
+                            your own maps, edit existing ones and style for your
+                            needs.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="border-t pt-4">
