@@ -60,10 +60,26 @@ async function main() {
 }
 
 main()
-    .then(() => {
-        process.exitCode = 0
+    .then(async () => {
+        try {
+            await sdePrisma.$disconnect()
+        } catch (err) {
+            sdeLogger.error(
+                { err },
+                'SystemActivity: error during prisma disconnect',
+            )
+        }
+        process.exit(0)
     })
-    .catch((err) => {
-        sdeLogger.error('SystemActivity: error:', err)
-        process.exitCode = 1
+    .catch(async (err) => {
+        sdeLogger.error({ err }, 'SystemActivity: error during execution')
+        try {
+            await sdePrisma.$disconnect()
+        } catch (disconnectErr) {
+            sdeLogger.error(
+                { err: disconnectErr },
+                'SystemActivity: error during prisma disconnect',
+            )
+        }
+        process.exit(1)
     })
