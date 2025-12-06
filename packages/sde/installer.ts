@@ -4,14 +4,12 @@
  */
 
 import { importer } from './importer.js'
-import { calculator } from './calculator.js'
+import { runCalculations } from './calculator.js'
 import {
-    IMPORT_TASKS,
     IMPORT_TASKS_BY_ID,
     type ImportDatasetId,
 } from './tasks/importTasks.js'
 import {
-    CALCULATION_TASKS,
     CALCULATION_TASKS_BY_ID,
     type CalculationId,
 } from './tasks/calculateTasks.js'
@@ -24,12 +22,10 @@ import {
     type SdeVersion,
 } from './version.js'
 import { invalidateSdeCaches } from './cache.js'
-import { sdePrisma } from './lib/prisma.js'
-import { sdeRedis } from './lib/redis.js'
 import { sdeLogger } from './lib/logger.js'
 import { withMaintenance } from './lib/maintenance'
 
-type Command =
+export type InstallerCommand =
     | 'install'
     | 'import'
     | 'calculate'
@@ -37,22 +33,22 @@ type Command =
     | 'download'
     | 'help'
 
-interface GlobalOptions {
-    dryRun: boolean
-    force: boolean
+export interface SdeGlobalOptions {
+    dryRun?: boolean
+    force?: boolean
     datasets?: string[]
 }
 
 interface ParsedArgs {
-    command: Command
+    command: InstallerCommand
     subcommand?: string
-    options: GlobalOptions
+    options: SdeGlobalOptions
 }
 
 // --- Argument Parsing
 function parseArgs(argv: string[]): ParsedArgs {
     const positional: string[] = []
-    const options: GlobalOptions = {
+    const options: SdeGlobalOptions = {
         dryRun: false,
         force: false,
     }
@@ -79,10 +75,6 @@ function parseArgs(argv: string[]): ParsedArgs {
             continue
         }
 
-        if (arg === '--help' || arg === '-h') {
-            return { command: 'help', options }
-        }
-
         if (arg.startsWith('-')) {
             sdeLogger.warn(`⚠️  Unknown option: ${arg}`)
             continue
@@ -92,7 +84,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     }
 
     const first = (positional[0] ?? 'help').toLowerCase()
-    let command: Command
+    let command: InstallerCommand = 'help'
     let subcommand: string | undefined = positional[1]
 
     switch (first) {
@@ -116,60 +108,34 @@ function parseArgs(argv: string[]): ParsedArgs {
     return { command, subcommand, options }
 }
 
-// --- Helpers
-function printHelp(): void {
-    const datasetList = IMPORT_TASKS.map((t) => t.id).join(', ')
-    const calcList = CALCULATION_TASKS.map((t) => t.id).join(', ')
-
-    sdeLogger.info(
+function printHelp() {
+    const msg = `
+        Usage: sde <command> [options]
+        
+        Commands:
+          install         Force full pipeline (download + import + calculate + cache)
+          import          Version-aware import (full or partial via --datasets=...)
+          calculate       Version-aware calculations (all or single task)
+          update          Version-aware import + calculate on version change
+          download        Only ensure .sde files on disk
+        
+        Options:
+          --dry-run       Don't write to DB or Redis, just simulate
+          --force         Ignore version match and run anyway
+          --datasets=a,b  Only import selected datasets (for "import")
         `
-            EVE Tool – SDE INSTALLER
-            
-            Usage:
-              npm run sde:<command> -- [options]
-            
-            Commands:
-              install                      Always run: download (if needed), import all datasets,
-                                           run all calculations, invalidate Redis, update DB version.
-            
-              import                       Version-aware import of all datasets + Redis invalidation.
-                                           Skips if no new SDE version (unless --force).
-              import --datasets=regions    Version-aware import for specific datasets.
-                                           Skips if no new SDE version (unless --force).
-                                           Partial imports do not update DB version.
-            
-              calculate                    Version-aware run of all calculations + Redis invalidation.
-              calculate region-links       Run only the given calculation.
-                                           Skips if DB/File versions differ (unless --force).
-            
-              update                       Download .sde (if needed), check version; if mismatch:
-                                           import all datasets + run all calculations +
-                                           update DB version + invalidate Redis.
-            
-              download                     Only download/refresh .sde files (no DB writes, no Redis).
-            
-            Options:
-              --dry-run                    No DB writes, no Redis invalidation, no download.
-              --force                      Ignore version checks and always run for this command.
-              --datasets=<list>            Comma-separated dataset list for "import".
-              -h, --help                   Show this help.
-            
-            Datasets:
-              ${datasetList}
-            
-            Calculations:
-              ${calcList}
-            `.trim(),
-    )
+    // eslint-disable-next-line no-console
+    console.log(msg)
 }
 
+// --- Helpers
 function formatVersion(label: string, v: SdeVersion | null): string {
     if (!v) return `${label}: <none>`
     return `${label}: build=${v.buildNumber}, release=${v.releaseDate.toISOString()}`
 }
 
 // --- INSTALL – all, force everytime
-async function runInstall(options: GlobalOptions): Promise<void> {
+export async function runInstall(options: SdeGlobalOptions): Promise<void> {
     const { dryRun } = options
 
     sdeLogger.info('🚀 EVE Tool – SDE INSTALL (force full pipeline)')
@@ -203,7 +169,7 @@ async function runInstall(options: GlobalOptions): Promise<void> {
 
     sdeLogger.info('🧮 Running ALL calculations (force)…')
     const calcStart = performance.now()
-    const calcStats = await calculator(dryRun)
+    const calcStats = await runCalculations(dryRun)
     const calcDuration = ((performance.now() - calcStart) / 1000).toFixed(1)
     sdeLogger.info(
         `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
@@ -229,7 +195,7 @@ async function runInstall(options: GlobalOptions): Promise<void> {
 }
 
 // --- IMPORT – version-aware
-async function runImportCommand(options: GlobalOptions): Promise<void> {
+export async function runImport(options: SdeGlobalOptions): Promise<void> {
     const { dryRun, force, datasets } = options
 
     assertSdeDirOnThrow()
@@ -333,7 +299,7 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
 
         try {
             const { success, total, errors } = await task.run(
-                dryRun,
+                dryRun ?? false,
                 task.label,
             )
             datasetSuccess++
@@ -367,20 +333,18 @@ async function runImportCommand(options: GlobalOptions): Promise<void> {
         return
     }
 
-    // Important: DB-Version if PARTIAL IMPORT => NO update
     sdeLogger.info(
         'ℹ️ Partial import completed. DB SDE version was not changed (only full import updates version).',
     )
-
     sdeLogger.info('🧹 Invalidating Redis caches related to SDE/universe…')
     await invalidateSdeCaches()
     sdeLogger.info('✅ Redis caches successfully invalidated.')
 }
 
 // --- CALCULATE – version-aware
-async function runCalculateCommand(
+export async function runCalculate(
     subcommand: string | undefined,
-    options: GlobalOptions,
+    options: SdeGlobalOptions,
 ): Promise<void> {
     const { dryRun, force } = options
 
@@ -416,7 +380,7 @@ async function runCalculateCommand(
     }
 
     if (!subcommand) {
-        const stats = await calculator(dryRun)
+        const stats = await runCalculations(dryRun)
         sdeLogger.info(
             `📊 Calculations summary: ${stats.taskSuccess}/${stats.taskTotal} tasks (${stats.errorCount} errors)`,
         )
@@ -428,7 +392,7 @@ async function runCalculateCommand(
             return
         }
 
-        const stats = await calculator(dryRun, [id])
+        const stats = await runCalculations(dryRun, [id])
         sdeLogger.info(
             `📊 Calculations summary: ${stats.taskSuccess}/${stats.taskTotal} tasks (${stats.errorCount} errors)`,
         )
@@ -445,7 +409,7 @@ async function runCalculateCommand(
 }
 
 // --- UPDATE – import and calculate if Version mismatch
-async function runUpdateCommand(options: GlobalOptions): Promise<void> {
+export async function runUpdate(options: SdeGlobalOptions): Promise<void> {
     const { dryRun, force } = options
 
     sdeLogger.info(
@@ -496,7 +460,7 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
             '🧪 DRY-RUN: running UPDATE pipeline without maintenance mode.',
         )
         const importStart = performance.now()
-        const stats = await importer(dryRun, {
+        const stats = await importer(true, {
             changedOnly: true,
         })
 
@@ -507,7 +471,7 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
         sdeLogger.info(`✅ Import phase finished in ${importDur}s.`)
 
         const calcStart = performance.now()
-        const calcStats = await calculator(dryRun)
+        const calcStats = await runCalculations(true)
         const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
         sdeLogger.info(
             `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
@@ -523,7 +487,7 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
     await withMaintenance(reason, async () => {
         // Import
         const importStart = performance.now()
-        const stats = await importer(dryRun, {
+        const stats = await importer(false, {
             changedOnly: true,
         })
 
@@ -535,7 +499,7 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
 
         // --- Calculations
         const calcStart = performance.now()
-        const calcStats = await calculator(dryRun)
+        const calcStats = await runCalculations(false)
         const calcDur = ((performance.now() - calcStart) / 1000).toFixed(1)
         sdeLogger.info(
             `📊 Calculations summary: ${calcStats.taskSuccess}/${calcStats.taskTotal} tasks (${calcStats.errorCount} errors)`,
@@ -555,7 +519,7 @@ async function runUpdateCommand(options: GlobalOptions): Promise<void> {
 }
 
 // --- DOWNLOAD – only .sde Files
-async function runDownloadCommand(options: GlobalOptions): Promise<void> {
+export async function runDownload(options: SdeGlobalOptions): Promise<void> {
     const { dryRun } = options
 
     sdeLogger.info('🚀 EVE Tool – SDE DOWNLOAD (.sde only)')
@@ -570,55 +534,34 @@ async function runDownloadCommand(options: GlobalOptions): Promise<void> {
 
 // --- Main
 ;(async () => {
-    const { command, subcommand, options } = parseArgs(process.argv.slice(2))
-
-    if (command === 'help') {
-        printHelp()
-        return
-    }
-
     try {
-        if (command === 'install') {
-            await runInstall(options)
-            return
-        }
+        const { command, subcommand, options } = parseArgs(
+            process.argv.slice(2),
+        )
 
-        if (command === 'import') {
-            await runImportCommand(options)
-            return
+        switch (command) {
+            case 'install':
+                await runInstall(options)
+                return
+            case 'import':
+                await runImport(options)
+                return
+            case 'calculate':
+                await runCalculate(subcommand, options)
+                return
+            case 'update':
+                await runUpdate(options)
+                return
+            case 'download':
+                await runDownload(options)
+                return
+            case 'help':
+            default:
+                printHelp()
+                return
         }
-
-        if (command === 'calculate') {
-            await runCalculateCommand(subcommand, options)
-            return
-        }
-
-        if (command === 'update') {
-            await runUpdateCommand(options)
-            return
-        }
-
-        if (command === 'download') {
-            await runDownloadCommand(options)
-            return
-        }
-
-        printHelp()
-        process.exitCode = 1
     } catch (err) {
-        sdeLogger.error('❌ SDE Installer failed:', err)
+        sdeLogger.error(err, '❌ SDE installer failed.')
         process.exitCode = 1
-    } finally {
-        try {
-            await sdePrisma.$disconnect()
-        } catch {
-            // ignore
-        }
-
-        try {
-            await sdeRedis.quit()
-        } catch {
-            // ignore
-        }
     }
 })()

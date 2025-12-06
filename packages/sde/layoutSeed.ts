@@ -30,7 +30,7 @@ type LayoutSeedFile = {
 }
 
 // --- EXPORT
-export async function exportRegionLayouts(opts?: {
+export async function exportLayouts(opts?: {
     regionId?: number
     layoutMode?: LayoutMode
 }): Promise<void> {
@@ -103,7 +103,7 @@ export async function exportRegionLayouts(opts?: {
 }
 
 // --- IMPORT
-export async function importRegionLayoutsFromSeed(opts?: {
+export async function importLayouts(opts?: {
     regionId?: number
     layoutMode?: LayoutMode
     truncateExisting?: boolean
@@ -248,14 +248,14 @@ function parseCliArgs(): {
     try {
         if (command === 'export') {
             sdeLogger.info('🧭 SDE Layouts – EXPORT')
-            await exportRegionLayouts({ regionId, layoutMode })
+            await exportLayouts({ regionId, layoutMode })
             sdeLogger.info('✅ Layout export finished.')
             return
         }
 
         if (command === 'import') {
             sdeLogger.info('🧭 SDE Layouts – IMPORT from seed')
-            await importRegionLayoutsFromSeed({ regionId, layoutMode })
+            await importLayouts({ regionId, layoutMode })
             sdeLogger.info('✅ Layout import finished.')
             return
         }
@@ -276,3 +276,21 @@ function parseCliArgs(): {
         }
     }
 })()
+
+if (process.argv[1]?.endsWith('layoutSeed.ts')) {
+    const cmd = process.argv[2]
+    if (cmd === 'export') {
+        exportLayouts().catch((err) => {
+            console.error(err)
+            process.exit(1)
+        })
+    } else if (cmd === 'import') {
+        importLayouts().catch((err) => {
+            console.error(err)
+            process.exit(1)
+        })
+    } else {
+        console.error('Usage: layoutSeed.ts [export|import]')
+        process.exit(1)
+    }
+}

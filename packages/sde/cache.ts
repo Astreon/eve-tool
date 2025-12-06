@@ -4,7 +4,7 @@
  */
 
 import { sdeRedis } from './lib/redis.js'
-import { sdeLogger } from './lib/logger'
+import { sdeLogger } from './lib/logger.js'
 
 const REGION_CACHE_PREFIX = 'regions'
 const CACHE_VERSION = process.env.CACHE_VERSION

@@ -21,7 +21,7 @@
         "sde:download": "npx tsx --env-file .env ../packages/sde/installer.ts download",
         "sde:export": "npx tsx --env-file .env ../packages/sde/layoutSeed.ts export",
         "sde:layouts:import": "npx tsx --env-file .env ../packages/sde/layoutSeed.ts import",
-        "metrics:collect:systemactivity": "npx tsx --env-file .env ../packages/sde/collectors/collectSystemActivity.ts"
+        "metrics:collect:systemactivity": "npx tsx --env-file .env ../packages/collector/src/jobs/systemActivity.ts"
     },
     "keywords": [],
     "author": "Astreon",

@@ -11,7 +11,6 @@ const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 export const sdePrisma = new PrismaClient({ adapter })
 
-// Optional: kurzes Info-Log, aber KEIN Query-Spam
 sdePrisma
     .$connect()
     .then(() => {
