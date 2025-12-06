@@ -1,20 +1,2 @@
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Dependencies
-/node_modules
-
-# TypeScript build output
-/dist
-
-# OS generated files
-.DS_Store
-/src/generated/prisma
-
-# Exclude fckn Prisma generated...
-generated/
-
 # Exclude local OpenAPI ESI Definition
 EVE Stable Infrastructure.json
