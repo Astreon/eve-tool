@@ -162,7 +162,10 @@ export async function importer(
             }
         } finally {
             datasetProgress.done({ clear: true })
-            globalProgress.tick()
+
+            if (globalProgress) {
+                globalProgress.tick(1)
+            }
         }
     }
 

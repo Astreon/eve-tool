@@ -6,6 +6,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/auth/auth-provider'
+import { AUTH_BASE } from '@/lib/env'
 
 type CallbackResponse = {
     success: boolean
@@ -46,7 +47,7 @@ function CallbackPage() {
                 }
 
                 const res = await fetch(
-                    `/auth/callback?code=${encodeURIComponent(
+                    `${AUTH_BASE}/callback?code=${encodeURIComponent(
                         code,
                     )}&state=${encodeURIComponent(state)}`,
                 )

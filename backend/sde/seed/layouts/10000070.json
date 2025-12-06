@@ -1,0 +1,195 @@
+{
+  "regionId": 10000070,
+  "layoutMode": "optimized",
+  "systems": [
+    {
+      "systemId": 30000021,
+      "x": 900,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30000157,
+      "x": 600,
+      "y": -800,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30000192,
+      "x": 975,
+      "y": -500,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30000206,
+      "x": 450,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30001372,
+      "x": 675,
+      "y": -900,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30001381,
+      "x": 300,
+      "y": -400,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30001413,
+      "x": 1125,
+      "y": -300,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30001445,
+      "x": 750,
+      "y": -800,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002079,
+      "x": 900,
+      "y": -600,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002225,
+      "x": 1200,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002411,
+      "x": 1200,
+      "y": -200,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002652,
+      "x": 300,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002702,
+      "x": 0,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002737,
+      "x": 825,
+      "y": -700,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002770,
+      "x": 1050,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30002797,
+      "x": 225,
+      "y": -300,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30003046,
+      "x": 75,
+      "y": -100,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30003495,
+      "x": 1275,
+      "y": -100,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30003504,
+      "x": 1350,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30005005,
+      "x": 525,
+      "y": -700,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30005029,
+      "x": 150,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30010141,
+      "x": 375,
+      "y": -500,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30020141,
+      "x": 600,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30031392,
+      "x": 450,
+      "y": -600,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30040141,
+      "x": 1050,
+      "y": -400,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30045328,
+      "x": 750,
+      "y": 0,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    },
+    {
+      "systemId": 30045329,
+      "x": 150,
+      "y": -200,
+      "isLocked": true,
+      "layoutMode": "optimized"
+    }
+  ]
+}

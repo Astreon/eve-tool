@@ -13,6 +13,12 @@ import {
     importStargates,
     importPlanets,
     importMoons,
+    importTypes,
+    importAsteroidBelts,
+    importStars,
+    importNpcStations,
+    importStationServices,
+    importStationOperations,
 } from '../importers'
 import type { ImportResult } from '../importer.js'
 
@@ -26,6 +32,12 @@ export type ImportDatasetId =
     | 'stargates'
     | 'planets'
     | 'moons'
+    | 'types'
+    | 'asteroidbelts'
+    | 'stars'
+    | 'npcstations'
+    | 'stationservices'
+    | 'stationoperations'
 
 export interface ImportTask {
     id: ImportDatasetId
@@ -78,6 +90,36 @@ export const IMPORT_TASKS: ImportTask[] = [
         id: 'moons',
         label: 'Moons',
         run: importMoons,
+    },
+    {
+        id: 'types',
+        label: 'Types',
+        run: importTypes,
+    },
+    {
+        id: 'asteroidbelts',
+        label: 'Asteroid Belts',
+        run: importAsteroidBelts,
+    },
+    {
+        id: 'stars',
+        label: 'Stars',
+        run: importStars,
+    },
+    {
+        id: 'npcstations',
+        label: 'NPC Stations',
+        run: importNpcStations,
+    },
+    {
+        id: 'stationservices',
+        label: 'Station Services',
+        run: importStationServices,
+    },
+    {
+        id: 'stationoperations',
+        label: 'Station Operations',
+        run: importStationOperations,
     },
 ]
 

@@ -9,7 +9,7 @@ import { redis } from '../lib/redis.js'
 import config from '../config/config.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import { parseNumericIdFromParams } from '../utils/params.js'
-import { NotFoundError } from '../types/appError.js'
+import { BadRequestError, NotFoundError } from '../types/appError.js'
 
 import type { ApiResponse } from '../types/apiResponse.js'
 import type {
@@ -20,6 +20,9 @@ import type {
     RegionSystemNode,
     RegionSystemEdge,
     SystemBorderType,
+    RegionMapLayoutMode,
+    UpdateRegionSystemLayoutRequest,
+    RegionSystemLayoutApi,
 } from '../types/api/region.types.js'
 
 const KNOWN_SPACE_MIN_ID = 10000000
@@ -186,7 +189,7 @@ export async function getRegionMap(
             })
         }
 
-        // 2) Regions from DB
+        // 2) Region from DB
         const region = await prisma.region.findUnique({
             where: { id: regionId },
             include: { faction: true },
@@ -225,6 +228,11 @@ export async function getRegionMap(
             region: { name: string }
         }[] = []
 
+        const layoutBySystemId = new Map<
+            number,
+            { x: number; y: number; layoutMode: RegionMapLayoutMode }
+        >()
+
         if (systemIds.length > 0) {
             // 4) SystemLinks, both Systems in the same Region
             const links = await prisma.systemLink.findMany({
@@ -241,13 +249,13 @@ export async function getRegionMap(
                 },
             })
 
-            const allSystemIds = new Set<number>()
+            const linkedSystemIdSet = new Set<number>()
             for (const l of links) {
-                allSystemIds.add(l.fromSystemId)
-                allSystemIds.add(l.toSystemId)
+                linkedSystemIdSet.add(l.fromSystemId)
+                linkedSystemIdSet.add(l.toSystemId)
             }
 
-            const foreignIds = Array.from(allSystemIds).filter(
+            const foreignIds = Array.from(linkedSystemIdSet).filter(
                 (id) => !systemIds.includes(id),
             )
 
@@ -276,29 +284,89 @@ export async function getRegionMap(
             }))
         }
 
-        const localNodes: RegionSystemNode[] = systems.map((s) => ({
-            id: s.id,
-            name: s.name,
-            x: s.x,
-            y: s.y,
-            z: s.z,
-            constellationId: s.constellationId,
-            regionId: regionId,
-            regionName: region.name,
-            isForeign: false,
-        }))
+        // 5) Load layout data (for local and foreign systems)
+        const layoutSystemIds = [
+            ...systemIds,
+            ...foreignSystems.map((s) => s.id),
+        ]
 
-        const foreignNodes: RegionSystemNode[] = foreignSystems.map((s) => ({
-            id: s.id,
-            name: s.name,
-            x: s.x,
-            y: s.y,
-            z: s.z,
-            constellationId: s.constellationId,
-            regionId: s.regionId,
-            regionName: s.region.name,
-            isForeign: true,
-        }))
+        if (layoutSystemIds.length > 0) {
+            const layoutRows = await prisma.regionSystemLayout.findMany({
+                where: {
+                    mapRegionId: regionId,
+                    systemId: { in: layoutSystemIds },
+                },
+                select: {
+                    mapRegionId: true,
+                    systemId: true,
+                    layoutMode: true,
+                    x: true,
+                    y: true,
+                },
+            })
+
+            for (const row of layoutRows) {
+                const mode = row.layoutMode as RegionMapLayoutMode
+                const existing = layoutBySystemId.get(row.systemId)
+
+                if (!existing) {
+                    layoutBySystemId.set(row.systemId, {
+                        x: row.x,
+                        y: row.y,
+                        layoutMode: mode,
+                    })
+                    continue
+                }
+
+                if (
+                    mode === 'optimized' &&
+                    existing.layoutMode !== 'optimized'
+                ) {
+                    layoutBySystemId.set(row.systemId, {
+                        x: row.x,
+                        y: row.y,
+                        layoutMode: mode,
+                    })
+                }
+            }
+        }
+
+        // 6) Nodes (lokal + foreign) inkl. Layout-Feldern
+        const localNodes: RegionSystemNode[] = systems.map((s) => {
+            const layout = layoutBySystemId.get(s.id)
+            return {
+                id: s.id,
+                name: s.name,
+                x: s.x,
+                y: s.y,
+                z: s.z,
+                constellationId: s.constellationId,
+                regionId: regionId,
+                regionName: region.name,
+                isForeign: false,
+                layoutX: layout?.x ?? null,
+                layoutY: layout?.y ?? null,
+                layoutMode: layout?.layoutMode ?? null,
+            }
+        })
+
+        const foreignNodes: RegionSystemNode[] = foreignSystems.map((s) => {
+            const layout = layoutBySystemId.get(s.id)
+            return {
+                id: s.id,
+                name: s.name,
+                x: s.x,
+                y: s.y,
+                z: s.z,
+                constellationId: s.constellationId,
+                regionId: s.regionId,
+                regionName: s.region.name,
+                isForeign: true,
+                layoutX: layout?.x ?? null,
+                layoutY: layout?.y ?? null,
+                layoutMode: layout?.layoutMode ?? null,
+            }
+        })
 
         const systemNodes = [...localNodes, ...foreignNodes]
 
@@ -336,6 +404,89 @@ export async function getRegionMap(
                 edgeCount: edges.length,
                 timestamp: new Date().toISOString(),
             },
+        })
+    } catch (err) {
+        next(err)
+        return
+    }
+}
+
+export async function updateRegionLayout(
+    req: Request,
+    res: Response<ApiResponse<RegionSystemLayoutApi>>,
+    next: NextFunction,
+) {
+    try {
+        const regionId = parseRegionId(req)
+
+        const body = req.body as Partial<UpdateRegionSystemLayoutRequest>
+        const systemId = Number(body.systemId)
+        let x = Number(body.x)
+        let y = Number(body.y)
+        const layoutMode: RegionMapLayoutMode = body.layoutMode ?? 'optimized'
+
+        if (
+            !Number.isFinite(systemId) ||
+            !Number.isFinite(x) ||
+            !Number.isFinite(y)
+        ) {
+            throw new BadRequestError('Invalid layout payload', {
+                systemId: body.systemId,
+                x: body.x,
+                y: body.y,
+            })
+        }
+
+        const GRID = 25
+        const snapToGrid = (val: number) => Math.round(val / GRID) * GRID
+        x = snapToGrid(x)
+        y = snapToGrid(y)
+
+        const system = await prisma.solarSystem.findUnique({
+            where: { id: systemId },
+            select: { id: true },
+        })
+
+        if (!system) {
+            throw new NotFoundError(`Solar system ${systemId} not found`)
+        }
+
+        const row = await prisma.regionSystemLayout.upsert({
+            where: {
+                mapRegionId_systemId_layoutMode: {
+                    mapRegionId: regionId,
+                    systemId,
+                    layoutMode,
+                },
+            },
+            create: {
+                mapRegionId: regionId,
+                systemId,
+                layoutMode,
+                x,
+                y,
+                isLocked: true,
+            },
+            update: {
+                x,
+                y,
+                isLocked: true,
+            },
+        })
+
+        await redis.del(getRegionMapCacheKey(regionId))
+
+        const data: RegionSystemLayoutApi = {
+            regionId,
+            systemId: row.systemId,
+            x: row.x,
+            y: row.y,
+            layoutMode: row.layoutMode as RegionMapLayoutMode,
+        }
+
+        return res.json({
+            success: true,
+            data,
         })
     } catch (err) {
         next(err)

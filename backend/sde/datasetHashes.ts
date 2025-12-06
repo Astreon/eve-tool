@@ -13,13 +13,19 @@ import { sdeLogger } from './lib/logger'
 export const DATASET_FILES = {
     bloodlines: 'bloodlines.jsonl',
     factions: 'factions.jsonl',
+    asteroidbelts: 'mapAsteroidBelts.jsonl',
     constellations: 'mapConstellations.jsonl',
     moons: 'mapMoons.jsonl',
     planets: 'mapPlanets.jsonl',
     regions: 'mapRegions.jsonl',
     solarsystems: 'mapSolarSystems.jsonl',
     stargates: 'mapStargates.jsonl',
+    stars: 'mapStars.jsonl',
+    npcstations: 'npcStations.jsonl',
     races: 'races.jsonl',
+    stationoperations: 'stationOperations.jsonl',
+    stationservices: 'stationServices.jsonl',
+    types: 'types.jsonl',
 } as const
 
 export type DatasetId = keyof typeof DATASET_FILES

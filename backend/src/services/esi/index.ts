@@ -4,3 +4,4 @@
  */
 
 export * from './character.service.js'
+export * from './universe.service.js'

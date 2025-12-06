@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
 import { StatusBadges } from '@/components/layout/header/status-badges.tsx'
+import { API_BASE } from '@/lib/env'
 
 type MaintenanceStatus = {
     success: boolean
@@ -20,7 +21,7 @@ type MaintenanceStatus = {
 }
 
 async function fetchStatus(): Promise<MaintenanceStatus> {
-    const res = await fetch('/api/status')
+    const res = await fetch(`${API_BASE}/status`)
     if (!res.ok) {
         throw new Error(`Status endpoint failed with HTTP ${res.status}`)
     }

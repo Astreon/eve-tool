@@ -6,6 +6,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { ComponentProps } from 'react'
+import { API_BASE } from '@/lib/env.ts'
 
 type EsiRouteHealth = 'Unknown' | 'OK' | 'Degraded' | 'Down' | 'Recovering'
 type ApiStatus = 'Up' | 'Maintenance' | 'Down' | 'Unknown'
@@ -46,7 +47,7 @@ type StatusResponse = {
 }
 
 async function fetchStatus(): Promise<StatusResponse> {
-    const res = await fetch('/api/status')
+    const res = await fetch(`${API_BASE}/status`)
     if (!res.ok) {
         throw new Error(`Status endpoint failed with HTTP ${res.status}`)
     }
