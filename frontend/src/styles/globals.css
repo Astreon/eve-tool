@@ -5,6 +5,7 @@
 
 @import 'tailwindcss';
 @import './themes.css';
+@import './eve-styles.css';
 
 @plugin 'tailwindcss-animate';
 
@@ -23,6 +24,18 @@
     --base-900: oklch(0.21 0.0053 285.89);
     --base-950: oklch(0.141 0.004 285.83);
     --base-1000: oklch(0.096 0.0027 285.79);
+
+    --eve-sec-10: #2e74de;
+    --eve-sec-09: #3b9bf0;
+    --eve-sec-08: #4acff4;
+    --eve-sec-07: #5edba6;
+    --eve-sec-06: #73e352;
+    --eve-sec-05: #eeff85;
+    --eve-sec-04: #e16a0b;
+    --eve-sec-03: #cf450e;
+    --eve-sec-02: #bc1113;
+    --eve-sec-01: #6d2120;
+    --eve-sec-00: #8f3068;
 
     --background: var(--color-white);
     --foreground: var(--base-800);

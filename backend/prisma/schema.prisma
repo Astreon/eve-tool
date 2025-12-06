@@ -11,7 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["sde", "public"]
+  schemas  = ["sde", "public", "data"]
 }
 
 model Character {
@@ -102,6 +102,44 @@ model SystemLink {
   @@schema("public")
 }
 
+model RegionSystemLayout {
+  mapRegionId Int
+  systemId    Int
+  layoutMode  String   @default("optimized")
+  x           Float
+  y           Float
+  isLocked    Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  mapRegion Region      @relation(fields: [mapRegionId], references: [id])
+  system    SolarSystem @relation(fields: [systemId], references: [id])
+
+  @@id([mapRegionId, systemId, layoutMode])
+  @@index([systemId, layoutMode])
+  @@schema("public")
+}
+
+/**
+ * Data Collector
+ */
+model SystemActivitySample {
+  id        Int      @id @default(autoincrement())
+  systemId  Int
+  timestamp DateTime
+
+  jumps     Int
+  npcKills  Int
+  podKills  Int
+  shipKills Int
+
+  system SolarSystem @relation(fields: [systemId], references: [id])
+
+  @@unique([systemId, timestamp], map: "systemId_timestamp")
+  @@index([systemId, timestamp(sort: Desc)])
+  @@schema("data")
+}
+
 /**
  * SDE Export from CCP
  */
@@ -161,6 +199,7 @@ model SolarSystem {
   id              Int    @id
   name            String @unique
   securityStatus  Float
+  securityClass   String @default("")
   constellationId Int
   regionId        Int
   factionId       Int?
@@ -169,12 +208,17 @@ model SolarSystem {
   y               Float
   z               Float
 
-  stargates     Stargate[]
-  planets       Planet[]
-  moons         Moon[]
-  region        Region        @relation(fields: [regionId], references: [id])
-  faction       Faction?      @relation(fields: [factionId], references: [id])
-  constellation Constellation @relation(fields: [constellationId], references: [id])
+  star                 Star?
+  stargates            Stargate[]
+  planets              Planet[]
+  moons                Moon[]
+  asteroidBelts        AsteroidBelt[]
+  npcStations          NpcStation[]
+  regionSystemLayouts  RegionSystemLayout[]
+  SystemActivitySample SystemActivitySample[]
+  region               Region                 @relation(fields: [regionId], references: [id])
+  faction              Faction?               @relation(fields: [factionId], references: [id])
+  constellation        Constellation          @relation(fields: [constellationId], references: [id])
 
   linksFrom SystemLink[] @relation("SystemLinkFrom")
   linksTo   SystemLink[] @relation("SystemLinkTo")
@@ -210,9 +254,10 @@ model Region {
   y           Float
   z           Float
 
-  constellations Constellation[]
-  solarSystems   SolarSystem[]
-  faction        Faction?        @relation(fields: [factionId], references: [id])
+  constellations      Constellation[]
+  solarSystems        SolarSystem[]
+  regionSystemLayouts RegionSystemLayout[]
+  faction             Faction?             @relation(fields: [factionId], references: [id])
 
   linksFrom RegionLink[] @relation("RegionLinkFrom")
   linksTo   RegionLink[] @relation("RegionLinkTo")
@@ -290,6 +335,127 @@ model Moon {
   z              Float
 
   solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+
+  @@schema("sde")
+}
+
+model AsteroidBelt {
+  id             Int      @id
+  celestialIndex Int
+  orbitId        Int
+  orbitIndex     Int
+  solarSystemId  Int
+  typeId         Int
+  radius         Int?
+  name           String?
+  density        Float?
+  eccentricity   Float?
+  escapeVelocity Float?
+  locked         Boolean?
+  massDust       Float?
+  massGas        Float?
+  orbitPeriod    Float?
+  orbitRadius    BigInt?
+  rotationRate   Float?
+  spectralClass  String?
+  surfaceGravity Float?
+  temperature    Float?
+  x              Float
+  y              Float
+  z              Float
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+  type        Type        @relation(fields: [typeId], references: [id])
+
+  @@schema("sde")
+}
+
+model Type {
+  id                    Int      @id
+  name                  String
+  description           String?
+  groupId               Int?
+  metaGroupId           Int?
+  marketGroupId         Int?
+  iconId                Int?
+  graphicId             Int?
+  capacity              Float?
+  mass                  Float?
+  basePrice             Float?
+  published             Boolean?
+  radius                Float?
+  portionSize           Int?
+  volume                Float?
+  raceId                Int?
+  variationParentTypeId Int?
+
+  Star         Star[]
+  asteroidBelt AsteroidBelt[]
+  npcStation   NpcStation[]
+
+  @@schema("sde")
+}
+
+model Star {
+  id            Int    @id
+  radius        BigInt
+  solarSystemId Int    @unique
+  age           BigInt
+  life          BigInt
+  luminosity    Float
+  spectralClass String
+  temperature   Int
+  typeId        Int
+
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+  type        Type        @relation(fields: [typeId], references: [id])
+
+  @@schema("sde")
+}
+
+model NpcStation {
+  id                       Int     @id
+  celestialIndex           Int?
+  operationId              Int
+  orbitId                  Int
+  orbitIndex               Int?
+  npcCorporationId         Int
+  solarSystemId            Int
+  typeId                   Int
+  reprocessingEfficiency   Float
+  reprocessingHangarFlag   Int
+  reprocessingStationsTake Float
+  useOperationName         Boolean
+  x                        Float
+  y                        Float
+  z                        Float
+
+  type        Type        @relation(fields: [typeId], references: [id])
+  solarSystem SolarSystem @relation(fields: [solarSystemId], references: [id])
+
+  @@schema("sde")
+}
+
+model StationService {
+  id   Int    @id
+  name String
+
+  @@schema("sde")
+}
+
+model StationOperation {
+  id                  Int     @id
+  activityId          Int
+  border              Float
+  corridor            Float
+  name                String
+  description         String?
+  fringe              Float
+  hub                 Float
+  manufacturingFactor Float
+  ratio               Float
+  researchFactor      Float
+  services            Int[]
 
   @@schema("sde")
 }

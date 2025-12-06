@@ -1,0 +1,48 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
+.eve-security-10 {
+    color: var(--eve-sec-10);
+}
+
+.eve-security-09 {
+    color: var(--eve-sec-09);
+}
+
+.eve-security-08 {
+    color: var(--eve-sec-08);
+}
+
+.eve-security-07 {
+    color: var(--eve-sec-07);
+}
+
+.eve-security-06 {
+    color: var(--eve-sec-06);
+}
+
+.eve-security-05 {
+    color: var(--eve-sec-05);
+}
+
+.eve-security-04 {
+    color: var(--eve-sec-04);
+}
+
+.eve-security-03 {
+    color: var(--eve-sec-03);
+}
+
+.eve-security-02 {
+    color: var(--eve-sec-02);
+}
+
+.eve-security-01 {
+    color: var(--eve-sec-01);
+}
+
+.eve-security-00 {
+    color: var(--eve-sec-00);
+}

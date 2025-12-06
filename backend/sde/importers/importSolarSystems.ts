@@ -69,6 +69,7 @@ export const importSolarSystems = async (
                 id: json._key,
                 name: json.name?.en ?? 'Unknown',
                 securityStatus: json.securityStatus,
+                securityClass: json.securityClass ?? '',
                 constellationId: json.constellationID,
                 regionId: json.regionID,
                 factionId: json.factionID ?? null,

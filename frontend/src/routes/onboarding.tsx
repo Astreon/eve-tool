@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { seo } from '@/lib/seo.ts'
+import { AUTH_BASE } from '@/lib/env.ts'
 
 export const Route = createFileRoute('/onboarding')({
     head: () => ({
@@ -94,7 +95,7 @@ function OnboardingPage() {
             const redirect = '/'
 
             const resp = await fetch(
-                `/auth/login?scopes=${encodeURIComponent(scopeString)}&redirect=${encodeURIComponent(redirect)}`,
+                `${AUTH_BASE}/login?scopes=${encodeURIComponent(scopeString)}&redirect=${encodeURIComponent(redirect)}`,
             )
 
             if (!resp.ok) {
