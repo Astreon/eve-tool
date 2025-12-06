@@ -14,7 +14,7 @@ import {
 } from './installer'
 import { logger } from './lib/logger'
 import { invalidateSdeCaches } from './cache/cache'
-import { exportLayouts, importLayouts } from './layouts/layoutSeed'
+import { exportLayouts, importLayouts } from './layout/layoutSeed'
 
 export type { SdeGlobalOptions, InstallerCommand }
 

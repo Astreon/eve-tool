@@ -6,7 +6,7 @@
 import { logger } from '../lib/logger'
 import { prisma } from '../lib/prisma'
 import { redis } from '../lib/redis'
-import { exportLayouts, importLayouts } from '../layouts/layoutSeed'
+import { exportLayouts, importLayouts } from '../layout/layoutSeed'
 
 type LayoutCommand = 'export' | 'import'
 type LayoutMode = string
