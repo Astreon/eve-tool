@@ -1,6 +1,6 @@
 {
     "name": "eve-tool-frontend",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "type": "module",
     "description": "Frontend for Eve Tool",
     "main": "index.js",
