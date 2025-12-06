@@ -3,20 +3,22 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { importer } from './import/importer'
-import { runCalculations } from './calculate/calculator'
-import { IMPORT_TASKS_BY_ID, type ImportDatasetId } from './import/tasks'
-import { CALCULATION_TASKS_BY_ID, type CalculationId } from './calculate/tasks'
-import { assertSdeDirOnThrow } from './config'
-import { ensureLatestSdeOnDisk } from './download/remote'
 import {
+    ensureLatestSdeOnDisk,
     readSdeVersionFromFile,
     getDbVersion,
     upsertDbVersion,
     type SdeVersion,
-} from './download/version'
-import { invalidateSdeCaches } from './cache/cache'
+} from './download'
+import {
+    runCalculations,
+    CALCULATION_TASKS_BY_ID,
+    type CalculationId,
+} from './calculate'
+import { importer, IMPORT_TASKS_BY_ID, type ImportDatasetId } from './import'
 import { logger } from './lib/logger'
+import { assertSdeDirOnThrow } from './config'
+import { invalidateSdeCaches } from './cache/cache'
 import { withMaintenance } from './lib/maintenance'
 
 export type InstallerCommand =
