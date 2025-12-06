@@ -6,9 +6,9 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { SDE_DIR } from '../config'
-import { prisma } from '../lib/prisma'
-import { logger } from '../lib/logger'
+import { SDE_DIR } from '../../config'
+import { prisma } from '../../lib/prisma'
+import { logger } from '../../lib/logger'
 
 type SolarSystemRow = {
     _key: number

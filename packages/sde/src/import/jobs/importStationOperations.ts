@@ -6,12 +6,12 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { prisma } from '../lib/prisma'
-import { ImportResult } from '../import/importer'
-import { BATCH_SIZE, SDE_DIR } from '../config'
+import { prisma } from '../../lib/prisma'
+import { ImportResult } from '../importer'
+import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
-import { logger } from '../lib/logger'
-import { createProgressBar } from '../lib/progress'
+import { logger } from '../../lib/logger'
+import { createProgressBar } from '../../lib/progress'
 
 async function countLines(filePath: string): Promise<number> {
     return new Promise<number>((resolve, reject) => {
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importFactions = async (
+export const importStationOperations = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'factions.jsonl')
+    const filePath = path.join(SDE_DIR, 'stationOperations.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importFactions = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.FactionCreateManyInput[] = []
+    const batch: Prisma.StationOperationCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,12 +65,19 @@ export const importFactions = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.FactionCreateManyInput = {
+            const data: Prisma.StationOperationCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
-                description: json.description.en,
-                corporationId: json.corporationID ?? null,
-                solarSystemId: json.solarSystemID,
+                activityId: json.activityID,
+                border: json.border,
+                corridor: json.corridor,
+                name: json.operationName?.en,
+                description: json.description?.en ?? null,
+                fringe: json.fringe,
+                hub: json.hub,
+                manufacturingFactor: json.manufacturingFactor,
+                ratio: json.ratio,
+                researchFactor: json.researchFactor,
+                services: json.services,
             }
             batch.push(data)
 
@@ -78,7 +85,7 @@ export const importFactions = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.faction.upsert({
+                            prisma.stationOperation.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -102,7 +109,7 @@ export const importFactions = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.faction.upsert({
+                    prisma.stationOperation.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

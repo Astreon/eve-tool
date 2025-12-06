@@ -6,13 +6,13 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { SDE_DIR } from '../config'
-import { prisma } from '../lib/prisma'
-import { logger } from '../lib/logger'
+import { SDE_DIR } from '../../config'
+import { prisma } from '../../lib/prisma'
+import { logger } from '../../lib/logger'
 
 type SolarSystemRow = {
     _key: number
-    constellationID: number
+    regionID: number
 }
 
 type StargateRow = {
@@ -24,14 +24,14 @@ type StargateRow = {
     }
 }
 
-export async function computeConstellationLinks(dryRun = false) {
+export async function computeRegionLinks(dryRun = false) {
     if (dryRun) {
-        logger.info('🧪 Dry-run: would compute constellation links.')
+        logger.info('🧪 Dry-run: would compute region links.')
         return
     }
 
-    // 1) solarSystemID -> constellationID
-    const solarToConstellation = new Map<number, number>()
+    // 1) solarSystemID -> regionID
+    const solarToRegion = new Map<number, number>()
 
     {
         const file = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
@@ -44,11 +44,11 @@ export async function computeConstellationLinks(dryRun = false) {
             if (!line.trim()) continue
             const json = JSON.parse(line) as SolarSystemRow
 
-            solarToConstellation.set(json._key, json.constellationID)
+            solarToRegion.set(json._key, json.regionID)
         }
     }
 
-    // 2) Collect constellation-pairs
+    // 2) Collect region-pairs
     const edgeKeys = new Set<string>()
 
     {
@@ -62,17 +62,13 @@ export async function computeConstellationLinks(dryRun = false) {
             if (!line.trim()) continue
             const json = JSON.parse(line) as StargateRow
 
-            const fromConstellation = solarToConstellation.get(
-                json.solarSystemID,
-            )
-            const toConstellation = solarToConstellation.get(
-                json.destination.solarSystemID,
-            )
-            if (!fromConstellation || !toConstellation) continue
-            if (fromConstellation === toConstellation) continue
+            const fromRegion = solarToRegion.get(json.solarSystemID)
+            const toRegion = solarToRegion.get(json.destination.solarSystemID)
+            if (!fromRegion || !toRegion) continue
+            if (fromRegion === toRegion) continue
 
-            const a = Math.min(fromConstellation, toConstellation)
-            const b = Math.max(fromConstellation, toConstellation)
+            const a = Math.min(fromRegion, toRegion)
+            const b = Math.max(fromRegion, toRegion)
             const key = `${a}:${b}`
 
             edgeKeys.add(key)
@@ -81,18 +77,16 @@ export async function computeConstellationLinks(dryRun = false) {
 
     // 3) Prepare for DB
     const links = Array.from(edgeKeys).map((key) => {
-        const [fromConstellationId, toConstellationId] = key
-            .split(':')
-            .map(Number)
-        return { fromConstellationId, toConstellationId }
+        const [fromRegionId, toRegionId] = key.split(':').map(Number)
+        return { fromRegionId, toRegionId }
     })
 
     // 4) Safe to DB
-    await prisma.constellationLink.deleteMany()
-    await prisma.constellationLink.createMany({
+    await prisma.regionLink.deleteMany()
+    await prisma.regionLink.createMany({
         data: links,
         skipDuplicates: true,
     })
 
-    logger.info(`✅ Stored ${links.length} constellation links`)
+    logger.info(`✅ Stored ${links.length} region links`)
 }

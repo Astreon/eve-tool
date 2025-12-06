@@ -19,7 +19,7 @@ import {
     importNpcStations,
     importStationServices,
     importStationOperations,
-} from '../importers'
+} from './jobs'
 import type { ImportResult } from './importer'
 
 export type ImportDatasetId =

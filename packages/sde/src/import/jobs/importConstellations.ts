@@ -6,12 +6,12 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { prisma } from '../lib/prisma'
-import { ImportResult } from '../import/importer'
-import { BATCH_SIZE, SDE_DIR } from '../config'
+import { prisma } from '../../lib/prisma'
+import { ImportResult } from '../importer'
+import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
-import { logger } from '../lib/logger'
-import { createProgressBar } from '../lib/progress'
+import { logger } from '../../lib/logger'
+import { createProgressBar } from '../../lib/progress'
 
 async function countLines(filePath: string): Promise<number> {
     return new Promise<number>((resolve, reject) => {
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importStargates = async (
+export const importConstellations = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapStargates.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapConstellations.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importStargates = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.StargateCreateManyInput[] = []
+    const batch: Prisma.ConstellationCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,12 +65,11 @@ export const importStargates = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.StargateCreateManyInput = {
+            const data: Prisma.ConstellationCreateManyInput = {
                 id: json._key,
-                solarSystemId: json.solarSystemID,
-                destSolarSystemId: json.destination.solarSystemID,
-                destStargateId: json.destination.stargateID,
-                typeId: json.typeID,
+                name: json.name?.en ?? 'Unknown',
+                factionId: json.factionID ?? null,
+                regionId: json.regionID,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -81,7 +80,7 @@ export const importStargates = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.stargate.upsert({
+                            prisma.constellation.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -105,7 +104,7 @@ export const importStargates = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.stargate.upsert({
+                    prisma.constellation.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,
