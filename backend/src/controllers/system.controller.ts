@@ -12,7 +12,7 @@ import type {
     SystemOverviewApiResponse,
     SystemOverviewMeta,
 } from '../types/api/system.types.js'
-import { getSystemActivitySnapshot } from '../services/esi'
+import { getSystemActivitySnapshot } from '../services/esi/index.js'
 
 export async function getSystemOverview(
     req: Request,
