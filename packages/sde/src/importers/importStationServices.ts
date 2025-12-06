@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 

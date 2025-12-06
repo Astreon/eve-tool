@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importRegions = async (
+export const importPlanets = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapRegions.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapPlanets.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importRegions = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.RegionCreateManyInput[] = []
+    const batch: Prisma.PlanetCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,11 +65,26 @@ export const importRegions = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.RegionCreateManyInput = {
+            const data: Prisma.PlanetCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
-                description: json.description?.en ?? null,
-                factionId: json.factionID ?? null,
+                solarSystemId: json.solarSystemID,
+                typeId: json.typeID,
+                celestialIndex: json.celestialIndex,
+                orbitId: json.orbitID,
+                radius: json.radius,
+                density: json.statistics.density,
+                eccentricity: json.statistics.eccentricity,
+                escapeVelocity: json.statistics.escapeVelocity,
+                locked: json.statistics.locked,
+                massDust: json.statistics.massDust ?? null,
+                massGas: json.statistics.massGas ?? null,
+                orbitPeriod: json.statistics.orbitPeriod ?? null,
+                orbitRadius: json.statistics.orbitRadius ?? null,
+                pressure: json.statistics.pressure,
+                rotationRate: json.statistics.rotationRate,
+                spectralClass: json.statistics.spectralClass,
+                surfaceGravity: json.statistics.surfaceGravity ?? null,
+                temperature: json.statistics.temperature,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -80,7 +95,7 @@ export const importRegions = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.region.upsert({
+                            sdePrisma.planet.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -104,7 +119,7 @@ export const importRegions = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.region.upsert({
+                    sdePrisma.planet.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

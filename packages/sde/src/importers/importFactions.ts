@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importStargates = async (
+export const importFactions = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapStargates.jsonl')
+    const filePath = path.join(SDE_DIR, 'factions.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importStargates = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.StargateCreateManyInput[] = []
+    const batch: Prisma.FactionCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,15 +65,12 @@ export const importStargates = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.StargateCreateManyInput = {
+            const data: Prisma.FactionCreateManyInput = {
                 id: json._key,
+                name: json.name?.en ?? 'Unknown',
+                description: json.description.en,
+                corporationId: json.corporationID ?? null,
                 solarSystemId: json.solarSystemID,
-                destSolarSystemId: json.destination.solarSystemID,
-                destStargateId: json.destination.stargateID,
-                typeId: json.typeID,
-                x: json.position.x,
-                y: json.position.y,
-                z: json.position.z,
             }
             batch.push(data)
 
@@ -81,7 +78,7 @@ export const importStargates = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.stargate.upsert({
+                            sdePrisma.faction.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -105,7 +102,7 @@ export const importStargates = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.stargate.upsert({
+                    sdePrisma.faction.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

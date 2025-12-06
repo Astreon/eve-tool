@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importNpcStations = async (
+export const importRaces = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'npcStations.jsonl')
+    const filePath = path.join(SDE_DIR, 'races.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importNpcStations = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.NpcStationCreateManyInput[] = []
+    const batch: Prisma.RaceCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,22 +65,10 @@ export const importNpcStations = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.NpcStationCreateManyInput = {
+            const data: Prisma.RaceCreateManyInput = {
                 id: json._key,
-                celestialIndex: json.celestialIndex ?? null,
-                operationId: json.operationID,
-                orbitId: json.orbitID,
-                orbitIndex: json.orbitIndex ?? null,
-                npcCorporationId: json.ownerID,
-                solarSystemId: json.solarSystemID,
-                typeId: json.typeID,
-                reprocessingEfficiency: json.reprocessingEfficiency,
-                reprocessingHangarFlag: json.reprocessingHangarFlag,
-                reprocessingStationsTake: json.reprocessingStationsTake,
-                useOperationName: json.useOperationName,
-                x: json.position.x,
-                y: json.position.y,
-                z: json.position.z,
+                name: json.name?.en ?? 'Unknown',
+                description: json.description?.en ?? null,
             }
             batch.push(data)
 
@@ -88,7 +76,7 @@ export const importNpcStations = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.npcStation.upsert({
+                            sdePrisma.race.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -112,7 +100,7 @@ export const importNpcStations = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.npcStation.upsert({
+                    sdePrisma.race.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

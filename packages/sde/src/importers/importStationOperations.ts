@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importStars = async (
+export const importStationOperations = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapStars.jsonl')
+    const filePath = path.join(SDE_DIR, 'stationOperations.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importStars = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.StarCreateManyInput[] = []
+    const batch: Prisma.StationOperationCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,16 +65,19 @@ export const importStars = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.StarCreateManyInput = {
+            const data: Prisma.StationOperationCreateManyInput = {
                 id: json._key,
-                radius: json.radius,
-                solarSystemId: json.solarSystemID,
-                typeId: json.typeID,
-                age: json.statistics?.age,
-                life: json.statistics?.life,
-                luminosity: json.statistics?.luminosity,
-                spectralClass: json.statistics?.spectralClass,
-                temperature: json.statistics?.temperature,
+                activityId: json.activityID,
+                border: json.border,
+                corridor: json.corridor,
+                name: json.operationName?.en,
+                description: json.description?.en ?? null,
+                fringe: json.fringe,
+                hub: json.hub,
+                manufacturingFactor: json.manufacturingFactor,
+                ratio: json.ratio,
+                researchFactor: json.researchFactor,
+                services: json.services,
             }
             batch.push(data)
 
@@ -82,7 +85,7 @@ export const importStars = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.star.upsert({
+                            sdePrisma.stationOperation.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -106,7 +109,7 @@ export const importStars = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.star.upsert({
+                    sdePrisma.stationOperation.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

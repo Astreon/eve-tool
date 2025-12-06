@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importBloodlines = async (
+export const importMoons = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'bloodlines.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapMoons.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importBloodlines = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.BloodlineCreateManyInput[] = []
+    const batch: Prisma.MoonCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,10 +65,30 @@ export const importBloodlines = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.BloodlineCreateManyInput = {
+            const data: Prisma.MoonCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
-                description: json.description?.en ?? null,
+                solarSystemId: json.solarSystemID,
+                typeId: json.typeID,
+                celestialIndex: json.celestialIndex,
+                orbitId: json.orbitID,
+                orbitIndex: json.orbitIndex,
+                radius: json.radius,
+                density: json.statistics?.density ?? null,
+                eccentricity: json.statistics?.eccentricity ?? null,
+                escapeVelocity: json.statistics?.escapeVelocity ?? null,
+                locked: json.statistics?.locked ?? null,
+                massDust: json.statistics?.massDust ?? null,
+                massGas: json.statistics?.massGas ?? null,
+                orbitPeriod: json.statistics?.orbitPeriod ?? null,
+                orbitRadius: json.statistics?.orbitRadius ?? null,
+                pressure: json.statistics?.pressure ?? null,
+                rotationRate: json.statistics?.rotationRate ?? null,
+                spectralClass: json.statistics?.spectralClass ?? null,
+                surfaceGravity: json.statistics?.surfaceGravity ?? null,
+                temperature: json.statistics?.temperature ?? null,
+                x: json.position.x,
+                y: json.position.y,
+                z: json.position.z,
             }
             batch.push(data)
 
@@ -76,7 +96,7 @@ export const importBloodlines = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.bloodline.upsert({
+                            sdePrisma.moon.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -100,7 +120,7 @@ export const importBloodlines = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.bloodline.upsert({
+                    sdePrisma.moon.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

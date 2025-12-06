@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importAsteroidBelts = async (
+export const importSolarSystems = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapAsteroidBelts.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importAsteroidBelts = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.AsteroidBeltCreateManyInput[] = []
+    const batch: Prisma.SolarSystemCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,26 +65,15 @@ export const importAsteroidBelts = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.AsteroidBeltCreateManyInput = {
+            const data: Prisma.SolarSystemCreateManyInput = {
                 id: json._key,
-                celestialIndex: json.celestialIndex,
-                orbitId: json.orbitID,
-                orbitIndex: json.orbitIndex,
-                solarSystemId: json.solarSystemID,
-                typeId: json.typeID,
-                radius: json.radius ?? null,
-                density: json.statistics?.density ?? null,
-                eccentricity: json.statistics?.eccentricity ?? null,
-                escapeVelocity: json.statistics?.escapeVelocity ?? null,
-                locked: json.statistics?.locked ?? null,
-                massDust: json.statistics?.massDust ?? null,
-                massGas: json.statistics?.massGas ?? null,
-                orbitPeriod: json.statistics?.orbitPeriod ?? null,
-                orbitRadius: json.statistics?.orbitRadius ?? null,
-                rotationRate: json.statistics?.rotationRate ?? null,
-                spectralClass: json.statistics?.spectralClass ?? null,
-                surfaceGravity: json.statistics?.surfaceGravity ?? null,
-                temperature: json.statistics?.temperature ?? null,
+                name: json.name?.en ?? 'Unknown',
+                securityStatus: json.securityStatus,
+                securityClass: json.securityClass ?? '',
+                constellationId: json.constellationID,
+                regionId: json.regionID,
+                factionId: json.factionID ?? null,
+                starId: json.starID ?? null,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -95,7 +84,7 @@ export const importAsteroidBelts = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.asteroidBelt.upsert({
+                            sdePrisma.solarSystem.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -119,7 +108,7 @@ export const importAsteroidBelts = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.asteroidBelt.upsert({
+                    sdePrisma.solarSystem.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

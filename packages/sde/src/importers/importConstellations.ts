@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import { sdePrisma } from '../lib/prisma.js'
 import { ImportResult } from '../importer.js'
 import { BATCH_SIZE, SDE_DIR } from '../config'
-import { Prisma } from '@eve-toolkit/db'
+import { Prisma } from 'packages/db'
 import { sdeLogger } from '../lib/logger'
 import { createProgressBar } from '../lib/progress'
 
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importSolarSystems = async (
+export const importConstellations = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapSolarSystems.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapConstellations.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importSolarSystems = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.SolarSystemCreateManyInput[] = []
+    const batch: Prisma.ConstellationCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,15 +65,11 @@ export const importSolarSystems = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.SolarSystemCreateManyInput = {
+            const data: Prisma.ConstellationCreateManyInput = {
                 id: json._key,
                 name: json.name?.en ?? 'Unknown',
-                securityStatus: json.securityStatus,
-                securityClass: json.securityClass ?? '',
-                constellationId: json.constellationID,
-                regionId: json.regionID,
                 factionId: json.factionID ?? null,
-                starId: json.starID ?? null,
+                regionId: json.regionID,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -84,7 +80,7 @@ export const importSolarSystems = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            sdePrisma.solarSystem.upsert({
+                            sdePrisma.constellation.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -108,7 +104,7 @@ export const importSolarSystems = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    sdePrisma.solarSystem.upsert({
+                    sdePrisma.constellation.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

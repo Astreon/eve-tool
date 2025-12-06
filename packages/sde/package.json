@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
-    "main": "./index.ts",
+    "main": "src/index.ts",
     "types": "./index.ts",
     "dependencies": {
         "@eve-toolkit/db": "0.0.1"
