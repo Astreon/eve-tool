@@ -11,7 +11,7 @@ import versionRoutes from './version.routes.js'
 import characterRoutes from './character.routes.js'
 import regionRoutes from './region.routes.js'
 import searchRoutes from './search.routes.js'
-import systemRoutes from './system.routes'
+import systemRoutes from './system.routes.js'
 
 const router = Router()
 
