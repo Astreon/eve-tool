@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../importer'
+import { ImportResult } from '../../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
 import { logger } from '../../lib/logger'
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importStargates = async (
+export const importBloodlines = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapStargates.jsonl')
+    const filePath = path.join(SDE_DIR, 'bloodlines.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importStargates = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.StargateCreateManyInput[] = []
+    const batch: Prisma.BloodlineCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,15 +65,10 @@ export const importStargates = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.StargateCreateManyInput = {
+            const data: Prisma.BloodlineCreateManyInput = {
                 id: json._key,
-                solarSystemId: json.solarSystemID,
-                destSolarSystemId: json.destination.solarSystemID,
-                destStargateId: json.destination.stargateID,
-                typeId: json.typeID,
-                x: json.position.x,
-                y: json.position.y,
-                z: json.position.z,
+                name: json.name?.en ?? 'Unknown',
+                description: json.description?.en ?? null,
             }
             batch.push(data)
 
@@ -81,7 +76,7 @@ export const importStargates = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.stargate.upsert({
+                            prisma.bloodline.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -105,7 +100,7 @@ export const importStargates = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.stargate.upsert({
+                    prisma.bloodline.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

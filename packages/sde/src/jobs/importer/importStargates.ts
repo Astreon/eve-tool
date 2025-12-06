@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../importer'
+import { ImportResult } from '../../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
 import { logger } from '../../lib/logger'
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importMoons = async (
+export const importStargates = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapMoons.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapStargates.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importMoons = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.MoonCreateManyInput[] = []
+    const batch: Prisma.StargateCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,27 +65,12 @@ export const importMoons = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.MoonCreateManyInput = {
+            const data: Prisma.StargateCreateManyInput = {
                 id: json._key,
                 solarSystemId: json.solarSystemID,
+                destSolarSystemId: json.destination.solarSystemID,
+                destStargateId: json.destination.stargateID,
                 typeId: json.typeID,
-                celestialIndex: json.celestialIndex,
-                orbitId: json.orbitID,
-                orbitIndex: json.orbitIndex,
-                radius: json.radius,
-                density: json.statistics?.density ?? null,
-                eccentricity: json.statistics?.eccentricity ?? null,
-                escapeVelocity: json.statistics?.escapeVelocity ?? null,
-                locked: json.statistics?.locked ?? null,
-                massDust: json.statistics?.massDust ?? null,
-                massGas: json.statistics?.massGas ?? null,
-                orbitPeriod: json.statistics?.orbitPeriod ?? null,
-                orbitRadius: json.statistics?.orbitRadius ?? null,
-                pressure: json.statistics?.pressure ?? null,
-                rotationRate: json.statistics?.rotationRate ?? null,
-                spectralClass: json.statistics?.spectralClass ?? null,
-                surfaceGravity: json.statistics?.surfaceGravity ?? null,
-                temperature: json.statistics?.temperature ?? null,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -96,7 +81,7 @@ export const importMoons = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.moon.upsert({
+                            prisma.stargate.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -120,7 +105,7 @@ export const importMoons = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.moon.upsert({
+                    prisma.stargate.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

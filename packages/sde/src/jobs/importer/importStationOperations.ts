@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../importer'
+import { ImportResult } from '../../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
 import { logger } from '../../lib/logger'
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importBloodlines = async (
+export const importStationOperations = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'bloodlines.jsonl')
+    const filePath = path.join(SDE_DIR, 'stationOperations.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importBloodlines = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.BloodlineCreateManyInput[] = []
+    const batch: Prisma.StationOperationCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,10 +65,19 @@ export const importBloodlines = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.BloodlineCreateManyInput = {
+            const data: Prisma.StationOperationCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
+                activityId: json.activityID,
+                border: json.border,
+                corridor: json.corridor,
+                name: json.operationName?.en,
                 description: json.description?.en ?? null,
+                fringe: json.fringe,
+                hub: json.hub,
+                manufacturingFactor: json.manufacturingFactor,
+                ratio: json.ratio,
+                researchFactor: json.researchFactor,
+                services: json.services,
             }
             batch.push(data)
 
@@ -76,7 +85,7 @@ export const importBloodlines = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.bloodline.upsert({
+                            prisma.stationOperation.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -100,7 +109,7 @@ export const importBloodlines = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.bloodline.upsert({
+                    prisma.stationOperation.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

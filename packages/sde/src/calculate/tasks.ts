@@ -7,7 +7,7 @@ import {
     computeRegionLinks,
     computeConstellationLinks,
     computeSystemLinks,
-} from './jobs'
+} from '../jobs/calculator'
 
 export type CalculationId =
     | 'region-links'

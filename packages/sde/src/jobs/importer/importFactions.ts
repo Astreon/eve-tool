@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../importer'
+import { ImportResult } from '../../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
 import { logger } from '../../lib/logger'
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importStationServices = async (
+export const importFactions = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'stationServices.jsonl')
+    const filePath = path.join(SDE_DIR, 'factions.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importStationServices = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.StationServiceCreateManyInput[] = []
+    const batch: Prisma.FactionCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,9 +65,12 @@ export const importStationServices = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.StationServiceCreateManyInput = {
+            const data: Prisma.FactionCreateManyInput = {
                 id: json._key,
-                name: json.serviceName?.en,
+                name: json.name?.en ?? 'Unknown',
+                description: json.description.en,
+                corporationId: json.corporationID ?? null,
+                solarSystemId: json.solarSystemID,
             }
             batch.push(data)
 
@@ -75,7 +78,7 @@ export const importStationServices = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.stationService.upsert({
+                            prisma.faction.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -99,7 +102,7 @@ export const importStationServices = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.stationService.upsert({
+                    prisma.faction.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

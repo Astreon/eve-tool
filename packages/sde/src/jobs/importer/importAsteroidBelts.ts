@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../importer'
+import { ImportResult } from '../../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
 import { logger } from '../../lib/logger'
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importTypes = async (
+export const importAsteroidBelts = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'types.jsonl')
+    const filePath = path.join(SDE_DIR, 'mapAsteroidBelts.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importTypes = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.TypeCreateManyInput[] = []
+    const batch: Prisma.AsteroidBeltCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,24 +65,29 @@ export const importTypes = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.TypeCreateManyInput = {
+            const data: Prisma.AsteroidBeltCreateManyInput = {
                 id: json._key,
-                name: json.name?.en,
-                description: json.description?.en ?? null,
-                groupId: json.groupID ?? null,
-                metaGroupId: json.metaGroupID ?? null,
-                marketGroupId: json.marketGroupID ?? null,
-                iconId: json.iconID ?? null,
-                graphicId: json.graphicID ?? null,
-                capacity: json.capacity ?? null,
-                mass: json.mass ?? null,
-                basePrice: json.basePrice ?? null,
-                published: json.published ?? false,
+                celestialIndex: json.celestialIndex,
+                orbitId: json.orbitID,
+                orbitIndex: json.orbitIndex,
+                solarSystemId: json.solarSystemID,
+                typeId: json.typeID,
                 radius: json.radius ?? null,
-                portionSize: json.portionSize ?? null,
-                volume: json.volume ?? null,
-                raceId: json.raceID ?? null,
-                variationParentTypeId: json.variationParentTypeID ?? null,
+                density: json.statistics?.density ?? null,
+                eccentricity: json.statistics?.eccentricity ?? null,
+                escapeVelocity: json.statistics?.escapeVelocity ?? null,
+                locked: json.statistics?.locked ?? null,
+                massDust: json.statistics?.massDust ?? null,
+                massGas: json.statistics?.massGas ?? null,
+                orbitPeriod: json.statistics?.orbitPeriod ?? null,
+                orbitRadius: json.statistics?.orbitRadius ?? null,
+                rotationRate: json.statistics?.rotationRate ?? null,
+                spectralClass: json.statistics?.spectralClass ?? null,
+                surfaceGravity: json.statistics?.surfaceGravity ?? null,
+                temperature: json.statistics?.temperature ?? null,
+                x: json.position.x,
+                y: json.position.y,
+                z: json.position.z,
             }
             batch.push(data)
 
@@ -90,7 +95,7 @@ export const importTypes = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.type.upsert({
+                            prisma.asteroidBelt.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -114,7 +119,7 @@ export const importTypes = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.type.upsert({
+                    prisma.asteroidBelt.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,

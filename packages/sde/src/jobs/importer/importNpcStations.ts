@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
 import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../importer'
+import { ImportResult } from '../../import/importer'
 import { BATCH_SIZE, SDE_DIR } from '../../config'
 import { Prisma } from '@eve-toolkit/db'
 import { logger } from '../../lib/logger'
@@ -31,11 +31,11 @@ async function countLines(filePath: string): Promise<number> {
     })
 }
 
-export const importConstellations = async (
+export const importNpcStations = async (
     dryRun = false,
     label: string,
 ): Promise<ImportResult> => {
-    const filePath = path.join(SDE_DIR, 'mapConstellations.jsonl')
+    const filePath = path.join(SDE_DIR, 'npcStations.jsonl')
     if (!fs.existsSync(filePath)) {
         throw new Error(`Missing File: ${filePath}`)
     }
@@ -46,7 +46,7 @@ export const importConstellations = async (
         crlfDelay: Infinity,
     })
 
-    const batch: Prisma.ConstellationCreateManyInput[] = []
+    const batch: Prisma.NpcStationCreateManyInput[] = []
     let success = 0
     let total = 0
     let errors = 0
@@ -65,11 +65,19 @@ export const importConstellations = async (
 
         try {
             const json = JSON.parse(line)
-            const data: Prisma.ConstellationCreateManyInput = {
+            const data: Prisma.NpcStationCreateManyInput = {
                 id: json._key,
-                name: json.name?.en ?? 'Unknown',
-                factionId: json.factionID ?? null,
-                regionId: json.regionID,
+                celestialIndex: json.celestialIndex ?? null,
+                operationId: json.operationID,
+                orbitId: json.orbitID,
+                orbitIndex: json.orbitIndex ?? null,
+                npcCorporationId: json.ownerID,
+                solarSystemId: json.solarSystemID,
+                typeId: json.typeID,
+                reprocessingEfficiency: json.reprocessingEfficiency,
+                reprocessingHangarFlag: json.reprocessingHangarFlag,
+                reprocessingStationsTake: json.reprocessingStationsTake,
+                useOperationName: json.useOperationName,
                 x: json.position.x,
                 y: json.position.y,
                 z: json.position.z,
@@ -80,7 +88,7 @@ export const importConstellations = async (
                 if (!dryRun) {
                     await Promise.all(
                         batch.map((row) =>
-                            prisma.constellation.upsert({
+                            prisma.npcStation.upsert({
                                 where: { id: row.id },
                                 create: row,
                                 update: row,
@@ -104,7 +112,7 @@ export const importConstellations = async (
         if (!dryRun) {
             await Promise.all(
                 batch.map((row) =>
-                    prisma.constellation.upsert({
+                    prisma.npcStation.upsert({
                         where: { id: row.id },
                         create: row,
                         update: row,
