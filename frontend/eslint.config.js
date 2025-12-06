@@ -1,8 +1,3 @@
-/*
- * SPDX-License-Identifier: CC-BY-NC-SA-4.0
- * Copyright (C) 2025 Astreon
- */
-
 import js from '@eslint/js'
 import prettierConfig from 'eslint-config-prettier'
 import prettierPlugin from 'eslint-plugin-prettier'

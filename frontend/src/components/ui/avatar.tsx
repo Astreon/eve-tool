@@ -9,17 +9,26 @@ import * as AvatarPrimitive from '@radix-ui/react-avatar'
 import { cn } from '@/lib/utils'
 import { cva, VariantProps } from 'class-variance-authority'
 
-function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+function Avatar({
+    className,
+    ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
     return (
         <AvatarPrimitive.Root
             data-slot="avatar"
-            className={cn('relative flex size-8 shrink-0 overflow-hidden rounded-full', className)}
+            className={cn(
+                'relative flex size-8 shrink-0 overflow-hidden rounded-full',
+                className,
+            )}
             {...props}
         />
     )
 }
 
-function AvatarImage({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+function AvatarImage({
+    className,
+    ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
     return (
         <AvatarPrimitive.Image
             data-slot="avatar-image"
@@ -62,7 +71,9 @@ const indicatorVariants = cva('size-2 absolute rounded-full', {
 })
 
 export interface AvatarIndicatorProps
-    extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof indicatorVariants> {
+    extends
+        React.HTMLAttributes<HTMLDivElement>,
+        VariantProps<typeof indicatorVariants> {
     variant?: 'success' | 'danger' | 'warning' | null
     position?: 'top-end' | 'bottom-end' | 'bottom-start' | 'top-start' | null
 }

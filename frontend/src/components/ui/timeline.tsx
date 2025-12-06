@@ -13,7 +13,9 @@ type TimelineContextValue = {
     setActiveStep: (step: number) => void
 }
 
-const TimelineContext = React.createContext<TimelineContextValue | undefined>(undefined)
+const TimelineContext = React.createContext<TimelineContextValue | undefined>(
+    undefined,
+)
 
 const useTimeline = () => {
     const context = React.useContext(TimelineContext)
@@ -53,7 +55,9 @@ function Timeline({
     const currentStep = value ?? activeStep
 
     return (
-        <TimelineContext.Provider value={{ activeStep: currentStep, setActiveStep }}>
+        <TimelineContext.Provider
+            value={{ activeStep: currentStep, setActiveStep }}
+        >
             <div
                 data-slot="timeline"
                 className={cn(
@@ -67,7 +71,10 @@ function Timeline({
     )
 }
 
-function TimelineContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function TimelineContent({
+    className,
+    ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
     return (
         <div
             data-slot="timeline-content"
@@ -81,7 +88,11 @@ interface TimelineDateProps extends React.HTMLAttributes<HTMLTimeElement> {
     asChild?: boolean
 }
 
-function TimelineDate({ asChild = false, className, ...props }: TimelineDateProps) {
+function TimelineDate({
+    asChild = false,
+    className,
+    ...props
+}: TimelineDateProps) {
     const Comp = asChild ? Slot : 'time'
 
     return (
@@ -96,8 +107,13 @@ function TimelineDate({ asChild = false, className, ...props }: TimelineDateProp
     )
 }
 
-function TimelineHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-    return <div data-slot="timeline-header" className={cn(className)} {...props} />
+function TimelineHeader({
+    className,
+    ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+    return (
+        <div data-slot="timeline-header" className={cn(className)} {...props} />
+    )
 }
 
 // TimelineIndicator
@@ -148,7 +164,10 @@ function TimelineItem({ step, className, ...props }: TimelineItemProps) {
     )
 }
 
-function TimelineSeparator({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function TimelineSeparator({
+    className,
+    ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
     return (
         <div
             data-slot="timeline-separator"
@@ -162,7 +181,10 @@ function TimelineSeparator({ className, ...props }: React.HTMLAttributes<HTMLDiv
     )
 }
 
-function TimelineTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+function TimelineTitle({
+    className,
+    ...props
+}: React.HTMLAttributes<HTMLHeadingElement>) {
     return (
         <h3
             data-slot="timeline-title"

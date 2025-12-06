@@ -3,7 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react'
+import {
+    ReactNode,
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+} from 'react'
 import { DEFAULT_THEME, ThemeType } from '@/lib/themes'
 
 function setThemeCookie(key: string, value: string | null) {
@@ -68,13 +74,19 @@ export function ActiveThemeProvider({
         }
     }, [theme.preset, theme.radius, theme.scale, theme.contentLayout])
 
-    return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+    return (
+        <ThemeContext.Provider value={{ theme, setTheme }}>
+            {children}
+        </ThemeContext.Provider>
+    )
 }
 
 export function useThemeConfig() {
     const context = useContext(ThemeContext)
     if (context === undefined) {
-        throw new Error('useThemeConfig must be used within an ActiveThemeProvider')
+        throw new Error(
+            'useThemeConfig must be used within an ActiveThemeProvider',
+        )
     }
     return context
 }

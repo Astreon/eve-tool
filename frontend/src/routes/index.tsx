@@ -6,7 +6,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { seo } from '@/lib/seo.ts'
 import { APP_NAME, APP_VERSION } from '@/lib/copyright.ts'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card.tsx'
 import { AlertCircleIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/')({
@@ -50,8 +56,9 @@ function RouteComponent() {
                             <h1 className="text-xl">EVE Toolkit</h1>
                         </CardTitle>
                         <CardDescription>
-                            This would be a multipurpose Toolkitpage for EVE Online. It will contain
-                            tools for mapping, data mining, market analysis, and many more.
+                            This would be a multipurpose Toolkitpage for EVE
+                            Online. It will contain tools for mapping, data
+                            mining, market analysis, and many more.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="border-t pt-4">

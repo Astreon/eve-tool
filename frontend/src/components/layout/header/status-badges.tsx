@@ -64,7 +64,9 @@ function useStatusQuery() {
     })
 }
 
-function esiStatusToVariant(status: EsiRouteHealth): ComponentProps<typeof Badge>['variant'] {
+function esiStatusToVariant(
+    status: EsiRouteHealth,
+): ComponentProps<typeof Badge>['variant'] {
     switch (status) {
         case 'OK':
             return 'success'
@@ -85,7 +87,9 @@ function esiStatusToLabel(status: EsiRouteHealth): string {
     return status
 }
 
-function apiStatusToVariant(status: ApiStatus): ComponentProps<typeof Badge>['variant'] {
+function apiStatusToVariant(
+    status: ApiStatus,
+): ComponentProps<typeof Badge>['variant'] {
     switch (status) {
         case 'Up':
             return 'success'
@@ -141,14 +145,18 @@ export function StatusBadges() {
     const esiOverall: EsiRouteHealth =
         data?.data.esi.overallStatus ?? (isLoading ? 'Unknown' : 'Down')
 
-    const apiStatus: ApiStatus = data?.data.api.status ?? (isLoading ? 'Unknown' : 'Down')
+    const apiStatus: ApiStatus =
+        data?.data.api.status ?? (isLoading ? 'Unknown' : 'Down')
 
     const players = data?.data.esi.global.players ?? null
 
     return (
         <div className="hidden items-center gap-2 lg:flex">
             {/* Player Count */}
-            <Badge variant="outline" className="px-2 py-0.5 font-mono text-xs tabular-nums">
+            <Badge
+                variant="outline"
+                className="px-2 py-0.5 font-mono text-xs tabular-nums"
+            >
                 {players !== null
                     ? `${players.toLocaleString('de-CH')} Player`
                     : isLoading

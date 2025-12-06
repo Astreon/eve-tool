@@ -8,6 +8,8 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/backend/src/generated" />
       <excludeFolder url="file://$MODULE_DIR$/backend/prisma/migrations" />
+      <excludeFolder url="file://$MODULE_DIR$/.sde" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/db/src/generated" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

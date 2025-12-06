@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Character } from '../../generated/client.js'
+import { Character } from '@eve-toolkit/db'
 
 export type CharacterWithRelations = Character & {
     bloodline: { name: string }

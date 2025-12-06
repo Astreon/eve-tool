@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Prisma } from '../generated/client.js'
+import { Prisma } from '@eve-toolkit/db'
 import { ConflictError, NotFoundError, AppError } from '../types/appError.js'
 
 export function mapPrismaError(e: unknown): AppError {

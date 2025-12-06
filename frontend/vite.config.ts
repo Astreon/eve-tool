@@ -1,8 +1,3 @@
-/*
- * SPDX-License-Identifier: CC-BY-NC-SA-4.0
- * Copyright (C) 2025 Astreon
- */
-
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'

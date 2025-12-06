@@ -1,0 +1,16 @@
+{
+    "name": "@eve-toolkit/sde",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "main": "src/index.ts",
+    "types": "./index.ts",
+    "scripts": {
+        "type-check": "tsc -p tsconfig.json --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix ."
+    },
+    "dependencies": {
+        "@eve-toolkit/db": "0.0.1"
+    }
+}

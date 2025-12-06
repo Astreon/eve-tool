@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { PrismaClient, Prisma } from '../generated/client.js'
+import { PrismaClient, Prisma } from '@eve-toolkit/db'
 import config from '../config/config.js'
 import { logger } from './logger.js'
 import { PrismaPg } from '@prisma/adapter-pg'

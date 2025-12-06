@@ -53,7 +53,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 className="flex w-full items-center gap-2"
                             >
                                 <Logo />
-                                <span className="font-semibold">EVE Toolkit</span>
+                                <span className="font-semibold">
+                                    EVE Toolkit
+                                </span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
