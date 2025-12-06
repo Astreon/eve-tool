@@ -3,16 +3,16 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { esiApi } from '../../lib/axios'
-import { toEsiAppError } from '../../lib/axiosErrors'
+import { esiApi } from '../../lib/axios.js'
+import { toEsiAppError } from '../../lib/axiosErrors.js'
 import {
     computeTtlFromHeaders,
     extractCachingHeaders,
-} from '../../utils/cacheControl'
+} from '../../utils/cacheControl.js'
 import type {
     EsiSystemJumpsResponse,
     EsiSystemKillsResponse,
-} from '../../types/esi/universe.types'
+} from '../../types/esi/universe.types.js'
 
 export interface SystemActivity {
     systemId: number
