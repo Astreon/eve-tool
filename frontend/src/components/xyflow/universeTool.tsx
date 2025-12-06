@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { UniverseMap } from '@/components/xyflow/universeMap.tsx'
 import { RegionMap } from '@/components/xyflow/regionMap.tsx'
@@ -14,7 +14,9 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart'
-import { CartesianGrid, Line, LineChart, XAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
+import { cn } from '@/lib/utils.ts'
+import { getSecurityClassName, formatSecurity } from '@/lib/security.ts'
 
 type ViewMode = 'universe' | 'region'
 
@@ -22,6 +24,13 @@ type SelectedSystem = {
     id: number
     name: string
     constellationId: number
+}
+
+type SystemOverviewStar = {
+    spectralClass: string
+    temperature: number
+    radius: number
+    typeName: string | null
 }
 
 type SystemOverviewIndex = {
@@ -43,6 +52,9 @@ type SystemOverviewIndex = {
     } | null
     planetsCount: number
     moonsCount: number
+    beltsCount?: number
+    npcStationsCount?: number
+    star: SystemOverviewStar
 }
 
 type SystemOverviewActivityWindow = {
@@ -126,6 +138,7 @@ export function UniverseTool() {
             npcKills: point.npcKills,
             shipKills: point.shipKills,
             podKills: point.podKills,
+            timestamp: point.timestamp,
         })) ?? []
 
     const chartConfig = {
@@ -147,9 +160,31 @@ export function UniverseTool() {
         },
     } satisfies ChartConfig
 
+    const formatTooltipLabel = (_label: unknown, payload: unknown[]) => {
+        if (!payload?.length) return null
+
+        const first: any = payload[0]
+        const ts = first?.payload?.timestamp as string | undefined
+        if (!ts) return null
+
+        const date = new Date(ts)
+        const now = Date.now()
+        const diffMs = now - date.getTime()
+        const diffHours = Math.round(diffMs / (1000 * 60 * 60))
+
+        const pad = (n: number) => n.toString().padStart(2, '0')
+
+        const month = pad(date.getMonth() + 1)
+        const day = pad(date.getDate())
+        const hours = pad(date.getHours())
+        const minutes = pad(date.getMinutes())
+
+        return `${month}-${day} / ${hours}:${minutes} (${diffHours}h ago)`
+    }
+
     return (
         <div className="grid h-full grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)] gap-4">
-            {/* Linke Seite: Canvas */}
+            {/* Left: Canvas */}
             <div className="border-border overflow-hidden rounded-lg border">
                 {mode === 'universe' && (
                     <UniverseMap
@@ -184,7 +219,7 @@ export function UniverseTool() {
                 )}
             </div>
 
-            {/* Rechte Seite: Info-Panel */}
+            {/* Right: Info panel */}
             <div className="border-border flex flex-col gap-3 rounded-lg border p-3 text-sm">
                 <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -196,22 +231,21 @@ export function UniverseTool() {
                     <div className="space-y-2 text-xs">
                         {!selectedRegionId && (
                             <p className="text-muted-foreground">
-                                Klicke eine Region im Universum an, um sie im Infofenster zu
-                                markieren.
+                                Click a region in the universe to highlight it in the info panel.
                                 <br />
-                                Doppelklick öffnet die Regionskarte.
+                                Double-click to open the region map.
                             </p>
                         )}
 
                         {selectedRegionId && (
                             <div className="space-y-1">
                                 <div>
-                                    <span className="font-medium">Ausgewählte Region:</span>{' '}
+                                    <span className="font-medium">Selected region:</span>{' '}
                                     <span className="font-mono">{selectedRegionId}</span>
                                 </div>
                                 <p className="text-muted-foreground">
-                                    Doppelklicke die Region im Canvas, um in die Systemansicht zu
-                                    wechseln.
+                                    Double-click the region in the canvas to switch to the system
+                                    view.
                                 </p>
                             </div>
                         )}
@@ -225,21 +259,20 @@ export function UniverseTool() {
                                 Region <span className="font-mono">{activeRegionId}</span>
                             </div>
                             <p className="text-muted-foreground">
-                                Du befindest dich in der Systemansicht dieser Region. Kantenfarbe:
+                                You are in the system view of this region. Edge colors:
                             </p>
-                            <ul className="text-muted-foreground mt-1 list-inside list-disc">
-                                <li>
-                                    Schwarz/Weiss: Verbindung innerhalb der gleichen Constellation
-                                </li>
-                                <li>Rot: Verbindung zu System in anderer Constellation</li>
-                                <li>Violett: Verbindung zu System in anderer Region</li>
+                            <ul>
+                                <li>Black/white: connection within the same constellation</li>
+                                <li>Red: connection to a system in another constellation</li>
+                                <li>Purple: connection to a system in another region</li>
                             </ul>
                         </div>
 
                         {selectedSystem ? (
                             <div className="space-y-3">
+                                {/* Selection header */}
                                 <div className="space-y-1">
-                                    <div className="font-medium">Ausgewähltes System</div>
+                                    <div className="font-medium">Selected system</div>
                                     <div>
                                         Name:{' '}
                                         <span className="font-mono">{selectedSystem.name}</span>
@@ -255,24 +288,24 @@ export function UniverseTool() {
                                     </div>
                                 </div>
 
-                                {/* System-Overview */}
+                                {/* System overview */}
                                 {systemOverviewQuery.isLoading && (
                                     <p className="text-muted-foreground text-xs">
-                                        Lade Systeminformationen…
+                                        Loading system information...
                                     </p>
                                 )}
 
                                 {systemOverviewQuery.isError && (
                                     <p className="text-destructive text-xs">
-                                        Konnte Systeminformationen nicht laden.
+                                        Failed to load system information.
                                     </p>
                                 )}
 
                                 {systemOverviewQuery.isSuccess && (
-                                    <div className="grid grid-cols-1 gap-3 text-xs md:grid-cols-2">
-                                        {/* Allgemeine Infos */}
-                                        <div className="space-y-1">
-                                            <div className="font-medium">Allgemein</div>
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                        {/* General */}
+                                        <div className="bg-muted/40 space-y-1 rounded-md p-2">
+                                            <div className="font-medium">General</div>
                                             <div>
                                                 Region:{' '}
                                                 <span className="font-mono">
@@ -308,34 +341,104 @@ export function UniverseTool() {
                                             )}
                                             <div>
                                                 Security:{' '}
-                                                <span className="font-mono">
-                                                    {systemOverviewQuery.data.system.securityStatus.toFixed(
-                                                        2,
-                                                    )}{' '}
-                                                    {systemOverviewQuery.data.system.securityClass
-                                                        ? `(${systemOverviewQuery.data.system.securityClass})`
-                                                        : ''}
+                                                <span
+                                                    className={cn(
+                                                        'eve-security-badge',
+                                                        getSecurityClassName(
+                                                            systemOverviewQuery.data.system
+                                                                .securityStatus,
+                                                        ),
+                                                    )}
+                                                >
+                                                    {formatSecurity(
+                                                        systemOverviewQuery.data.system
+                                                            .securityStatus,
+                                                    )}
                                                 </span>
+                                                {systemOverviewQuery.data.system.securityClass && (
+                                                    <span className="font-mono">
+                                                        {' '}
+                                                        (
+                                                        {
+                                                            systemOverviewQuery.data.system
+                                                                .securityClass
+                                                        }
+                                                        )
+                                                    </span>
+                                                )}
                                             </div>
                                             <div>
-                                                Planeten:{' '}
+                                                Planets:{' '}
                                                 <span className="font-mono">
                                                     {systemOverviewQuery.data.system.planetsCount}
                                                 </span>
                                             </div>
                                             <div>
-                                                Monde:{' '}
+                                                Moons:{' '}
                                                 <span className="font-mono">
                                                     {systemOverviewQuery.data.system.moonsCount}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        {/* Activity */}
-                                        <div className="space-y-1">
-                                            <div className="font-medium">
-                                                Aktivität (letzte Stunde)
+                                        {/* Structs and star */}
+                                        <div className="bg-muted/40 space-y-1 rounded-md p-2">
+                                            <div className="font-medium">Structure &amp; star</div>
+                                            <div>
+                                                Asteroid belts:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system.beltsCount ??
+                                                        0}
+                                                </span>
                                             </div>
+                                            <div>
+                                                NPC stations:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system
+                                                        .npcStationsCount ?? 0}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1">
+                                                Star:{' '}
+                                                <span className="font-mono">
+                                                    {
+                                                        systemOverviewQuery.data.system.star
+                                                            .spectralClass
+                                                    }
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Temp.:{' '}
+                                                <span className="font-mono">
+                                                    {
+                                                        systemOverviewQuery.data.system.star
+                                                            .temperature
+                                                    }
+                                                    K
+                                                </span>
+                                            </div>
+                                            <div>
+                                                Radius:{' '}
+                                                <span className="font-mono">
+                                                    {systemOverviewQuery.data.system.star.radius}
+                                                </span>
+                                            </div>
+                                            {systemOverviewQuery.data.system.star.typeName && (
+                                                <div>
+                                                    Type:{' '}
+                                                    <span className="font-mono">
+                                                        {
+                                                            systemOverviewQuery.data.system.star
+                                                                .typeName
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Activity (last hour / 24h) */}
+                                        <div className="bg-muted/40 space-y-1 rounded-md p-2">
+                                            <div className="font-medium">Activity (last hour)</div>
                                             <div>
                                                 Jumps:{' '}
                                                 <span className="font-mono">
@@ -363,41 +466,172 @@ export function UniverseTool() {
                                                         '0'}
                                                 </span>
                                             </div>
+
+                                            {systemOverviewQuery.data.activity.last24h && (
+                                                <div className="mt-3 space-y-1">
+                                                    <div className="font-medium">
+                                                        Activity (last 24h)
+                                                    </div>
+                                                    <div>
+                                                        Jumps:{' '}
+                                                        <span className="font-mono">
+                                                            {
+                                                                systemOverviewQuery.data.activity
+                                                                    .last24h!.jumps
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        NPC Kills:{' '}
+                                                        <span className="font-mono">
+                                                            {
+                                                                systemOverviewQuery.data.activity
+                                                                    .last24h!.npcKills
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        Ship Kills:{' '}
+                                                        <span className="font-mono">
+                                                            {
+                                                                systemOverviewQuery.data.activity
+                                                                    .last24h!.shipKills
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        Pod Kills:{' '}
+                                                        <span className="font-mono">
+                                                            {
+                                                                systemOverviewQuery.data.activity
+                                                                    .last24h!.podKills
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {systemOverviewQuery.data.activity.last24h && (
-                                            <div className="mt-3 space-y-1">
-                                                <div className="font-medium">
-                                                    Aktivität (letzte 24h)
+                                        {/* Activity (48h) – Kills */}
+                                        {chartData.length > 1 && (
+                                            <div className="mt-2 md:col-span-2">
+                                                <div className="mb-1 font-medium">
+                                                    Activity (last 48h): Kills
                                                 </div>
-                                                <div>
-                                                    Jumps:{' '}
-                                                    <span className="font-mono">
-                                                        {systemOverviewQuery.data.activity.last24h
-                                                            .jumps ?? '0'}
-                                                    </span>
+                                                <ChartContainer
+                                                    className="h-40 w-full"
+                                                    config={chartConfig}
+                                                >
+                                                    <LineChart
+                                                        accessibilityLayer
+                                                        data={chartData}
+                                                        margin={{ left: 12, right: 12 }}
+                                                    >
+                                                        <CartesianGrid vertical={false} />
+                                                        <YAxis
+                                                            orientation="right"
+                                                            width={30}
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tickMargin={6}
+                                                            tickFormatter={(v) => v.toString()}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="hour"
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tickMargin={8}
+                                                            tickFormatter={(value: number) =>
+                                                                value % 6 === 0 ? `${value}h` : ''
+                                                            }
+                                                        />
+                                                        <ChartTooltip
+                                                            cursor={false}
+                                                            content={
+                                                                <ChartTooltipContent
+                                                                    labelFormatter={
+                                                                        formatTooltipLabel
+                                                                    }
+                                                                />
+                                                            }
+                                                        />
+                                                        <Line
+                                                            dataKey="npcKills"
+                                                            stroke="var(--color-npcKills)"
+                                                            strokeWidth={1}
+                                                            dot={false}
+                                                            style={{ opacity: 0.6 }}
+                                                        />
+                                                        <Line
+                                                            dataKey="shipKills"
+                                                            stroke="var(--color-shipKills)"
+                                                            strokeWidth={2}
+                                                            dot={false}
+                                                        />
+                                                        <Line
+                                                            dataKey="podKills"
+                                                            stroke="var(--color-podKills)"
+                                                            strokeWidth={1}
+                                                            dot={false}
+                                                            style={{ opacity: 0.6 }}
+                                                        />
+                                                    </LineChart>
+                                                </ChartContainer>
+                                            </div>
+                                        )}
+
+                                        {/* Activity (48h) – Jumps */}
+                                        {chartData.length > 1 && (
+                                            <div className="mt-2 md:col-span-2">
+                                                <div className="mb-1 font-medium">
+                                                    Activity (last 48h): Jumps
                                                 </div>
-                                                <div>
-                                                    NPC Kills:{' '}
-                                                    <span className="font-mono">
-                                                        {systemOverviewQuery.data.activity.last24h
-                                                            .npcKills ?? '0'}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    Ship Kills:{' '}
-                                                    <span className="font-mono">
-                                                        {systemOverviewQuery.data.activity.last24h
-                                                            .shipKills ?? '0'}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    Pod Kills:{' '}
-                                                    <span className="font-mono">
-                                                        {systemOverviewQuery.data.activity.last24h
-                                                            .podKills ?? '0'}
-                                                    </span>
-                                                </div>
+                                                <ChartContainer
+                                                    className="h-40 w-full"
+                                                    config={chartConfig}
+                                                >
+                                                    <LineChart
+                                                        accessibilityLayer
+                                                        data={chartData}
+                                                        margin={{ left: 12, right: 12 }}
+                                                    >
+                                                        <CartesianGrid vertical={false} />
+                                                        <YAxis
+                                                            orientation="right"
+                                                            width={30}
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tickMargin={6}
+                                                            tickFormatter={(v) => v.toString()}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="hour"
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tickMargin={8}
+                                                            tickFormatter={(value: number) =>
+                                                                value % 6 === 0 ? `${value}h` : ''
+                                                            }
+                                                        />
+                                                        <ChartTooltip
+                                                            cursor={false}
+                                                            content={
+                                                                <ChartTooltipContent
+                                                                    labelFormatter={
+                                                                        formatTooltipLabel
+                                                                    }
+                                                                />
+                                                            }
+                                                        />
+                                                        <Line
+                                                            dataKey="jumps"
+                                                            stroke="var(--color-jumps)"
+                                                            strokeWidth={1.5}
+                                                            dot={false}
+                                                            style={{ opacity: 0.8 }}
+                                                        />
+                                                    </LineChart>
+                                                </ChartContainer>
                                             </div>
                                         )}
                                     </div>
@@ -405,7 +639,7 @@ export function UniverseTool() {
                             </div>
                         ) : (
                             <p className="text-muted-foreground">
-                                Klicke ein System im Canvas an, um Details hier anzuzeigen.
+                                Click a system in the canvas to show its details here.
                             </p>
                         )}
                     </div>
