@@ -3,25 +3,27 @@
  * Copyright (C) 2025 Astreon
  */
 
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { AppError, NotFoundError, RateLimitedError } from '../types/appError.js'
 import { EsiErrorContext } from '../types/axios.types.js'
 
 export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
     if (axios.isAxiosError(e)) {
-        const status = e.response?.status ?? 502
-        const headers = (e.response?.headers ?? {}) as Record<string, unknown>
+        const err = e as AxiosError
+
+        const status = err.response?.status ?? 502
+        const headers = (err.response?.headers ?? {}) as Record<string, unknown>
         const remain = headerNumber(headers, 'x-esi-error-limit-remain')
         const reset = headerNumber(headers, 'x-esi-error-limit-reset')
 
         const details: Record<string, unknown> = {
             ...ctx,
             status,
-            url: ctx.url ?? e.config?.url,
-            method: ctx.method ?? e.config?.method,
+            url: ctx.url ?? err.config?.url,
+            method: ctx.method ?? err.config?.method,
             remain,
             reset,
-            data: e.response?.data as unknown,
+            data: err.response?.data as unknown,
         }
 
         if (status === 404) {
@@ -39,7 +41,7 @@ export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
         return new EsiError(`ESI request failed (${status})`, {
             statusCode: status,
             details,
-            cause: e,
+            cause: err,
         })
     }
 

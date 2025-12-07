@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "@eve-toolkit/db": "0.0.1",
-        "@eve-toolkit/logger": "0.0.1"
+        "@eve-toolkit/logger": "0.0.1",
+        "extract-zip": "^2.0.1"
     }
 }
