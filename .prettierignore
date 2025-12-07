@@ -1,7 +1,4 @@
 node_modules
-dist
-build
-coverage
 .prisma
 .sde
-packages/sde/src/seed/layouts/*.json
+packages/sde/layouts/*.json

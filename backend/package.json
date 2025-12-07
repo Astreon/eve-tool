@@ -12,15 +12,7 @@
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "test": "vitest run",
-        "test:watch": "vitest",
-        "sde:install": "npx tsx --env-file .env ../packages/sde/src/cli/sde.ts install",
-        "sde:import": "npx tsx --env-file .env ../packages/sde/src/cli/sde.ts import",
-        "sde:calculate": "npx tsx --env-file .env ../packages/sde/src/cli/sde.ts calculate",
-        "sde:update": "npx tsx --env-file .env ../packages/sde/src/cli/sde.ts update",
-        "sde:download": "npx tsx --env-file .env ../packages/sde/src/cli/sde.ts download",
-        "sde:export": "npx tsx --env-file .env ../packages/sde/src/cli/layouts.ts export",
-        "sde:layouts:import": "npx tsx --env-file .env ../packages/sde/src/cli/layouts.ts import",
-        "collector:system-activity": "npx tsx --env-file .env ../packages/collector/src/cli/collector.ts system-activity"
+        "test:watch": "vitest"
     },
     "keywords": [],
     "author": "Astreon",

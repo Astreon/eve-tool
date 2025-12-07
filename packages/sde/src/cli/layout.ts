@@ -3,28 +3,28 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { logger } from '../lib/logger'
-import { prisma } from '../lib/prisma'
-import { redis } from '../lib/redis'
-import { exportLayouts, importLayouts } from '../layout/layoutSeed'
+import { exportMapLayouts, importMapLayouts } from '../layout'
+import { logger } from '../lib/logger.js'
 
 type LayoutCommand = 'export' | 'import'
-type LayoutMode = string
 
-function parseCliArgs(): {
+interface LayoutCliOptions {
     command: LayoutCommand
     regionId?: number
-    layoutMode?: LayoutMode
-} {
+    layoutMode?: string
+    truncateExisting?: boolean
+}
+
+function parseCliArgs(): LayoutCliOptions {
     const [, , ...argv] = process.argv
 
-    const first = (argv[0] ?? 'export').toLowerCase()
+    const commandArg = (argv[0] ?? 'export').toLowerCase()
     let command: LayoutCommand
 
-    switch (first) {
+    switch (commandArg) {
         case 'export':
         case 'import':
-            command = first
+            command = commandArg
             break
         default:
             command = 'export'
@@ -32,58 +32,61 @@ function parseCliArgs(): {
     }
 
     let regionId: number | undefined
-    let layoutMode: LayoutMode | undefined
+    let layoutMode: string | undefined
+    let truncateExisting: boolean | undefined
 
     for (const arg of argv.slice(1)) {
-        if (/^\d+$/.test(arg)) {
-            regionId = Number(arg)
-            continue
-        }
-
         if (arg.startsWith('--region=')) {
-            regionId = Number(arg.slice('--region='.length))
-            continue
-        }
-
-        if (arg.startsWith('--layout=')) {
-            layoutMode = arg.slice('--layout='.length)
+            const value = arg.slice('--region='.length)
+            const parsed = Number(value)
+            if (Number.isFinite(parsed)) {
+                regionId = parsed
+            }
+        } else if (arg.startsWith('--mode=')) {
+            layoutMode = arg.slice('--mode='.length)
+        } else if (arg === '--no-truncate') {
+            truncateExisting = false
         }
     }
 
-    return { command, regionId, layoutMode }
+    return { command, regionId, layoutMode, truncateExisting }
 }
 
-;(async () => {
-    const { command, regionId, layoutMode } = parseCliArgs()
+void (async () => {
+    const { command, regionId, layoutMode, truncateExisting } = parseCliArgs()
 
     try {
         if (command === 'export') {
-            logger.info('🧭 SDE Layouts – EXPORT')
-            await exportLayouts({ regionId, layoutMode })
-            logger.info('✅ Layout export finished.')
+            logger.info(
+                { regionId: regionId ?? 'ALL', layoutMode },
+                'SDE Layouts – EXPORT',
+            )
+            await exportMapLayouts({ regionId, layoutMode })
+            logger.info('Layout export finished')
             return
         }
 
         if (command === 'import') {
-            logger.info('🧭 SDE Layouts – IMPORT from seed')
-            await importLayouts({ regionId, layoutMode })
-            logger.info('✅ Layout import finished.')
+            logger.info(
+                {
+                    regionId: regionId ?? 'ALL',
+                    layoutMode,
+                    truncateExisting,
+                },
+                'SDE Layouts – IMPORT from seed',
+            )
+            await importMapLayouts({ regionId, layoutMode, truncateExisting })
+            logger.info('Layout import finished')
             return
         }
-    } catch (err) {
-        logger.error({ err }, '❌ Layout seed command failed:')
-        process.exitCode = 1
-    } finally {
-        try {
-            await prisma.$disconnect()
-        } catch {
-            // ignore
-        }
 
-        try {
-            await redis.quit()
-        } catch {
-            // ignore
-        }
+        logger.error(
+            { command },
+            'Unknown layout command. Use: export | import',
+        )
+        process.exitCode = 1
+    } catch (err) {
+        logger.error({ err }, 'Layout CLI command failed')
+        process.exitCode = 1
     }
 })()

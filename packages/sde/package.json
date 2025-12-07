@@ -8,7 +8,14 @@
     "scripts": {
         "type-check": "tsc -p tsconfig.json --noEmit",
         "lint": "eslint .",
-        "lint:fix": "eslint --fix ."
+        "lint:fix": "eslint --fix .",
+        "sde:install": "npx tsx --env-file ../../backend/.env src/cli/sde.ts install",
+        "sde:import": "npx tsx --env-file ../../backend/.env src/cli/sde.ts import",
+        "sde:calculate": "npx tsx --env-file ../../backend/.env src/cli/sde.ts calculate",
+        "sde:update": "npx tsx --env-file ../../backend/.env src/cli/sde.ts update",
+        "sde:download": "npx tsx --env-file ../../backend/.env src/cli/sde.ts download",
+        "layout:export": "tsx --env-file ../../backend/.env src/cli/layout.ts export",
+        "layout:import": "tsx --env-file ../../backend/.env src/cli/layout.ts import"
     },
     "dependencies": {
         "@eve-toolkit/db": "0.0.1",

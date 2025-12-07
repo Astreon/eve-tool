@@ -27,7 +27,14 @@
         "lint:packages": "npm run lint --workspace @eve-toolkit/sde && npm run lint --workspace @eve-toolkit/collector && npm run lint --workspace @eve-toolkit/logger",
         "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
-        "test": "npm test --workspace backend"
+        "test": "npm test --workspace backend",
+        "sde:install": "npm run sde:install --workspace @eve-toolkit/sde",
+        "sde:import": "npm run sde:import --workspace @eve-toolkit/sde",
+        "sde:calculate": "npm run sde:calculate --workspace @eve-toolkit/sde",
+        "sde:update": "npm run sde:update --workspace @eve-toolkit/sde",
+        "sde:download": "npm run sde:download --workspace @eve-toolkit/sde",
+        "sde:layout:export": "npm run layout:export --workspace @eve-toolkit/sde",
+        "sde:layout:import": "npm run layout:import --workspace @eve-toolkit/sde"
     },
     "devDependencies": {
         "@types/node-cron": "^3.0.11",

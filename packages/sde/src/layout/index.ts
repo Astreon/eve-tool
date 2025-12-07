@@ -5,15 +5,15 @@
 
 import * as path from 'path'
 import { promises as fs } from 'fs'
-import { logger } from '../lib/logger'
 import { prisma } from '../lib/prisma'
+import { logger } from '../lib/logger'
 
-const LAYOUT_SEED_DIR = path.resolve('sde', 'seed', 'layouts')
+const LAYOUT_SEED_DIR = path.resolve('layouts')
 const DEFAULT_LAYOUT_MODE = 'optimized' as const
 
 type LayoutMode = string
 
-type LayoutSeedEntry = {
+interface LayoutSeedSystem {
     systemId: number
     x: number
     y: number
@@ -21,14 +21,14 @@ type LayoutSeedEntry = {
     layoutMode?: LayoutMode
 }
 
-type LayoutSeedFile = {
+interface LayoutSeedFile {
     regionId: number
     layoutMode?: LayoutMode
-    systems: LayoutSeedEntry[]
+    systems: LayoutSeedSystem[]
 }
 
 // --- Import
-export async function importLayouts(opts?: {
+export async function importMapLayouts(opts?: {
     regionId?: number
     layoutMode?: LayoutMode
     truncateExisting?: boolean
@@ -43,17 +43,21 @@ export async function importLayouts(opts?: {
     } catch (err: any) {
         if (err?.code === 'ENOENT') {
             logger.warn(
-                `📁 Layout seed directory does not exist: ${LAYOUT_SEED_DIR} (nothing to import)`,
+                { dir: LAYOUT_SEED_DIR },
+                'Layout seed directory does not exist (nothing to import)',
             )
             return
         }
+
         throw err
     }
 
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
+
     if (jsonFiles.length === 0) {
         logger.warn(
-            `📁 No *.json layout seed files found in ${LAYOUT_SEED_DIR} (nothing to import)`,
+            { dir: LAYOUT_SEED_DIR },
+            'No *.json layout seed files found (nothing to import)',
         )
         return
     }
@@ -67,17 +71,18 @@ export async function importLayouts(opts?: {
             parsed = JSON.parse(raw) as LayoutSeedFile
         } catch (err) {
             logger.error(
-                {
-                    error: err instanceof Error ? err.message : String(err),
-                },
-                `❌ Failed to parse layout seed file ${fullPath}:`,
+                { file: fullPath, err },
+                'Failed to parse layout seed file',
             )
             continue
         }
 
         const regionId = parsed.regionId
-        if (!Number.isFinite(regionId)) {
-            logger.warn(`⚠️ Seed file ${file} has no valid regionId, skipping`)
+        if (!regionId || !Number.isFinite(regionId)) {
+            logger.warn(
+                { file: fullPath },
+                'Seed file has no valid regionId, skipping',
+            )
             continue
         }
 
@@ -90,7 +95,8 @@ export async function importLayouts(opts?: {
 
         if (rows.length === 0) {
             logger.warn(
-                `⚠️ Seed file ${file} for region ${regionId} has no systems, skipping`,
+                { file: fullPath, regionId },
+                'Seed file has no systems, skipping',
             )
             continue
         }
@@ -117,13 +123,20 @@ export async function importLayouts(opts?: {
         })
 
         logger.info(
-            `📥 Imported layout seed for region ${regionId} (${rows.length} systems, mode=${fileLayoutMode})`,
+            {
+                file: path.relative(process.cwd(), fullPath),
+                regionId,
+                systems: rows.length,
+                layoutMode: fileLayoutMode,
+                truncateExisting,
+            },
+            'Imported layout seed',
         )
     }
 }
 
 // --- Export
-export async function exportLayouts(opts?: {
+export async function exportMapLayouts(opts?: {
     regionId?: number
     layoutMode?: LayoutMode
 }): Promise<void> {
@@ -147,7 +160,11 @@ export async function exportLayouts(opts?: {
 
     if (rows.length === 0) {
         logger.warn(
-            `🧭 No region layouts found for export (regionId=${regionFilter ?? 'ALL'}, layoutMode=${layoutMode})`,
+            {
+                regionId: regionFilter ?? 'ALL',
+                layoutMode,
+            },
+            'No region layouts found for export',
         )
         return
     }
@@ -187,10 +204,13 @@ export async function exportLayouts(opts?: {
         )
 
         logger.info(
-            `💾 Exported layout for region ${regionId} (${regionRows.length} systems) -> ${path.relative(
-                process.cwd(),
-                filePath,
-            )}`,
+            {
+                regionId,
+                systems: regionRows.length,
+                file: path.relative(process.cwd(), filePath),
+                layoutMode,
+            },
+            'Exported region layout',
         )
     }
 }

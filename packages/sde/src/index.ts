@@ -14,7 +14,6 @@ import {
 } from './installer'
 import { logger } from './lib/logger'
 import { invalidateSdeCaches } from './cache/cache'
-import { exportLayouts, importLayouts } from './layout/layoutSeed'
 
 export type { SdeGlobalOptions, InstallerCommand }
 
@@ -81,20 +80,9 @@ export async function downloadStaticData(
 }
 
 /**
- * Export map layouts to static files from the database.
+ * Import/export map layouts from/to static files to/from the database.
  */
-export async function exportMapLayouts(): Promise<void> {
-    logger.info('🚀 exportMapLayouts()')
-    await exportLayouts()
-}
-
-/**
- * Import map layouts from static files to the database.
- */
-export async function importMapLayouts() {
-    logger.info('🚀 importMapLayouts()')
-    await importLayouts()
-}
+export { exportMapLayouts, importMapLayouts } from './layout'
 
 /**
  * Only cache invalidation.
