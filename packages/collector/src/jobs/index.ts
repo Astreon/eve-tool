@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { systemActivity } from './systemActivity'
-import type { SystemActivityCollectorOptions } from './systemActivity'
+import { systemActivity } from './systemActivity.js'
+import type { SystemActivityCollectorOptions } from './systemActivity.js'
 
 export type CollectorOptions = SystemActivityCollectorOptions
 

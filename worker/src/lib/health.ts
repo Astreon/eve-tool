@@ -3,9 +3,9 @@
  * Copyright (C) 2025 Astreon
  */
 
-import type { WorkerTaskId } from '../tasks'
-import { logger } from './logger'
-import { redis } from './redis'
+import type { WorkerTaskId } from '../tasks.js'
+import { logger } from './logger.js'
+import { redis } from './redis.js'
 
 const HEALTH_KEY_PREFIX = 'worker:task'
 

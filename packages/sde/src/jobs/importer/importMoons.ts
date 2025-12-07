@@ -6,12 +6,12 @@
 import * as path from 'path'
 import * as readline from 'readline'
 import * as fs from 'fs'
-import { prisma } from '../../lib/prisma'
-import { ImportResult } from '../../import/importer'
-import { BATCH_SIZE, SDE_DIR } from '../../config'
+import { prisma } from '../../lib/prisma.js'
+import { ImportResult } from '../../import/importer.js'
+import { BATCH_SIZE, SDE_DIR } from '../../config.js'
 import { Prisma } from '@eve-toolkit/db'
-import { logger } from '../../lib/logger'
-import { createProgressBar } from '../../lib/progress'
+import { logger } from '../../lib/logger.js'
+import { createProgressBar } from '../../lib/progress.js'
 
 async function countLines(filePath: string): Promise<number> {
     return new Promise<number>((resolve, reject) => {

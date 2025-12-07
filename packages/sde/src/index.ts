@@ -11,9 +11,9 @@ import {
     runUpdate,
     type SdeGlobalOptions,
     type InstallerCommand,
-} from './installer'
-import { logger } from './lib/logger'
-import { invalidateSdeCaches } from './cache/cache'
+} from './installer.js'
+import { logger } from './lib/logger.js'
+import { invalidateSdeCaches } from './cache/cache.js'
 
 export type { SdeGlobalOptions, InstallerCommand }
 

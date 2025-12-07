@@ -4,9 +4,9 @@
  */
 
 import cron from 'node-cron'
-import { logger } from './lib/logger'
-import { getEnabledWorkerTasks, type WorkerTask } from './tasks'
-import { markTaskError, markTaskSuccess } from './lib/health'
+import { logger } from './lib/logger.js'
+import { getEnabledWorkerTasks, type WorkerTask } from './tasks.js'
+import { markTaskError, markTaskSuccess } from './lib/health.js'
 
 async function runTask(task: WorkerTask): Promise<void> {
     const startedAt = Date.now()

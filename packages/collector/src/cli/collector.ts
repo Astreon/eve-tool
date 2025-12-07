@@ -3,13 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { logger } from '../lib/logger'
+import { logger } from '../lib/logger.js'
 import {
     COLLECTOR_JOBS,
     type CollectorJobId,
     type CollectorOptions,
 } from '../jobs'
-import { runCollectorJob } from '../index'
+import { runCollectorJob } from '../index.js'
 
 type ParsedArgs = {
     jobId: CollectorJobId

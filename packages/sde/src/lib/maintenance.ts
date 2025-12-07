@@ -4,7 +4,7 @@
  */
 
 import { redis } from './redis.js'
-import { logger } from './logger'
+import { logger } from './logger.js'
 
 const MAINTENANCE_KEY = 'runtime:maintenance'
 

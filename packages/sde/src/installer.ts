@@ -16,10 +16,10 @@ import {
     type CalculationId,
 } from './calculate'
 import { importer, IMPORT_TASKS_BY_ID, type ImportDatasetId } from './import'
-import { logger } from './lib/logger'
-import { assertSdeDirOnThrow } from './config'
-import { invalidateSdeCaches } from './cache/cache'
-import { withMaintenance } from './lib/maintenance'
+import { logger } from './lib/logger.js'
+import { assertSdeDirOnThrow } from './config.js'
+import { invalidateSdeCaches } from './cache/cache.js'
+import { withMaintenance } from './lib/maintenance.js'
 
 export type InstallerCommand =
     | 'install'

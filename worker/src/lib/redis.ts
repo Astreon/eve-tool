@@ -4,7 +4,7 @@
  */
 
 import { Redis } from 'ioredis'
-import { logger } from './logger'
+import { logger } from './logger.js'
 
 const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379/0'
 const parsed = new URL(redisUrl)

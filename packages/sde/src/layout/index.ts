@@ -5,8 +5,8 @@
 
 import * as path from 'path'
 import { promises as fs } from 'fs'
-import { prisma } from '../lib/prisma'
-import { logger } from '../lib/logger'
+import { prisma } from '../lib/prisma.js'
+import { logger } from '../lib/logger.js'
 
 const LAYOUT_SEED_DIR = path.resolve('layouts')
 const DEFAULT_LAYOUT_MODE = 'optimized' as const

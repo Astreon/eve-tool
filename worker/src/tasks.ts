@@ -5,7 +5,7 @@
 
 import { updateStaticData } from '@eve-toolkit/sde'
 import { runCollectorJob } from '@eve-toolkit/collector'
-import { logger } from './lib/logger'
+import { logger } from './lib/logger.js'
 
 export type WorkerTaskId = 'sdeUpdate' | 'systemActivity'
 
