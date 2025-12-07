@@ -3,7 +3,6 @@
 [![Frontend CI](https://github.com/Astreon/eve-tool/actions/workflows/frontend.yml/badge.svg?branch=main)](https://github.com/Astreon/eve-tool/actions/workflows/frontend.yml)
 [![Backend CI](https://github.com/Astreon/eve-tool/actions/workflows/backend.yml/badge.svg)](https://github.com/Astreon/eve-tool/actions/workflows/backend.yml)
 
-
 ## Overview
 
 EVE Tool is split into two workspaces:
