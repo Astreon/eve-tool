@@ -17,6 +17,8 @@
         "@eve-toolkit/sde": "0.0.1",
         "@eve-toolkit/collector": "0.0.1",
         "@eve-toolkit/logger": "0.0.1",
-        "node-cron": "^3.0.3"
+        "node-cron": "^3.0.3",
+        "pino": "^10.1.0",
+        "ioredis": "^5.8.2"
     }
 }

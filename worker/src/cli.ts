@@ -5,43 +5,49 @@
 
 import cron from 'node-cron'
 import { logger } from './lib/logger'
-import { WORKER_TASKS } from './tasks'
-import { getEnabledWorkerTasks } from './tasks'
+import { getEnabledWorkerTasks, type WorkerTask } from './tasks'
+import { markTaskError, markTaskSuccess } from './lib/health'
+
+async function runTask(task: WorkerTask): Promise<void> {
+    const startedAt = Date.now()
+
+    logger.info({ taskId: task.id, schedule: task.cron }, 'Running worker task')
+
+    try {
+        await task.run()
+
+        const durationMs = Date.now() - startedAt
+        await markTaskSuccess(task.id, durationMs)
+
+        logger.info({ taskId: task.id, durationMs }, 'Worker task finished')
+    } catch (err) {
+        const durationMs = Date.now() - startedAt
+        await markTaskError(task.id, err, durationMs)
+
+        logger.error({ taskId: task.id, err, durationMs }, 'Worker task failed')
+    }
+}
 
 void (async () => {
     const tasks = getEnabledWorkerTasks()
+
     logger.info(
         {
             enabledTaskIds: tasks.map((task) => task.id),
-            allTaskIds: ['sdeUpdate', 'systemActivity'],
         },
         'Starting worker scheduler',
     )
 
-    for (const task of WORKER_TASKS) {
+    for (const task of tasks) {
         cron.schedule(task.cron, () => {
-            logger.info(
-                { taskId: task.id, schedule: task.cron },
-                '▶ Running worker task',
-            )
-
-            task.run()
-                .then(() => {
-                    logger.info({ taskId: task.id }, '✅ Worker task finished')
-                })
-                .catch((err) => {
-                    logger.error(
-                        { taskId: task.id, err },
-                        '❌ Worker task failed',
-                    )
-                })
+            void runTask(task)
         })
 
         logger.info(
             { taskId: task.id, schedule: task.cron },
-            '⏰ Scheduled worker task',
+            'Scheduled worker task',
         )
     }
 
-    logger.info('🧠 Worker is now running and waiting for tasks...')
+    logger.info('Worker is now running and waiting for tasks...')
 })()
