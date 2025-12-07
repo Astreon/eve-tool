@@ -11,6 +11,9 @@ import {
     StatusApiResponse,
     EsiStatusRaw,
     ApiStatus,
+    ServiceStatus,
+    WorkerStatus,
+    WorkerTaskStatus,
 } from '../types/api/status.types.js'
 import { CACHE_THRESHOLDS } from '../config/cacheThresholds.js'
 import { esiApi } from '../lib/axios.js'
@@ -18,6 +21,7 @@ import { USED_ESI_ROUTES } from '../config/esiRoutes.js'
 import { logger } from '../lib/logger.js'
 import { ApiResponse } from '../types/apiResponse.js'
 import { getMaintenanceInfo } from '../lib/maintenance.js'
+import { redis } from '../lib/redis.js'
 
 let cachedGlobalStatus: EsiGlobalStatus | null = null
 let cachedGlobalStatusFetchedAt = 0
@@ -173,24 +177,137 @@ function aggregateEsiHealth(routes: EsiRouteStatus[]): EsiRouteHealth {
     return 'Unknown'
 }
 
+// --- Worker Health
+const WORKER_TASK_IDS = ['sdeUpdate', 'systemActivity'] as const
+type WorkerTaskId = (typeof WORKER_TASK_IDS)[number]
+
+const WORKER_STALE_THRESHOLDS_MS: Record<WorkerTaskId, number> = {
+    // sdeUpdate runs once per Day -> stale after 36h
+    sdeUpdate: 36 * 60 * 60 * 1000,
+    // systemActivity runs once per Hour -> stale after 2h
+    systemActivity: 2 * 60 * 60 * 1000,
+}
+
+async function fetchWorkerTaskStatus(
+    taskId: WorkerTaskId,
+): Promise<WorkerTaskStatus> {
+    const key = `worker:task:${taskId}:health`
+    const hash = await redis.hgetall(key)
+    const now = Date.now()
+
+    if (!hash || Object.keys(hash).length === 0) {
+        return {
+            id: taskId,
+            runCount: 0,
+            errorCount: 0,
+            status: 'Unknown',
+            isStale: true,
+        }
+    }
+
+    const lastSuccessAt = hash.lastSuccessAt
+    const lastErrorAt = hash.lastErrorAt
+    const lastErrorMessage = hash.lastErrorMessage
+    const lastDurationMs = hash.lastDurationMs
+        ? Number(hash.lastDurationMs)
+        : undefined
+    const runCount = hash.runCount ? Number(hash.runCount) : 0
+    const errorCount = hash.errorCount ? Number(hash.errorCount) : 0
+
+    let isStale = true
+    const thresholdMs = WORKER_STALE_THRESHOLDS_MS[taskId]
+
+    if (lastSuccessAt) {
+        const lastSuccessTime = Date.parse(lastSuccessAt)
+        if (Number.isFinite(lastSuccessTime)) {
+            const diff = now - lastSuccessTime
+            isStale = diff > thresholdMs
+        }
+    }
+
+    let status: ServiceStatus = 'Unknown'
+
+    if (runCount === 0) {
+        status = 'Unknown'
+    } else if (isStale && errorCount > 0) {
+        status = 'Down'
+    } else if (errorCount > 0) {
+        status = 'Degraded'
+    } else if (isStale) {
+        status = 'Degraded'
+    } else {
+        status = 'Up'
+    }
+
+    return {
+        id: taskId,
+        lastSuccessAt,
+        lastErrorAt,
+        lastErrorMessage,
+        lastDurationMs,
+        runCount,
+        errorCount,
+        status,
+        isStale,
+    }
+}
+
+function aggregateWorkerStatus(tasks: WorkerTaskStatus[]): ServiceStatus {
+    if (!tasks.length) return 'Unknown'
+
+    if (tasks.some((t) => t.status === 'Down')) return 'Down'
+    if (tasks.some((t) => t.status === 'Degraded')) return 'Degraded'
+    if (tasks.every((t) => t.status === 'Unknown')) return 'Unknown'
+    return 'Up'
+}
+
+async function fetchWorkerStatus(): Promise<WorkerStatus | null> {
+    try {
+        const tasks = await Promise.all(
+            WORKER_TASK_IDS.map((id) => fetchWorkerTaskStatus(id)),
+        )
+
+        const overallStatus = aggregateWorkerStatus(tasks)
+
+        return {
+            overallStatus,
+            tasks,
+        }
+    } catch (err) {
+        logger.error('API', 'Failed to fetch worker status from Redis', {
+            error: err instanceof Error ? err.message : String(err),
+        })
+        return null
+    }
+}
+
 // --- Aggregated status for frontend
 export async function getStatus(
     _req: Request,
     res: Response<ApiResponse<StatusApiResponse>>,
 ) {
-    const [esiGlobal, esiAllRoutes] = await Promise.all([
+    const [esiGlobal, esiAllRoutes, worker] = await Promise.all([
         fetchEsiGlobalStatus(),
         fetchEsiRouteStatuses(),
+        fetchWorkerStatus(),
     ])
 
     const usedRoutes = esiAllRoutes.filter(isUsedRoute)
-
-    const esiOverall: EsiRouteHealth =
-        esiGlobal.status === 'Down' ? 'Down' : aggregateEsiHealth(usedRoutes)
+    const esiOverall: EsiRouteHealth = aggregateEsiHealth(usedRoutes)
 
     const maintenanceInfo = await getMaintenanceInfo()
 
-    const apiStatus: ApiStatus = maintenanceInfo.isOn ? 'Maintenance' : 'Up'
+    let apiStatus: ApiStatus = 'Unknown'
+
+    if (maintenanceInfo.isOn) {
+        apiStatus = 'Maintenance'
+    } else if (worker && worker.overallStatus === 'Down') {
+        apiStatus = 'Down'
+    } else if (worker && worker.overallStatus === 'Degraded') {
+        apiStatus = 'Degraded'
+    } else {
+        apiStatus = 'Up'
+    }
 
     const api: StatusApiResponse['api'] = {
         status: apiStatus,
@@ -206,6 +323,7 @@ export async function getStatus(
             global: esiGlobal,
             routes: usedRoutes,
         },
+        worker: worker ?? undefined,
         maintenance: {
             isOn: maintenanceInfo.isOn,
             reason: maintenanceInfo.reason,

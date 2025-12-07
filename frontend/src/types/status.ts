@@ -27,13 +27,6 @@ export interface EsiRouteStatus {
     status: EsiRouteHealth
 }
 
-export interface EsiStatusRaw {
-    [key: string]: unknown
-    players?: number
-    server_version?: string
-    start_time?: string
-}
-
 export interface WorkerTaskStatus {
     id: string
     lastSuccessAt?: string
@@ -51,7 +44,7 @@ export interface WorkerStatus {
     tasks: WorkerTaskStatus[]
 }
 
-export interface StatusApiResponse {
+export interface StatusPayload {
     api: {
         status: ApiStatus
         uptimeMs: number
@@ -66,5 +59,14 @@ export interface StatusApiResponse {
         isOn: boolean
         reason?: string
         startedAt?: string
+    }
+}
+
+export interface StatusApiResponse {
+    success: boolean
+    data: StatusPayload
+    meta: {
+        ok: boolean
+        timestamp: string
     }
 }
