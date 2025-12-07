@@ -301,11 +301,9 @@ export async function getStatus(
 
     const apiStatus: ApiStatus = maintenanceInfo.isOn
         ? 'Maintenance'
-        : workerStatus === 'Down'
-          ? 'Down'
-          : workerStatus === 'Degraded'
-            ? 'Degraded'
-            : 'Up'
+        : workerStatus === 'Down' || workerStatus === 'Degraded'
+          ? 'Degraded'
+          : 'Up'
 
     const api: StatusApiResponse['api'] = {
         status: apiStatus,
