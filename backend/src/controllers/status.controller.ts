@@ -297,17 +297,15 @@ export async function getStatus(
 
     const maintenanceInfo = await getMaintenanceInfo()
 
-    let apiStatus: ApiStatus = 'Unknown'
+    const workerStatus = worker?.overallStatus
 
-    if (maintenanceInfo.isOn) {
-        apiStatus = 'Maintenance'
-    } else if (worker && worker.overallStatus === 'Down') {
-        apiStatus = 'Down'
-    } else if (worker && worker.overallStatus === 'Degraded') {
-        apiStatus = 'Degraded'
-    } else {
-        apiStatus = 'Up'
-    }
+    const apiStatus: ApiStatus = maintenanceInfo.isOn
+        ? 'Maintenance'
+        : workerStatus === 'Down'
+          ? 'Down'
+          : workerStatus === 'Degraded'
+            ? 'Degraded'
+            : 'Up'
 
     const api: StatusApiResponse['api'] = {
         status: apiStatus,
