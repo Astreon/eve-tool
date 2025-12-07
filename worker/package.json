@@ -1,0 +1,22 @@
+{
+    "name": "@eve-toolkit/worker",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "scripts": {
+        "dev": "tsx --env-file ../backend/.env src/cli.ts",
+        "start": "node --env-file ../backend/.env dist/cli.js",
+        "build": "tsc",
+        "type-check": "tsc -p tsconfig.json --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix ."
+    },
+    "dependencies": {
+        "@eve-toolkit/sde": "0.0.1",
+        "@eve-toolkit/collector": "0.0.1",
+        "node-cron": "^3.0.3",
+        "pino": "^9.0.0"
+    }
+}

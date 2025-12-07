@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
         "target": "ES2023",
         "module": "ESNext",
         "moduleResolution": "node",
@@ -7,6 +8,10 @@
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "paths": {
+            "@eve-toolkit/sde": ["packages/sde/src/index.ts"],
+            "@eve-toolkit/collector": ["packages/collector/src/index.ts"]
+        }
     }
 }

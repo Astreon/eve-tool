@@ -11,16 +11,22 @@
         "dev": "npm run dev:backend",
         "dev:backend": "npm run dev --workspace backend",
         "dev:frontend": "npm run dev --workspace frontend",
-        "type-check": "npm run type-check:backend && npm run type-check:frontend && npm run type-check:packages",
+        "dev:worker": "npm run dev --workspace worker",
+        "type-check": "npm run type-check:backend && npm run type-check:frontend && npm run type-check:worker && npm run type-check:packages",
         "type-check:backend": "npm run type-check --workspace backend",
         "type-check:frontend": "npm run type-check --workspace frontend",
+        "type-check:worker": "npm run type-check --workspace worker",
         "type-check:packages": "npm run type-check --workspace @eve-toolkit/db && npm run type-check --workspace @eve-toolkit/sde && npm run type-check --workspace @eve-toolkit/collector",
-        "lint": "npm run lint:backend && npm run lint:frontend && npm run lint:packages",
+        "lint": "npm run lint:backend && npm run lint:frontend && npm run lint:worker && npm run lint:packages",
         "lint:backend": "npm run lint --workspace backend",
         "lint:frontend": "npm run lint --workspace frontend",
+        "lint:worker": "npm run lint --workspace worker",
         "lint:packages": "npm run lint --workspace @eve-toolkit/sde && npm run lint --workspace @eve-toolkit/collector",
         "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "test": "npm test --workspace backend"
+    },
+    "devDependencies": {
+        "@types/node-cron": "^3.0.11"
     }
 }
