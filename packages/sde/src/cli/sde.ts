@@ -11,8 +11,8 @@ import {
     runDownload,
     type SdeGlobalOptions,
     type InstallerCommand,
-} from '../installer'
-import { logger } from '../lib/logger'
+} from '../installer.js'
+import { logger } from '../lib/logger.js'
 
 interface ParsedArgs {
     command: InstallerCommand

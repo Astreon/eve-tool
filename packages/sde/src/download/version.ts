@@ -6,8 +6,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as readline from 'readline'
-import { prisma } from '../lib/prisma'
-import { SDE_DIR } from '../config'
+import { prisma } from '../lib/prisma.js'
+import { SDE_DIR } from '../config.js'
 
 export interface SdeVersion {
     key: 'sde'

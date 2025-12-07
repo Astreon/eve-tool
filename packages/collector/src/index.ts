@@ -5,9 +5,9 @@
 
 import { logger } from './lib/logger.js'
 
-import { systemActivity } from './jobs/systemActivity'
-import { COLLECTOR_JOBS } from './jobs'
-import type { CollectorJobId, CollectorOptions } from './jobs'
+import { systemActivity } from './jobs/systemActivity.js'
+import { COLLECTOR_JOBS } from './jobs/index.js'
+import type { CollectorJobId, CollectorOptions } from './jobs/index.js'
 
 export { systemActivity }
 
@@ -16,7 +16,7 @@ export {
     type CollectorJobFn,
     type CollectorJobId,
     type CollectorOptions,
-} from './jobs'
+} from './jobs/index.js'
 
 export async function runCollectorJob(
     jobId: CollectorJobId,

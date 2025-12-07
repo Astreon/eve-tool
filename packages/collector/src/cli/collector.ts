@@ -8,7 +8,7 @@ import {
     COLLECTOR_JOBS,
     type CollectorJobId,
     type CollectorOptions,
-} from '../jobs'
+} from '../jobs/index.js'
 import { runCollectorJob } from '../index.js'
 
 type ParsedArgs = {

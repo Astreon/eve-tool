@@ -6,9 +6,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { createHash } from 'crypto'
-import { SDE_DIR } from '../config'
-import { prisma } from '../lib/prisma'
-import { logger } from '../lib/logger'
+import { SDE_DIR } from '../config.js'
+import { prisma } from '../lib/prisma.js'
+import { logger } from '../lib/logger.js'
 
 export const DATASET_FILES = {
     bloodlines: 'bloodlines.jsonl',

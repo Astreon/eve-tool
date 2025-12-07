@@ -82,7 +82,7 @@ export async function downloadStaticData(
 /**
  * Import/export map layouts from/to static files to/from the database.
  */
-export { exportMapLayouts, importMapLayouts } from './layout'
+export { exportMapLayouts, importMapLayouts } from './layout/index.js'
 
 /**
  * Only cache invalidation.

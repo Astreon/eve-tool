@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-export { runCalculations } from './calculator'
+export { runCalculations } from './calculator.js'
 
-export { CALCULATION_TASKS, CALCULATION_TASKS_BY_ID } from './tasks'
-export type { CalculationId } from './tasks'
+export { CALCULATION_TASKS, CALCULATION_TASKS_BY_ID } from './tasks.js'
+export type { CalculationId } from './tasks.js'

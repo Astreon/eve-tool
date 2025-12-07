@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { updateStaticData } from '@eve-toolkit/sde'
-import { runCollectorJob } from '@eve-toolkit/collector'
+import { updateStaticData } from '../../packages/sde/src/index.js'
+import { runCollectorJob } from '../../packages/collector/src/index.js'
 import { logger } from './lib/logger.js'
 
 export type WorkerTaskId = 'sdeUpdate' | 'systemActivity'

@@ -3,16 +3,16 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { logger } from '../lib/logger'
-import { IMPORT_TASKS } from './tasks'
-import { assertSdeDirOnThrow } from '../config'
-import { createProgressBar } from '../lib/progress'
+import { logger } from '../lib/logger.js'
+import { IMPORT_TASKS } from './tasks.js'
+import { assertSdeDirOnThrow } from '../config.js'
+import { createProgressBar } from '../lib/progress.js'
 import {
     DATASET_FILES,
     getDatasetsNeedingImport,
     markDatasetAsImported,
     type DatasetId,
-} from './datasetHashes'
+} from './datasetHashes.js'
 
 export interface ImportResult {
     success: number

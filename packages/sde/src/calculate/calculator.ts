@@ -7,9 +7,9 @@ import {
     CALCULATION_TASKS,
     CALCULATION_TASKS_BY_ID,
     type CalculationId,
-} from './tasks'
-import { logger } from '../lib/logger'
-import { createProgressBar } from '../lib/progress'
+} from './tasks.js'
+import { logger } from '../lib/logger.js'
+import { createProgressBar } from '../lib/progress.js'
 
 export interface CalculationStats {
     taskTotal: number

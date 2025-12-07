@@ -9,7 +9,7 @@
         "dev": "tsx --env-file ../backend/.env src/cli.ts",
         "start": "node dist/worker/src/cli.js",
         "build": "tsc -p tsconfig.build.json",
-        "type-check": "tsc -p tsconfig.json --noEmit",
+        "type-check": "tsc -p tsconfig.json",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
     },

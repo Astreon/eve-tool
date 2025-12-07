@@ -19,8 +19,8 @@ import {
     importNpcStations,
     importStationServices,
     importStationOperations,
-} from '../jobs/importer'
-import type { ImportResult } from './importer'
+} from '../jobs/importer/index.js'
+import type { ImportResult } from './importer.js'
 
 export type ImportDatasetId =
     | 'bloodlines'

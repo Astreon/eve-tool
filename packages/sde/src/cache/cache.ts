@@ -3,8 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { redis } from '../lib/redis'
-import { logger } from '../lib/logger'
+import { redis } from '../lib/redis.js'
+import { logger } from '../lib/logger.js'
 
 const REGION_CACHE_PREFIX = 'regions'
 const CACHE_VERSION = process.env.CACHE_VERSION

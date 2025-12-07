@@ -3,9 +3,10 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
-    "main": "src/generated/client.js",
+    "main": "dist/generated/client.js",
     "types": "src/generated/client.d.ts",
     "scripts": {
+        "build": "tsc -p tsconfig.json",
         "type-check": "tsc -p tsconfig.json --noEmit",
         "prisma:generate": "prisma generate"
     },

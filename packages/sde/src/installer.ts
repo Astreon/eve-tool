@@ -9,13 +9,17 @@ import {
     getDbVersion,
     upsertDbVersion,
     type SdeVersion,
-} from './download'
+} from './download/index.js'
 import {
     runCalculations,
     CALCULATION_TASKS_BY_ID,
     type CalculationId,
-} from './calculate'
-import { importer, IMPORT_TASKS_BY_ID, type ImportDatasetId } from './import'
+} from './calculate/index.js'
+import {
+    importer,
+    IMPORT_TASKS_BY_ID,
+    type ImportDatasetId,
+} from './import/index.js'
 import { logger } from './lib/logger.js'
 import { assertSdeDirOnThrow } from './config.js'
 import { invalidateSdeCaches } from './cache/cache.js'

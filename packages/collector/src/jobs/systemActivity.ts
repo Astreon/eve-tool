@@ -7,7 +7,7 @@
 
 import { logger } from '../lib/logger.js'
 import { prisma } from '../lib/prisma.js'
-import { getSystemActivitySnapshot } from '../../../../backend/src/services/esi'
+import { getSystemActivitySnapshot } from '../../../../backend/src/services/esi/index.js'
 
 export type SystemActivityCollectorOptions = {
     dryRun?: boolean

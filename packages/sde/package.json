@@ -3,10 +3,11 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
-    "main": "src/index.ts",
-    "types": "./index.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
-        "type-check": "tsc -p tsconfig.json --noEmit",
+        "build": "tsc -p tsconfig.build.json",
+        "type-check": "tsc -p tsconfig.json",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "sde:install": "npx tsx --env-file ../../backend/.env src/cli/sde.ts install",
@@ -21,5 +22,8 @@
         "@eve-toolkit/db": "0.0.1",
         "@eve-toolkit/logger": "0.0.1",
         "extract-zip": "^2.0.1"
+    },
+    "devDependencies": {
+        "@types/extract-zip": "^2.0.0"
     }
 }

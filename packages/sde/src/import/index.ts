@@ -3,15 +3,15 @@
  * Copyright (C) 2025 Astreon
  */
 
-export { importer } from './importer'
-export type { ImporterOptions, ImporterStats } from './importer'
+export { importer } from './importer.js'
+export type { ImporterOptions, ImporterStats } from './importer.js'
 
 export {
     DATASET_FILES,
     getDatasetsNeedingImport,
     markDatasetAsImported,
-} from './datasetHashes'
-export type { DatasetId } from './datasetHashes'
+} from './datasetHashes.js'
+export type { DatasetId } from './datasetHashes.js'
 
-export { IMPORT_TASKS, IMPORT_TASKS_BY_ID } from './tasks'
-export type { ImportDatasetId } from './tasks'
+export { IMPORT_TASKS, IMPORT_TASKS_BY_ID } from './tasks.js'
+export type { ImportDatasetId } from './tasks.js'

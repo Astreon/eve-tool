@@ -5,9 +5,9 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import { SDE_DIR } from '../config'
-import { getDbVersion, type SdeVersion } from './version'
-import { logger } from '../lib/logger'
+import { SDE_DIR } from '../config.js'
+import { getDbVersion, type SdeVersion } from './version.js'
+import { logger } from '../lib/logger.js'
 
 const LATEST_META_URL =
     'https://developers.eveonline.com/static-data/tranquility/latest.jsonl'

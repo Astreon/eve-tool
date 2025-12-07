@@ -17,8 +17,16 @@ RUN npm ci
 
 COPY . .
 
+ENV DATABASE_URL="postgres://user:pass@localhost:5432/dummy"
+RUN npm run prisma:generate --workspace @eve-toolkit/db
+
+RUN npm run build --workspace @eve-toolkit/db
+
+RUN npm run build --workspace @eve-toolkit/logger
+
 RUN npm run build --workspace @eve-toolkit/worker
 
 ENV NODE_ENV=production
 
-CMD ["npm", "run", "start", "--workspace", "@eve-toolkit/worker"]
+WORKDIR /app/worker
+CMD ["node", "dist/worker/src/cli.js"]

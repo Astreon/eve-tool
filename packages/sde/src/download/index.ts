@@ -3,12 +3,12 @@
  * Copyright (C) 2025 Astreon
  */
 
-export { ensureLatestSdeOnDisk } from './remote'
+export { ensureLatestSdeOnDisk } from './remote.js'
 
 export {
     readSdeVersionFromFile,
     getDbVersion,
     upsertDbVersion,
-} from './version'
+} from './version.js'
 
-export type { SdeVersion } from './version'
+export type { SdeVersion } from './version.js'

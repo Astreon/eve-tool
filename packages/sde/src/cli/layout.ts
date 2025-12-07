@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { exportMapLayouts, importMapLayouts } from '../layout'
+import { exportMapLayouts, importMapLayouts } from '../layout/index.js'
 import { logger } from '../lib/logger.js'
 
 type LayoutCommand = 'export' | 'import'

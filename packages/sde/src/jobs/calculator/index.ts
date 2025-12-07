@@ -3,6 +3,6 @@
  * Copyright (C) 2025 Astreon
  */
 
-export { computeRegionLinks } from './computeRegionLinks'
-export { computeConstellationLinks } from './computeConstellationLinks'
-export { computeSystemLinks } from './computeSystemLinks'
+export { computeRegionLinks } from './computeRegionLinks.js'
+export { computeConstellationLinks } from './computeConstellationLinks.js'
+export { computeSystemLinks } from './computeSystemLinks.js'

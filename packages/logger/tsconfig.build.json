@@ -9,8 +9,13 @@
             "ESNext.Collection",
             "ESNext.Iterator"
         ],
-        "noEmit": true
+        "noEmit": false,
+        "declaration": true,
+        "sourceMap": true,
+        "paths": {
+            "@eve-toolkit/logger": ["../logger/dist/index.d.ts"]
+        }
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["dist", "node_modules", "tests"]
+    "exclude": ["dist", "node_modules"]
 }
