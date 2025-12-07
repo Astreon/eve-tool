@@ -1,0 +1,24 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "../",
+        "lib": [
+            "ES2024",
+            "ESNext.Array",
+            "ESNext.Collection",
+            "ESNext.Iterator"
+        ],
+        "noEmit": false,
+        "declaration": false,
+        "sourceMap": false
+    },
+    "include": [
+        "src/**/*.ts",
+        "../packages/sde/src/**/*.ts",
+        "../packages/collector/src/**/*.ts",
+        "../packages/db/src/**/*.ts",
+        "../packages/logger/src/**/*.ts"
+    ],
+    "exclude": ["dist", "node_modules", "tests"]
+}

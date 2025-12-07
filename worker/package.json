@@ -7,8 +7,8 @@
     "types": "./src/index.ts",
     "scripts": {
         "dev": "tsx --env-file ../backend/.env src/cli.ts",
-        "start": "node --env-file ../backend/.env dist/cli.js",
-        "build": "tsc",
+        "start": "node dist/worker/src/cli.js",
+        "build": "tsc -p tsconfig.build.json",
         "type-check": "tsc -p tsconfig.json --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
