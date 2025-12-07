@@ -4,11 +4,19 @@
  */
 
 import cron from 'node-cron'
-import { logger } from './lib/logger.js'
-import { WORKER_TASKS } from './tasks.js'
+import { logger } from './lib/logger'
+import { WORKER_TASKS } from './tasks'
+import { getEnabledWorkerTasks } from './tasks'
 
 void (async () => {
-    logger.info('🚀 Starting worker scheduler')
+    const tasks = getEnabledWorkerTasks()
+    logger.info(
+        {
+            enabledTaskIds: tasks.map((task) => task.id),
+            allTaskIds: ['sdeUpdate', 'systemActivity'],
+        },
+        'Starting worker scheduler',
+    )
 
     for (const task of WORKER_TASKS) {
         cron.schedule(task.cron, () => {

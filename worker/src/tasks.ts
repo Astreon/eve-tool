@@ -5,7 +5,7 @@
 
 import { updateStaticData } from '@eve-toolkit/sde'
 import { runCollectorJob } from '@eve-toolkit/collector'
-import { logger } from './lib/logger.js'
+import { logger } from './lib/logger'
 
 export type WorkerTaskId = 'sdeUpdate' | 'systemActivity'
 
@@ -46,3 +46,24 @@ export const WORKER_TASKS: WorkerTask[] = [
     //   }
     // },
 ]
+
+export function getEnabledWorkerTasks(): WorkerTask[] {
+    const raw = process.env.WORKER_ENABLED_TASKS
+
+    if (!raw) return WORKER_TASKS
+
+    const requestedIds = new Set(
+        raw
+            .split(',')
+            .map((v) => v.trim())
+            .filter((v): v is WorkerTaskId =>
+                (['sdeUpdate', 'systemActivity'] as WorkerTaskId[]).includes(
+                    v as WorkerTaskId,
+                ),
+            ),
+    )
+
+    if (requestedIds.size === 0) return WORKER_TASKS
+
+    return WORKER_TASKS.filter((t) => requestedIds.has(t.id))
+}
