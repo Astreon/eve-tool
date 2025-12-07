@@ -16,7 +16,7 @@
     "dependencies": {
         "@eve-toolkit/sde": "0.0.1",
         "@eve-toolkit/collector": "0.0.1",
-        "node-cron": "^3.0.3",
-        "pino": "^9.0.0"
+        "@eve-toolkit/logger": "0.0.1",
+        "node-cron": "^3.0.3"
     }
 }

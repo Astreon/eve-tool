@@ -67,8 +67,10 @@ export async function importLayouts(opts?: {
             parsed = JSON.parse(raw) as LayoutSeedFile
         } catch (err) {
             logger.error(
+                {
+                    error: err instanceof Error ? err.message : String(err),
+                },
                 `❌ Failed to parse layout seed file ${fullPath}:`,
-                err,
             )
             continue
         }

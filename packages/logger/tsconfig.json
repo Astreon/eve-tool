@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "lib": [
+            "ES2024",
+            "ESNext.Array",
+            "ESNext.Collection",
+            "ESNext.Iterator"
+        ]
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["dist", "node_modules", "tests"]
+}

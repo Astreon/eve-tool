@@ -71,7 +71,7 @@ function parseCliArgs(): {
             return
         }
     } catch (err) {
-        logger.error('❌ Layout seed command failed:', err)
+        logger.error({ err }, '❌ Layout seed command failed:')
         process.exitCode = 1
     } finally {
         try {

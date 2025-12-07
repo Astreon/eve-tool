@@ -11,7 +11,8 @@
         "resolveJsonModule": true,
         "paths": {
             "@eve-toolkit/sde": ["packages/sde/src/index.ts"],
-            "@eve-toolkit/collector": ["packages/collector/src/index.ts"]
+            "@eve-toolkit/collector": ["packages/collector/src/index.ts"],
+            "@eve-toolkit/logger": ["packages/logger/src/index.ts"]
         }
     }
 }

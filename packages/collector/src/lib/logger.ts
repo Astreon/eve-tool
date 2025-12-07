@@ -3,9 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { pino } from 'pino'
+import { createLogger } from '@eve-toolkit/logger'
 
-export const logger = pino({
+export const logger = createLogger({
     name: 'collector',
-    level: process.env.LOG_LEVEL ?? 'info',
 })

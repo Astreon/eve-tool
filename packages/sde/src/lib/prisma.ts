@@ -17,5 +17,5 @@ prisma
         logger.info('🗄️ Connected to PostgreSQL via Prisma (SDE)')
     })
     .catch((err) => {
-        logger.error('❌ Failed to connect Prisma (SDE):', err)
+        logger.error({ err }, '❌ Failed to connect Prisma (SDE):')
     })

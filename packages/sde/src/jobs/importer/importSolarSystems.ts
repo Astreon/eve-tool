@@ -98,8 +98,10 @@ export const importSolarSystems = async (
         } catch (err) {
             errors++
             logger.error(
+                {
+                    error: err instanceof Error ? err.message : String(err),
+                },
                 `❌ Parse/DB error @line ${total}:`,
-                (err as Error).message,
             )
         }
     }

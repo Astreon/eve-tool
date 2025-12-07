@@ -25,8 +25,8 @@ export async function invalidateSdeCaches() {
             }
         } catch (err) {
             logger.error(
+                { err },
                 `[SDE] Failed to clear Redis keys for pattern "${pattern}":`,
-                err,
             )
         }
     }

@@ -153,8 +153,10 @@ export async function importer(
 
             const duration = ((performance.now() - start) / 1000).toFixed(1)
             logger.error(
+                {
+                    error: err instanceof Error ? err.message : String(err),
+                },
                 `❌ Failed to import ${task.label} (${datasetId}) after ${duration}s:`,
-                (err as Error).message,
             )
 
             if (globalProgress) {

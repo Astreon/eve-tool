@@ -222,8 +222,10 @@ export async function runImport(options: SdeGlobalOptions): Promise<void> {
             errorCount++
             const dur = ((performance.now() - dsStart) / 1000).toFixed(1)
             logger.error(
+                {
+                    error: err instanceof Error ? err.message : String(err),
+                },
                 `❌ Failed to import ${task.label} after ${dur}s:`,
-                (err as Error).message,
             )
         }
     }

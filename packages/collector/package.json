@@ -11,6 +11,7 @@
         "lint:fix": "eslint --fix ."
     },
     "dependencies": {
-        "@eve-toolkit/db": "0.0.1"
+        "@eve-toolkit/db": "0.0.1",
+        "@eve-toolkit/logger": "0.0.1"
     }
 }
