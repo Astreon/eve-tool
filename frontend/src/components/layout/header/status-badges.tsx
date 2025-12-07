@@ -100,11 +100,6 @@ function StatusPill({
 export function StatusBadges() {
     const { data, isLoading, isError } = useStatusQuery()
 
-    // Wenn der Request komplett scheitert → nichts rendern
-    if (!data && isError && !isLoading) {
-        return null
-    }
-
     const payload = data?.data
     const requestFailed = isError && !isLoading
 
