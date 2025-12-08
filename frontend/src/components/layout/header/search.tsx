@@ -20,15 +20,106 @@ import { Button } from '@/components/ui/button'
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { navItems } from '@/components/layout/sidebar/nav-main'
 import { useRouter } from '@tanstack/react-router'
+import { API_BASE } from '@/lib/env'
+
+type UniverseSearchItem = {
+    id: number
+    name?: string
+}
+
+type UniverseSearchResult = {
+    regions: UniverseSearchItem[]
+    solar_systems: UniverseSearchItem[]
+}
 
 export default function Search() {
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
 
+    const [query, setQuery] = useState('')
+    const [universeResults, setUniverseResults] =
+        useState<UniverseSearchResult | null>(null)
+    const [isUniverseLoading, setIsUniverseLoading] = useState(false)
+
     useEffect(() => {
         setMounted(true)
     }, [])
+
+    useEffect(() => {
+        if (!open) {
+            setUniverseResults(null)
+            setIsUniverseLoading(false)
+            return
+        }
+
+        const trimmed = query.trim()
+        if (trimmed.length < 2) {
+            setUniverseResults(null)
+            return
+        }
+
+        const controller = new AbortController()
+
+        async function run() {
+            try {
+                setIsUniverseLoading(true)
+
+                const params = new URLSearchParams({
+                    query: trimmed,
+                })
+
+                const res = await fetch(
+                    `${API_BASE}/universe/search?${params.toString()}`,
+                    {
+                        signal: controller.signal,
+                    },
+                )
+
+                if (res.status === 401) {
+                    setUniverseResults(null)
+                    setIsUniverseLoading(false)
+                    return
+                }
+
+                if (!res.ok) {
+                    throw new Error(`Search failed with status ${res.status}`)
+                }
+
+                const body = await res.json()
+
+                if (!body?.success) {
+                    setUniverseResults(null)
+                    return
+                }
+
+                const data = body.data ?? {}
+
+                const regions =
+                    ((data.regions ?? []) as UniverseSearchItem[]) ?? []
+                const solarSystems =
+                    ((data.solar_systems ?? []) as UniverseSearchItem[]) ?? []
+
+                setUniverseResults({
+                    regions,
+                    solar_systems: solarSystems,
+                })
+            } catch (err) {
+                if (controller.signal.aborted) return
+                setUniverseResults(null)
+            } finally {
+                if (!controller.signal.aborted) {
+                    setIsUniverseLoading(false)
+                }
+            }
+        }
+
+        run()
+
+        return () => {
+            controller.abort()
+        }
+    }, [query, open])
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -91,7 +182,11 @@ export default function Search() {
                         <DialogTitle></DialogTitle>
                     </DialogHeader>
                 </VisuallyHidden>
-                <CommandInput placeholder="Type a command or search..." />
+                <CommandInput
+                    placeholder="Type a command or search..."
+                    value={query}
+                    onValueChange={setQuery}
+                />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     {navItems.map((route) => (
@@ -114,6 +209,89 @@ export default function Search() {
                             <CommandSeparator />
                         </React.Fragment>
                     ))}
+
+                    {isUniverseLoading && (
+                        <CommandGroup heading="Universe">
+                            <CommandItem disabled value="universe-loading">
+                                Searching backend...
+                            </CommandItem>
+                        </CommandGroup>
+                    )}
+
+                    {universeResults &&
+                        !isUniverseLoading &&
+                        (universeResults.regions.length > 0 ||
+                            universeResults.solar_systems.length > 0) && (
+                            <>
+                                {universeResults?.regions.length > 0 && (
+                                    <CommandGroup heading="Regions">
+                                        {universeResults.regions.map(
+                                            (region) => (
+                                                <CommandItem
+                                                    key={`region-${region.id}`}
+                                                    onSelect={() => {
+                                                        setOpen(false)
+                                                        if (region.name) {
+                                                            const slug =
+                                                                encodeURIComponent(
+                                                                    region.name,
+                                                                )
+                                                            router.navigate({
+                                                                to: `/region/${slug}`,
+                                                            })
+                                                        }
+                                                    }}
+                                                    value={(
+                                                        region.name ??
+                                                        `region-${region.id}`
+                                                    ).toLowerCase()}
+                                                >
+                                                    <span>
+                                                        {region.name ??
+                                                            `Region #${region.id}`}
+                                                    </span>
+                                                </CommandItem>
+                                            ),
+                                        )}
+                                    </CommandGroup>
+                                )}
+
+                                {universeResults?.solar_systems.length > 0 && (
+                                    <CommandGroup heading="Systems">
+                                        {universeResults.solar_systems.map(
+                                            (system) => (
+                                                <CommandItem
+                                                    key={`system-${system.id}`}
+                                                    onSelect={() => {
+                                                        setOpen(false)
+                                                        if (system.name) {
+                                                            const slug =
+                                                                encodeURIComponent(
+                                                                    system.name,
+                                                                )
+                                                            router.navigate({
+                                                                to: `/system/${slug}`,
+                                                            })
+                                                        }
+                                                    }}
+                                                    value={(
+                                                        system.name ??
+                                                        `system-${system.id}`
+                                                    ).toLowerCase()}
+                                                >
+                                                    <span>
+                                                        {system.name ??
+                                                            `System #${system.id}`}
+                                                    </span>
+                                                </CommandItem>
+                                            ),
+                                        )}
+                                    </CommandGroup>
+                                )}
+
+                                <CommandSeparator />
+                            </>
+                        )}
                 </CommandList>
             </CommandDialog>
         </div>
