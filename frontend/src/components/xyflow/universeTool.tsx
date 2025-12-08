@@ -269,8 +269,8 @@ export function UniverseTool() {
                 <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                         {mode === 'universe'
-                            ? 'Universe overview'
-                            : 'Region details'}
+                            ? 'Region details'
+                            : 'System details'}
                     </div>
                 </div>
 
@@ -306,45 +306,8 @@ export function UniverseTool() {
 
                 {mode === 'region' && activeRegionId !== null && (
                     <div className="space-y-3 text-xs">
-                        <div>
-                            <div className="font-medium">
-                                Region{' '}
-                                <span className="font-mono">
-                                    {activeRegionId}
-                                </span>
-                            </div>
-                            <p className="text-muted-foreground">
-                                You are in the system view of this region.
-                            </p>
-                        </div>
-
                         {selectedSystem ? (
-                            <div className="space-y-3">
-                                {/* Selection header */}
-                                <div className="space-y-1">
-                                    <div className="font-medium">
-                                        Selected system
-                                    </div>
-                                    <div>
-                                        Name:{' '}
-                                        <span className="font-mono">
-                                            {selectedSystem.name}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        ID:{' '}
-                                        <span className="font-mono">
-                                            {selectedSystem.id}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        Constellation:{' '}
-                                        <span className="font-mono">
-                                            {selectedSystem.constellationId}
-                                        </span>
-                                    </div>
-                                </div>
-
+                            <div className="space-y-1">
                                 {/* System overview */}
                                 {systemOverviewQuery.isLoading && (
                                     <p className="text-muted-foreground text-xs">
@@ -359,11 +322,18 @@ export function UniverseTool() {
                                 )}
 
                                 {systemOverviewQuery.isSuccess && (
-                                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-2">
                                         {/* General */}
                                         <div className="bg-muted/40 space-y-1 rounded-md p-2">
                                             <div className="font-medium">
                                                 General
+                                            </div>
+                                            <div>
+                                                Name:{' '}
+                                                <span className="font-mono">
+                                                    {selectedSystem.name} (
+                                                    {selectedSystem.id})
+                                                </span>
                                             </div>
                                             <div>
                                                 Region:{' '}
@@ -411,7 +381,7 @@ export function UniverseTool() {
                                                 </div>
                                             )}
                                             <div>
-                                                Security:{' '}
+                                                Security Level:{' '}
                                                 <span
                                                     className={cn(
                                                         'eve-security-badge',
@@ -442,89 +412,45 @@ export function UniverseTool() {
                                                     </span>
                                                 )}
                                             </div>
-                                            <div>
-                                                Planets:{' '}
-                                                <span className="font-mono">
-                                                    {
-                                                        systemOverviewQuery.data
-                                                            .system.planetsCount
-                                                    }
-                                                </span>
-                                            </div>
-                                            <div>
-                                                Moons:{' '}
-                                                <span className="font-mono">
-                                                    {
-                                                        systemOverviewQuery.data
-                                                            .system.moonsCount
-                                                    }
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Structs and star */}
-                                        <div className="bg-muted/40 space-y-1 rounded-md p-2">
-                                            <div className="font-medium">
-                                                Structure &amp; star
-                                            </div>
-                                            <div>
-                                                Asteroid belts:{' '}
-                                                <span className="font-mono">
-                                                    {systemOverviewQuery.data
-                                                        .system.beltsCount ?? 0}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                NPC stations:{' '}
-                                                <span className="font-mono">
-                                                    {systemOverviewQuery.data
-                                                        .system
-                                                        .npcStationsCount ?? 0}
-                                                </span>
-                                            </div>
-                                            <div className="mt-1">
-                                                Star:{' '}
-                                                <span className="font-mono">
-                                                    {
-                                                        systemOverviewQuery.data
-                                                            .system.star
-                                                            .spectralClass
-                                                    }
-                                                </span>
-                                            </div>
-                                            <div>
-                                                Temp.:{' '}
-                                                <span className="font-mono">
-                                                    {
-                                                        systemOverviewQuery.data
-                                                            .system.star
-                                                            .temperature
-                                                    }
-                                                    K
-                                                </span>
-                                            </div>
-                                            <div>
-                                                Radius:{' '}
-                                                <span className="font-mono">
-                                                    {
-                                                        systemOverviewQuery.data
-                                                            .system.star.radius
-                                                    }
-                                                </span>
-                                            </div>
-                                            {systemOverviewQuery.data.system
-                                                .star.typeName && (
+                                            <div className="mt-3 space-y-1">
                                                 <div>
-                                                    Type:{' '}
+                                                    Planets:{' '}
                                                     <span className="font-mono">
                                                         {
                                                             systemOverviewQuery
                                                                 .data.system
-                                                                .star.typeName
+                                                                .planetsCount
                                                         }
                                                     </span>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    Moons:{' '}
+                                                    <span className="font-mono">
+                                                        {
+                                                            systemOverviewQuery
+                                                                .data.system
+                                                                .moonsCount
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    Asteroid belts:{' '}
+                                                    <span className="font-mono">
+                                                        {systemOverviewQuery
+                                                            .data.system
+                                                            .beltsCount ?? 0}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    NPC stations:{' '}
+                                                    <span className="font-mono">
+                                                        {systemOverviewQuery
+                                                            .data.system
+                                                            .npcStationsCount ??
+                                                            0}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {/* Activity (last hour / 24h) */}
@@ -624,7 +550,7 @@ export function UniverseTool() {
 
                                         {/* Activity (48h) – Kills */}
                                         {chartData.length > 1 && (
-                                            <div className="mt-2 md:col-span-2">
+                                            <div className="mt-2 p-2 md:col-span-2">
                                                 <div className="mb-1 font-medium">
                                                     Activity (last 48h): Kills
                                                 </div>
@@ -703,7 +629,7 @@ export function UniverseTool() {
 
                                         {/* Activity (48h) – Jumps */}
                                         {chartData.length > 1 && (
-                                            <div className="mt-2 md:col-span-2">
+                                            <div className="mt-2 p-2 md:col-span-2">
                                                 <div className="mb-1 font-medium">
                                                     Activity (last 48h): Jumps
                                                 </div>
@@ -766,6 +692,8 @@ export function UniverseTool() {
                                         )}
                                     </div>
                                 )}
+
+                                {/* TODO: Insert Killfeed here */}
                             </div>
                         ) : (
                             <div>
