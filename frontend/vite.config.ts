@@ -25,11 +25,11 @@ const config = defineConfig({
             process.env.npm_package_version ?? '0.0.0',
         ),
         __APP_BUILD__: JSON.stringify(
-            process.env.VERCEL_BUILD_ID ??
-                process.env.VERCEL_GIT_COMMIT_SHA ??
+            process.env.VERCEL_GIT_COMMIT_SHA ??
+                process.env.VERCEL_BUILD_ID ??
                 process.env.GITHUB_SHA ??
                 'local',
-        ),
+        ).slice(0, 7),
     },
 })
 
