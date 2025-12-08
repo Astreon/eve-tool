@@ -27,6 +27,7 @@ export interface SearchMeta {
 
 const ALLOWED_CATEGORIES: readonly EsiSearchCategories[] = [
     'character',
+    'region',
     'solar_system',
     // expand here if needed
 ]
@@ -124,22 +125,49 @@ export async function searchAll(
             out[cat] = (ids ?? []).map((id) => ({ id }))
         }
 
-        const charIds = result.characters ?? []
-        if (charIds.length) {
+        const characterIds = result.characters ?? []
+        const regionIds = result.regions ?? []
+        const solarSystemIds = result.solar_systems ?? []
+
+        const idsNeedingNames = [
+            ...characterIds,
+            ...regionIds,
+            ...solarSystemIds,
+        ]
+
+        if (idsNeedingNames.length) {
             try {
-                const named = await resolveNames(charIds)
-                const byId = new Map<number, string>()
+                const named = await resolveNames(
+                    Array.from(new Set(idsNeedingNames)),
+                )
+
+                const byCategoryAndId = new Map<string, string>()
                 for (const n of named) {
-                    if (n.category === 'character') {
-                        byId.set(n.id, n.name)
-                    }
+                    byCategoryAndId.set(`${n.category}:${n.id}`, n.name)
                 }
-                out.characters = charIds.map((id) => ({
-                    id,
-                    name: byId.get(id),
-                }))
+
+                if (characterIds.length) {
+                    out.characters = characterIds.map((id) => ({
+                        id,
+                        name: byCategoryAndId.get(`character:${id}`),
+                    }))
+                }
+
+                if (regionIds.length) {
+                    out.regions = regionIds.map((id) => ({
+                        id,
+                        name: byCategoryAndId.get(`region:${id}`),
+                    }))
+                }
+
+                if (solarSystemIds.length) {
+                    out.solar_systems = solarSystemIds.map((id) => ({
+                        id,
+                        name: byCategoryAndId.get(`solar_system:${id}`),
+                    }))
+                }
             } catch {
-                // we don't want to fail the whole search if this fails
+                // ignore, just return the raw ids
             }
         }
 

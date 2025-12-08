@@ -218,21 +218,16 @@ function relaxLayout(baseNodes: SystemNode[]): SystemNode[] {
     return nodes
 }
 
-function getIsDarkMode(): boolean {
-    if (typeof document === 'undefined') return false
-    return document.documentElement.classList.contains('dark')
-}
-
-function getEdgeColor(borderType: SystemBorderType, isDark: boolean): string {
+function getEdgeColor(borderType: SystemBorderType): string {
     switch (borderType) {
         case 'INTERNAL':
-            return isDark ? '#ffffff' : '#000000'
+            return 'var(--color-foreground)'
         case 'CONSTELLATION':
             return '#ff3b3b'
         case 'REGION':
             return '#8a09cf'
         default:
-            return isDark ? '#ffffff' : '#000000'
+            return 'var(--color-border)'
     }
 }
 
@@ -300,7 +295,6 @@ export function RegionMap({
     onSystemSelect?: (system: RegionSystemNodeApi) => void
 }) {
     const { data, isLoading, isError, error } = useRegionMap(regionId)
-    const isDark = getIsDarkMode()
     const { session } = useAuth()
     const canEditLayout = ADMIN_ID != null && session?.characterId === ADMIN_ID
 
@@ -485,14 +479,14 @@ export function RegionMap({
                     interactionWidth: 0,
                     animated: false,
                     style: {
-                        stroke: getEdgeColor(e.borderType, isDark),
+                        stroke: getEdgeColor(e.borderType),
                         strokeWidth: 1.2,
                         opacity: 0.7,
                         pointerEvents: 'none',
                     },
                 })) ?? []
         )
-    }, [data, rfNodes, isDark])
+    }, [data, rfNodes])
 
     const handleNodesChange = useCallback(
         (changes: NodeChange[]) => {

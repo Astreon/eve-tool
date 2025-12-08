@@ -12,6 +12,7 @@ import characterRoutes from './character.routes.js'
 import regionRoutes from './region.routes.js'
 import searchRoutes from './search.routes.js'
 import systemRoutes from './system.routes.js'
+import universeRoutes from './universe.routes.js'
 
 const router = Router()
 
@@ -23,6 +24,7 @@ router.use('/api/version', versionRoutes)
 router.use('/api/characters', characterRoutes)
 router.use('/api/regions', regionRoutes)
 router.use('/api/systems', systemRoutes)
+router.use('/api/universe', universeRoutes)
 
 // authenticated routes
 router.use('/api/search', requireAuth, searchRoutes)
