@@ -37,15 +37,9 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Set build metadata
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VITE_APP_VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VITE_APP_BUILD=${{ github.run_number }}" >> $GITHUB_ENV
-
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Format check
         run: npm run format:check
         working-directory: .
@@ -62,12 +56,38 @@ jobs:
       - name: Build
         run: npm run build
 
-  deploy:
+  promote:
     needs: quality
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: Trigger Vercel deploy
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Find latest production deployment
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME }}
         run: |
-          curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+          DEPLOYMENT_URL=$(vercel list "$VERCEL_PROJECT_NAME" \
+            --prod \
+            --limit=1 \
+            --json \
+            --scope "$VERCEL_ORG_ID" \
+            --token "$VERCEL_TOKEN" \
+            | jq -r '.[0].url')
+
+          echo "deployment_url=$DEPLOYMENT_URL"
+          echo "deployment_url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Promote deployment to production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          vercel promote "${{ steps.vercel.outputs.deployment_url }}" \
+            --scope "$VERCEL_ORG_ID" \
+            --token "$VERCEL_TOKEN" \
+            --timeout=0
