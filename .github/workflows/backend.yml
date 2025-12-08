@@ -1,4 +1,4 @@
-name: Deploy Backend + Worker
+name: Backend CI
 
 on:
   push:
@@ -38,6 +38,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+
+      - name: Generate Prisma client for db package
+        run: npm run prisma:generate --workspace @eve-toolkit/db
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
 
