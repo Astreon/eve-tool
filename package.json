@@ -28,6 +28,7 @@
         "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css,scss,html,yml,yaml}\"",
         "test": "npm test --workspace backend",
+        "db:build": "npm run prisma:generate --workspace @eve-toolkit/db && npm run build --workspace @eve-toolkit/db",
         "sde:install": "npm run sde:install --workspace @eve-toolkit/sde",
         "sde:import": "npm run sde:import --workspace @eve-toolkit/sde",
         "sde:calculate": "npm run sde:calculate --workspace @eve-toolkit/sde",
