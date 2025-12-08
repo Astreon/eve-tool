@@ -249,7 +249,6 @@ async function fetchWorkerTaskStatus(
         } else if (hasError) {
             status = isStale ? 'Down' : 'Degraded'
         } else {
-            // Fallback, falls aus irgendeinem Grund nur Timestamps kaputt sind
             status = isStale ? 'Degraded' : 'Up'
         }
     }
