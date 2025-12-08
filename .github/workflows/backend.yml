@@ -41,6 +41,9 @@ jobs:
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
 
+      - name: Format check
+        run: npm run format:check
+
       - name: Generate Prisma client for db package
         run: npm run prisma:generate --workspace @eve-toolkit/db
         env:
@@ -51,9 +54,6 @@ jobs:
 
       - name: Lint backend
         run: npm run lint:backend && npm run lint:packages
-
-      - name: Prettier check backend
-        run: npm run prettier:check --workspace backend
 
       - name: Tests backend
         run: npm run test --workspace backend --if-present
