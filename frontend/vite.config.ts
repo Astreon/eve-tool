@@ -32,7 +32,7 @@ const config = defineConfig({
         __APP_VERSION__: JSON.stringify(
             process.env.npm_package_version ?? '0.0.0',
         ),
-        __APP_BUILD_SHORT__: JSON.stringify(shortBuildId),
+        __APP_BUILD__: JSON.stringify(shortBuildId),
     },
 })
 
