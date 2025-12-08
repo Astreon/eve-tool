@@ -69,8 +69,8 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/eve-tool-backend
-      IMAGE_WORKER: ghcr.io/${{ github.repository_owner }}/eve-tool-worker
+      IMAGE_BACKEND: ghcr.io/astreon/eve-tool-backend
+      IMAGE_WORKER: ghcr.io/astreon/eve-tool-worker
 
     steps:
       - name: Check out repo

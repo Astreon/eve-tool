@@ -1,6 +1,6 @@
 {
     "name": "eve-tool-backend",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Backend for Eve Tool",
     "type": "module",
     "main": "server.js",
