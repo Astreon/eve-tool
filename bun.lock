@@ -11,7 +11,7 @@
     },
     "backend": {
       "name": "eve-tool-backend",
-      "version": "0.0.2",
+      "version": "0.0.4",
       "dependencies": {
         "@eve-toolkit/db": "0.0.1",
         "@prisma/adapter-pg": "^7.0.1",
@@ -20,7 +20,6 @@
         "cors": "^2.8.5",
         "dotenv": "^17.2.3",
         "express": "^5.1.0",
-        "extract-zip": "^2.0.1",
         "ioredis": "^5.8.2",
         "pg": "^8.16.3",
         "pino": "^10.1.0",
@@ -30,7 +29,6 @@
         "@eslint/js": "^9.38.0",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.4",
-        "@types/extract-zip": "^2.0.0",
         "@types/node": "^24.9.1",
         "@types/pg": "^8.15.6",
         "@types/pino": "^7.0.4",
@@ -51,7 +49,7 @@
     },
     "frontend": {
       "name": "eve-tool-frontend",
-      "version": "0.0.2",
+      "version": "0.0.3",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
@@ -178,6 +176,10 @@
       "dependencies": {
         "@eve-toolkit/db": "0.0.1",
         "@eve-toolkit/logger": "0.0.1",
+        "extract-zip": "^2.0.1",
+      },
+      "devDependencies": {
+        "@types/extract-zip": "^2.0.0",
       },
     },
     "worker": {

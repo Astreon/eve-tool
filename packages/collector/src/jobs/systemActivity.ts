@@ -28,8 +28,15 @@ export async function systemActivity(
 
     const bucket = getCurrentHourBucket()
     const snapshot = await getSystemActivitySnapshot()
-    const rows = Array.from(snapshot.data.values())
 
+    if (snapshot.source === 'cache') {
+        logger.info(
+            '⏩ System activity unchanged (ETag/cache) – skipping DB writes for this bucket.',
+        )
+        return
+    }
+
+    const rows = Array.from(snapshot.data.values())
     logger.info(`Collector received ${rows.length} system activity entries`)
 
     if (dryRun) {

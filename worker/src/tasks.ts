@@ -28,7 +28,7 @@ export const WORKER_TASKS: WorkerTask[] = [
     },
     {
         id: 'systemActivity',
-        cron: '15 * * * *',
+        cron: '*/5 * * * *',
         description:
             'Collect system activity snapshot from ESI every hour at 15th minute',
         run: async () => {
