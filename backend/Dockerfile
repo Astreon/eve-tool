@@ -10,6 +10,7 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/package.json
 COPY packages/db/package.json packages/db/package.json
 COPY packages/logger/package.json packages/logger/package.json
+COPY packages/sde/package.json packages/sde/package.json
 
 RUN npm ci
 
