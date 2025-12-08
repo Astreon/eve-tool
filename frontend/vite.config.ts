@@ -6,6 +6,14 @@ import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
+const fullBuildId =
+    process.env.VERCEL_GIT_COMMIT_SHA ??
+    process.env.VERCEL_BUILD_ID ??
+    process.env.GITHUB_SHA ??
+    'local'
+
+const shortBuildId = fullBuildId.slice(0, 7)
+
 const config = defineConfig({
     server: {
         port: 3005,
@@ -24,12 +32,7 @@ const config = defineConfig({
         __APP_VERSION__: JSON.stringify(
             process.env.npm_package_version ?? '0.0.0',
         ),
-        __APP_BUILD__: JSON.stringify(
-            process.env.VERCEL_GIT_COMMIT_SHA ??
-                process.env.VERCEL_BUILD_ID ??
-                process.env.GITHUB_SHA ??
-                'local',
-        ).slice(0, 7),
+        __APP_BUILD_SHORT__: JSON.stringify(shortBuildId),
     },
 })
 

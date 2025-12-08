@@ -11,7 +11,7 @@ generated/
 
 # Build output
 dist/
-.output+
+.output
 routeTree.gen.ts
 
 # OS generated files
