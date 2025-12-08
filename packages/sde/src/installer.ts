@@ -353,20 +353,23 @@ export async function runUpdate(options: SdeGlobalOptions): Promise<void> {
 
     if (versionMatches && !force) {
         logger.info(
-            '🆗 SDE already up to date and --force not set. Nothing to update.',
+            '🆗 SDE version in DB matches file version. Checking for new or changed datasets only.',
         )
-        return
+    } else if (!versionMatches) {
+        logger.info(
+            '⬆️ New SDE version detected – running UPDATE pipeline (import + calculate)…',
+        )
+    } else {
+        logger.info(
+            '⬆️ Running UPDATE pipeline with --force (import + calculate)…',
+        )
     }
 
     const reason = force
         ? 'SDE Update (forced by Administrator) in Progress'
-        : 'SDE Update in progress'
-
-    logger.info(
-        force
-            ? '⬆️ Running UPDATE pipeline with --force (import + calculate)…'
-            : '⬆️ New SDE version detected – running UPDATE pipeline (import + calculate)…',
-    )
+        : versionMatches
+          ? 'SDE Dataset import in progress'
+          : 'SDE Update in progress'
 
     if (dryRun) {
         logger.info(
@@ -409,6 +412,13 @@ export async function runUpdate(options: SdeGlobalOptions): Promise<void> {
             `📊 Import summary: ${stats.lineSuccess}/${stats.lineTotal} lines across ${stats.datasetSuccess}/${stats.datasetTotal} datasets (${stats.errorCount} errors)`,
         )
         logger.info(`✅ Import phase finished in ${importDur}s.`)
+
+        if (versionMatches && !force && stats.datasetTotal === 0) {
+            logger.info(
+                '🆗 No datasets changed or added since last import. Skipping calculations and DB version update.',
+            )
+            return
+        }
 
         // --- Calculations
         const calcStart = performance.now()
