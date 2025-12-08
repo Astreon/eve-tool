@@ -37,7 +37,7 @@ type SystemOverviewIndex = {
     id: number
     name: string
     securityStatus: number
-    securityClass: string | null //TODO: Implement Security Colorcoding from FIGMA -> EVE Online
+    securityClass: string | null
     region: {
         id: number
         name: string

@@ -3,8 +3,6 @@
  * Copyright (C) 2025 Astreon
  */
 
-// TODO: Run this every hour, at 30 minutes
-
 import { logger } from '../lib/logger.js'
 import { prisma } from '../lib/prisma.js'
 import { getSystemActivitySnapshot } from '../../../../backend/src/services/esi/index.js'
