@@ -3,13 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { AppError, NotFoundError, RateLimitedError } from '../types/appError.js'
 import { EsiErrorContext } from '../types/axios.types.js'
 
 export function toEsiAppError(e: unknown, ctx: EsiErrorContext = {}): AppError {
     if (axios.isAxiosError(e)) {
-        const err = e as AxiosError
+        const err = e
 
         const status = err.response?.status ?? 502
         const headers = (err.response?.headers ?? {}) as Record<string, unknown>

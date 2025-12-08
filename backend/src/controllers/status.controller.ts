@@ -214,29 +214,44 @@ async function fetchWorkerTaskStatus(
     const runCount = hash.runCount ? Number(hash.runCount) : 0
     const errorCount = hash.errorCount ? Number(hash.errorCount) : 0
 
-    let isStale = true
     const thresholdMs = WORKER_STALE_THRESHOLDS_MS[taskId]
 
-    if (lastSuccessAt) {
-        const lastSuccessTime = Date.parse(lastSuccessAt)
-        if (Number.isFinite(lastSuccessTime)) {
-            const diff = now - lastSuccessTime
-            isStale = diff > thresholdMs
-        }
+    const lastSuccessTime = lastSuccessAt ? Date.parse(lastSuccessAt) : NaN
+    const lastErrorTime = lastErrorAt ? Date.parse(lastErrorAt) : NaN
+
+    let referenceTime: number | null = null
+    if (Number.isFinite(lastSuccessTime)) {
+        referenceTime = lastSuccessTime
+    }
+    if (!referenceTime && Number.isFinite(lastErrorTime)) {
+        referenceTime = lastErrorTime
+    }
+
+    let isStale = true
+    if (referenceTime !== null) {
+        const diff = now - referenceTime
+        isStale = diff > thresholdMs
     }
 
     let status: ServiceStatus = 'Unknown'
 
-    if (runCount === 0) {
+    if (runCount === 0 && !lastSuccessAt && !lastErrorAt) {
         status = 'Unknown'
-    } else if (isStale && errorCount > 0) {
-        status = 'Down'
-    } else if (errorCount > 0) {
-        status = 'Degraded'
-    } else if (isStale) {
-        status = 'Degraded'
     } else {
-        status = 'Up'
+        const hasSuccess = Number.isFinite(lastSuccessTime)
+        const hasError = Number.isFinite(lastErrorTime)
+
+        const successIsNewer =
+            hasSuccess && (!hasError || lastSuccessTime >= lastErrorTime)
+
+        if (successIsNewer) {
+            status = isStale ? 'Degraded' : 'Up'
+        } else if (hasError) {
+            status = isStale ? 'Down' : 'Degraded'
+        } else {
+            // Fallback, falls aus irgendeinem Grund nur Timestamps kaputt sind
+            status = isStale ? 'Degraded' : 'Up'
+        }
     }
 
     return {

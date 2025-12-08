@@ -2,3 +2,4 @@ node_modules
 .prisma
 .sde
 packages/sde/layouts/*.json
+.github/workflows

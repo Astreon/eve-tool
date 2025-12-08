@@ -12,6 +12,11 @@ COPY packages/db/package.json packages/db/package.json
 COPY packages/logger/package.json packages/logger/package.json
 COPY packages/sde/package.json packages/sde/package.json
 
+ARG APP_VERSION=0.0.0
+ARG APP_BUILD=local
+ENV APP_VERSION=${APP_VERSION}
+ENV APP_BUILD=${APP_BUILD}
+
 RUN npm ci
 
 COPY . .
