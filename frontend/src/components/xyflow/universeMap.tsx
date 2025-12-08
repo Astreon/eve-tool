@@ -308,7 +308,7 @@ export function UniverseMap({
     onRegionDoubleClick,
 }: {
     onRegionClick?: (regionId: number) => void
-    onRegionDoubleClick?: (regionId: number) => void
+    onRegionDoubleClick?: (regionId: number, regionName: string) => void
 }) {
     const {
         nodes,
@@ -393,7 +393,9 @@ export function UniverseMap({
                 onRegionClick?.(Number(node.id))
             }}
             onNodeDoubleClick={(_, node) => {
-                onRegionDoubleClick?.(Number(node.id))
+                const regionNode = node as RegionNode
+                const data = regionNode.data as RegionNodeData
+                onRegionDoubleClick?.(Number(node.id), data.label)
             }}
         >
             <Background />

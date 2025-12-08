@@ -237,7 +237,11 @@ export default function Search() {
                                                                     region.name,
                                                                 )
                                                             router.navigate({
-                                                                to: `/region/${slug}`,
+                                                                to: '/universe/region/$regionName',
+                                                                params: {
+                                                                    regionName:
+                                                                        slug,
+                                                                },
                                                             })
                                                         }
                                                     }}
@@ -270,7 +274,7 @@ export default function Search() {
                                                                     system.name,
                                                                 )
                                                             router.navigate({
-                                                                to: `/system/${slug}`,
+                                                                to: `/universe/system/${slug}`,
                                                             })
                                                         }
                                                     }}

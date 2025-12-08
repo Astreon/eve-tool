@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { UniverseMap } from '@/components/xyflow/universeMap.tsx'
 import { RegionMap } from '@/components/xyflow/regionMap.tsx'
@@ -17,6 +17,7 @@ import {
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { cn } from '@/lib/utils.ts'
 import { formatSecurity, getSecurityClassName } from '@/lib/security.ts'
+import { useRouter } from '@tanstack/react-router'
 
 type ViewMode = 'universe' | 'region'
 
@@ -100,6 +101,10 @@ type ApiError = {
 
 type ApiResponse<T> = ApiSuccess<T> | ApiError
 
+type UniverseToolProps = {
+    initialRegionId?: number
+}
+
 async function fetchSystemOverview(
     systemId: number,
 ): Promise<SystemOverviewApiResponse> {
@@ -118,7 +123,7 @@ async function fetchSystemOverview(
     return body.data
 }
 
-export function UniverseTool() {
+export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
     const [mode, setMode] = useState<ViewMode>('universe')
     const [activeRegionId, setActiveRegionId] = useState<number | null>(null)
     const [selectedRegionId, setSelectedRegionId] = useState<number | null>(
@@ -127,6 +132,17 @@ export function UniverseTool() {
     const [selectedSystem, setSelectedSystem] = useState<SelectedSystem | null>(
         null,
     )
+
+    const router = useRouter()
+
+    useEffect(() => {
+        if (initialRegionId != null) {
+            setMode('region')
+            setActiveRegionId(initialRegionId)
+            setSelectedRegionId(initialRegionId)
+            setSelectedSystem(null)
+        }
+    }, [initialRegionId])
 
     const systemOverviewQuery = useQuery({
         queryKey: ['system-overview', selectedSystem?.id],
@@ -237,11 +253,19 @@ export function UniverseTool() {
                             setSelectedRegionId(id)
                             setSelectedSystem(null)
                         }}
-                        onRegionDoubleClick={(id) => {
+                        onRegionDoubleClick={(id, name) => {
                             setActiveRegionId(id)
                             setSelectedRegionId(id)
                             setSelectedSystem(null)
                             setMode('region')
+
+                            if (name) {
+                                const slug = encodeURIComponent(name)
+                                router.navigate({
+                                    to: '/universe/region/$regionName',
+                                    params: { regionName: slug },
+                                })
+                            }
                         }}
                     />
                 )}
@@ -252,6 +276,10 @@ export function UniverseTool() {
                         onBack={() => {
                             setMode('universe')
                             setSelectedSystem(null)
+                            setSelectedRegionId(null)
+                            setActiveRegionId(null)
+
+                            router.navigate({ to: '/universe' })
                         }}
                         onSystemSelect={(system) => {
                             setSelectedSystem({
@@ -562,8 +590,8 @@ export function UniverseTool() {
                                                         accessibilityLayer
                                                         data={chartData}
                                                         margin={{
-                                                            left: 12,
-                                                            right: 12,
+                                                            top: 8,
+                                                            bottom: 4,
                                                         }}
                                                     >
                                                         <CartesianGrid
@@ -571,13 +599,17 @@ export function UniverseTool() {
                                                         />
                                                         <YAxis
                                                             orientation="right"
-                                                            width={30}
+                                                            width={36}
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={6}
                                                             tickFormatter={
                                                                 formatYAxisTick
                                                             }
+                                                            allowDecimals={
+                                                                false
+                                                            }
+                                                            tickCount={5}
                                                         />
                                                         <XAxis
                                                             dataKey="hour"
@@ -641,8 +673,8 @@ export function UniverseTool() {
                                                         accessibilityLayer
                                                         data={chartData}
                                                         margin={{
-                                                            left: 12,
-                                                            right: 12,
+                                                            top: 8,
+                                                            bottom: 4,
                                                         }}
                                                     >
                                                         <CartesianGrid
@@ -650,13 +682,17 @@ export function UniverseTool() {
                                                         />
                                                         <YAxis
                                                             orientation="right"
-                                                            width={30}
+                                                            width={36}
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={6}
                                                             tickFormatter={
                                                                 formatYAxisTick
                                                             }
+                                                            allowDecimals={
+                                                                false
+                                                            }
+                                                            tickCount={5}
                                                         />
                                                         <XAxis
                                                             dataKey="hour"
