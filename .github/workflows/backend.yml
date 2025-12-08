@@ -134,6 +134,7 @@ jobs:
           passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
+            echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u astreon --password-stdin
             cd ~/server
             docker compose pull backend worker
             docker compose run --rm backend npx prisma migrate deploy
