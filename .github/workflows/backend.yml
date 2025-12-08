@@ -141,4 +141,5 @@ jobs:
             cd ~/server
             docker compose pull backend worker
             docker compose run --rm backend npx prisma migrate deploy
+            docker compose run --rm backend sh -lc 'cd /app && npm run sde:update && npm run sde:layout:import'
             docker compose up -d backend worker
