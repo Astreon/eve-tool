@@ -5,8 +5,19 @@
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import type { Edge as FlowEdge, Node as FlowNode, NodeChange } from '@xyflow/react'
-import { Background, Handle, NodeProps, Position, ReactFlow, applyNodeChanges } from '@xyflow/react'
+import type {
+    Edge as FlowEdge,
+    Node as FlowNode,
+    NodeChange,
+} from '@xyflow/react'
+import {
+    Background,
+    Handle,
+    NodeProps,
+    Position,
+    ReactFlow,
+    applyNodeChanges,
+} from '@xyflow/react'
 import { ADMIN_ID, API_BASE } from '@/lib/env'
 import { useAuth } from '@/components/auth/auth-provider'
 import '@xyflow/react/dist/style.css'
@@ -303,7 +314,8 @@ export function RegionMap({
     }, [canEditLayout, editMode])
 
     const layoutMutation = useMutation({
-        mutationFn: (vars: UpdateRegionLayoutPayload) => updateRegionLayoutApi(regionId, vars),
+        mutationFn: (vars: UpdateRegionLayoutPayload) =>
+            updateRegionLayoutApi(regionId, vars),
         retry: false,
         /*onSuccess: () => {
             queryClient.invalidateQueries({
@@ -355,30 +367,68 @@ export function RegionMap({
         return coords
     }
 
-    const buildNodesFromData = useCallback((d: RegionMapApiResponse | undefined): SystemNode[] => {
-        if (!d || d.systems.length === 0) return []
+    const buildNodesFromData = useCallback(
+        (d: RegionMapApiResponse | undefined): SystemNode[] => {
+            if (!d || d.systems.length === 0) return []
 
-        const systemsWithLayout = d.systems.filter((s) => s.layoutX != null && s.layoutY != null)
-        const hasAnyLayout = systemsWithLayout.length > 0
+            const systemsWithLayout = d.systems.filter(
+                (s) => s.layoutX != null && s.layoutY != null,
+            )
+            const hasAnyLayout = systemsWithLayout.length > 0
 
-        if (hasAnyLayout) {
-            let fallbackIndex = 0
-            const fallbackGapX = 120
-            const fallbackGapY = 80
+            if (hasAnyLayout) {
+                let fallbackIndex = 0
+                const fallbackGapX = 120
+                const fallbackGapY = 80
 
-            return d.systems.map((s) => {
-                let x = s.layoutX ?? null
-                let y = s.layoutY ?? null
+                return d.systems.map((s) => {
+                    let x = s.layoutX ?? null
+                    let y = s.layoutY ?? null
 
-                if (x == null || y == null) {
-                    const col = fallbackIndex % 10
-                    const row = Math.floor(fallbackIndex / 10)
-                    x = col * fallbackGapX
-                    y = row * fallbackGapY
-                    fallbackIndex++
-                }
+                    if (x == null || y == null) {
+                        const col = fallbackIndex % 10
+                        const row = Math.floor(fallbackIndex / 10)
+                        x = col * fallbackGapX
+                        y = row * fallbackGapY
+                        fallbackIndex++
+                    }
 
-                const subLabel = s.isForeign ? s.regionName : `C${s.constellationId}`
+                    const subLabel = s.isForeign
+                        ? s.regionName
+                        : `C${s.constellationId}`
+
+                    return {
+                        id: s.id.toString(),
+                        position: { x, y },
+                        basePosition: { x, y },
+                        type: 'system',
+                        data: {
+                            label: s.name,
+                            subLabel,
+                            isForeign: s.isForeign,
+                        },
+                        style: {
+                            width: 75,
+                            height: 30,
+                            borderRadius: '0.25rem',
+                            border: '1px solid rgba(0,0,0,0.2)',
+                            padding: 0,
+                            backgroundColor: 'var(--background)',
+                        },
+                    }
+                })
+            }
+
+            const projected = computeRegionProjection(d.systems)
+
+            const baseNodes: SystemNode[] = d.systems.map((s) => {
+                const proj = projected.get(s.id)!
+                const x = proj.x
+                const y = proj.y
+
+                const subLabel = s.isForeign
+                    ? s.regionName
+                    : `C${s.constellationId}`
 
                 return {
                     id: s.id.toString(),
@@ -391,8 +441,6 @@ export function RegionMap({
                         isForeign: s.isForeign,
                     },
                     style: {
-                        width: 75,
-                        height: 30,
                         borderRadius: '0.25rem',
                         border: '1px solid rgba(0,0,0,0.2)',
                         padding: 0,
@@ -400,38 +448,11 @@ export function RegionMap({
                     },
                 }
             })
-        }
 
-        const projected = computeRegionProjection(d.systems)
-
-        const baseNodes: SystemNode[] = d.systems.map((s) => {
-            const proj = projected.get(s.id)!
-            const x = proj.x
-            const y = proj.y
-
-            const subLabel = s.isForeign ? s.regionName : `C${s.constellationId}`
-
-            return {
-                id: s.id.toString(),
-                position: { x, y },
-                basePosition: { x, y },
-                type: 'system',
-                data: {
-                    label: s.name,
-                    subLabel,
-                    isForeign: s.isForeign,
-                },
-                style: {
-                    borderRadius: '0.25rem',
-                    border: '1px solid rgba(0,0,0,0.2)',
-                    padding: 0,
-                    backgroundColor: 'var(--background)',
-                },
-            }
-        })
-
-        return relaxLayout(baseNodes)
-    }, [])
+            return relaxLayout(baseNodes)
+        },
+        [],
+    )
 
     useEffect(() => {
         if (!data) {
@@ -481,7 +502,9 @@ export function RegionMap({
                 if (!editMode || !canEditLayout) return next
 
                 const movedIds = new Set(
-                    changes.filter((c) => c.type === 'position').map((c) => c.id),
+                    changes
+                        .filter((c) => c.type === 'position')
+                        .map((c) => c.id),
                 )
 
                 if (movedIds.size === 0) return next
@@ -489,10 +512,15 @@ export function RegionMap({
                 next = next.map((n) => {
                     if (!movedIds.has(n.id)) return n
 
-                    const snappedX = Math.round(n.position.x / SNAP_STEP) * SNAP_STEP
-                    const snappedY = Math.round(n.position.y / SNAP_STEP) * SNAP_STEP
+                    const snappedX =
+                        Math.round(n.position.x / SNAP_STEP) * SNAP_STEP
+                    const snappedY =
+                        Math.round(n.position.y / SNAP_STEP) * SNAP_STEP
 
-                    if (snappedX === n.position.x && snappedY === n.position.y) {
+                    if (
+                        snappedX === n.position.x &&
+                        snappedY === n.position.y
+                    ) {
                         return n
                     }
 
@@ -575,7 +603,9 @@ export function RegionMap({
                 <div className="flex flex-col">
                     <span className="font-semibold">{data?.region.name}</span>
                     {data?.region.faction && (
-                        <span className="text-muted-foreground">{data.region.faction.name}</span>
+                        <span className="text-muted-foreground">
+                            {data.region.faction.name}
+                        </span>
                     )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -589,7 +619,9 @@ export function RegionMap({
                                     : 'text-muted-foreground hover:bg-accent'
                             }`}
                         >
-                            {editMode ? 'Editing... (drag to save)' : 'Edit layout'}
+                            {editMode
+                                ? 'Editing... (drag to save)'
+                                : 'Edit layout'}
                         </button>
                     )}
                     {onBack && (
@@ -631,7 +663,9 @@ export function RegionMap({
                     onNodeClick={(_, node) => {
                         if (!data) return
                         if (editMode && canEditLayout) return
-                        const sys = data.systems.find((s) => s.id === Number(node.id))
+                        const sys = data.systems.find(
+                            (s) => s.id === Number(node.id),
+                        )
                         if (sys && onSystemSelect) {
                             onSystemSelect(sys)
                         }

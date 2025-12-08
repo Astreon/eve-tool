@@ -30,7 +30,9 @@ export function NavBug() {
                                 target="_blank"
                             >
                                 <BugIcon className="text-red-500" />
-                                <span className="text-red-400">Report a Bug</span>
+                                <span className="text-red-400">
+                                    Report a Bug
+                                </span>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

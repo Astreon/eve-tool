@@ -3,7 +3,7 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { Region } from '../../generated/client.js'
+import { Region } from '@eve-toolkit/db'
 
 export type RegionWithRelations = Region & {
     faction: { name: string }

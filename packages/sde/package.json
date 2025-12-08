@@ -1,0 +1,30 @@
+{
+    "name": "@eve-toolkit/sde",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "type-check": "tsc -p tsconfig.json",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix .",
+        "db:build": "npm run prisma:generate --workspace @eve-toolkit/db && npm run build --workspace @eve-toolkit/db",
+        "sde:install": "npx tsx --env-file ../../backend/.env src/cli/sde.ts install",
+        "sde:import": "npx tsx --env-file ../../backend/.env src/cli/sde.ts import",
+        "sde:calculate": "npx tsx --env-file ../../backend/.env src/cli/sde.ts calculate",
+        "sde:update": "npx tsx --env-file ../../backend/.env src/cli/sde.ts update",
+        "sde:download": "npx tsx --env-file ../../backend/.env src/cli/sde.ts download",
+        "layout:export": "tsx --env-file ../../backend/.env src/cli/layout.ts export",
+        "layout:import": "tsx --env-file ../../backend/.env src/cli/layout.ts import"
+    },
+    "dependencies": {
+        "@eve-toolkit/db": "0.0.1",
+        "@eve-toolkit/logger": "0.0.1",
+        "extract-zip": "^2.0.1"
+    },
+    "devDependencies": {
+        "@types/extract-zip": "^2.0.0"
+    }
+}

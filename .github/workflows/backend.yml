@@ -1,76 +1,140 @@
 name: Backend CI
 
 on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "backend/**"
+      - "worker/**"
+      - "packages/**"
+      - "backend/Dockerfile"
+      - "worker/Dockerfile"
+      - "package.json"
+      - "package-lock.json"
   pull_request:
     branches:
       - main
     paths:
-      - 'backend/**'
-      - 'backend.yml'
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'backend/**'
-      - 'backend.yml'
+      - "backend/**"
+      - "worker/**"
+      - "packages/**"
+      - ".github/workflows/deploy-backend-worker.yml"
 
 jobs:
-  backend-checks:
-    name: Checks
+  quality:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: backend
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 22
+      - name: Use Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build db package
+        run: npm run db:build
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
+
+      - name: Type check backend
+        run: npm run type-check:backend && npm run type-check:packages
+
+      - name: Lint backend
+        run: npm run lint:backend && npm run lint:packages
+
+      - name: Tests backend
+        run: npm run test --workspace backend --if-present
+
+      - name: Type check worker
+        run: npm run type-check --workspace @eve-toolkit/worker
+
+      - name: Lint worker
+        run: npm run lint --workspace @eve-toolkit/worker
+
+  build-and-push:
+    needs: quality
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/eve-tool-backend
+      IMAGE_WORKER: ghcr.io/${{ github.repository_owner }}/eve-tool-worker
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
 
       - name: Set build metadata
+        working-directory: backend
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           echo "APP_BUILD=${{ github.run_number }}" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: npm ci
-        env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
-
-      - name: Type check
-        run: npm run type-check
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Prettier check
-        run: npm run prettier
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Upload backend artifact
-        if: >
-          (github.event_name == 'pull_request' && github.base_ref == 'main') ||
-          (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        uses: actions/upload-artifact@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          name: backend-app
-          path: |
-            backend/dist
-            backend/package.json
-            backend/package-lock.json
-            backend/prisma.config.ts
-            backend/prisma
-            backend/sde
-            backend/src/generated
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_BACKEND }}:latest
+            ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
+          build-args: |
+            APP_VERSION=${{ env.APP_VERSION }}
+            APP_BUILD=${{ env.APP_BUILD }}
+
+      - name: Build & push worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: worker/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_WORKER }}:latest
+            ${{ env.IMAGE_WORKER }}:${{ github.sha }}
+          build-args: |
+            APP_VERSION=${{ env.APP_VERSION }}
+            APP_BUILD=${{ env.APP_BUILD }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: SSH into server and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ~/server
+            docker compose pull backend worker
+            docker compose run --rm backend npx prisma migrate deploy
+            docker compose up -d backend worker

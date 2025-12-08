@@ -64,30 +64,30 @@ jobs:
         run: |
           cat << 'EOF' > loader.cjs
           /* eslint-disable no-global-assign, no-undef */
-    
+          
           const OriginalURL = URL
-    
+          
           function hasScheme(str) {
             return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(str)
           }
-    
+          
           function SafeURL(input, base) {
             if (!(this instanceof SafeURL)) {
               return new SafeURL(input, base)
             }
-    
+          
             if (typeof input === 'string' && !hasScheme(input)) {
               return new OriginalURL('http://localhost' + input, base)
             }
-    
+          
             return new OriginalURL(input, base)
           }
-    
+          
           SafeURL.prototype = OriginalURL.prototype
           Object.setPrototypeOf(SafeURL, OriginalURL)
-    
+          
           global.URL = SafeURL
-    
+          
           ;(async () => {
             try {
               await import('./.output/server/index.mjs')

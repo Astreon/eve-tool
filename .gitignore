@@ -1,1 +1,21 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Prisma client
+generated/
+
+# Build output
+dist/
+.output+
+routeTree.gen.ts
+
+# OS generated files
+.DS_Store
+
+# SDE downloaded files
 .sde/

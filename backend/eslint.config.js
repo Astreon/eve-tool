@@ -1,8 +1,3 @@
-/*
- * SPDX-License-Identifier: CC-BY-NC-SA-4.0
- * Copyright (C) 2025 Astreon
- */
-
 // @ts-check
 // noinspection JSCheckFunctionSignatures,SpellCheckingInspection
 
@@ -11,15 +6,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
     {
-        ignores: [
-            'dist/**',
-            'node_modules/**',
-            'eslint.config.js',
-            'sde/**',
-            'prisma/**',
-            'prisma.config.ts',
-            'tests/**',
-        ],
+        ignores: ['dist/**', 'node_modules/**', 'eslint.config.js', 'tests/**'],
     },
 
     eslint.configs.recommended,
@@ -27,6 +14,7 @@ export default tseslint.config(
     ...tseslint.configs.stylisticTypeChecked,
 
     {
+        files: ['src/**/*.ts'],
         languageOptions: {
             parserOptions: {
                 project: './tsconfig.json',

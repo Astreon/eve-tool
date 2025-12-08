@@ -24,7 +24,7 @@ export const getCharacterInfo = async (
             `/characters/${characterId}/`,
             {
                 headers: buildConditionalHeaders({ etag }),
-                validateStatus: (s) => s === 200 || s === 304,
+                validateStatus: (s: number) => s === 200 || s === 304,
             },
         )
 

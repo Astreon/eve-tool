@@ -11,8 +11,7 @@
         "routes:gen": "tsr generate",
         "type-check": "tsc --noEmit",
         "lint": "eslint .",
-        "lint:fix": "eslint --fix .",
-        "prettier": "prettier --check ."
+        "lint:fix": "eslint --fix ."
     },
     "keywords": [],
     "author": "Astreon",

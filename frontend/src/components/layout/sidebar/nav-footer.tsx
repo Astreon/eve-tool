@@ -3,7 +3,13 @@
  * Copyright (C) 2025 Astreon
  */
 
-import { APP_BUILD, APP_COPYRIGHT, APP_LICENCE, APP_NAME, APP_VERSION } from '@/lib/copyright.ts'
+import {
+    APP_BUILD,
+    APP_COPYRIGHT,
+    APP_LICENCE,
+    APP_NAME,
+    APP_VERSION,
+} from '@/lib/copyright.ts'
 
 export function NavFooter() {
     return (

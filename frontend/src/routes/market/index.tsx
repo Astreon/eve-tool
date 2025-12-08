@@ -1,5 +1,16 @@
+/*
+ * SPDX-License-Identifier: CC-BY-NC-SA-4.0
+ * Copyright (C) 2025 Astreon
+ */
+
 import { createFileRoute } from '@tanstack/react-router'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card.tsx'
 import { AlertCircleIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/market/')({
@@ -36,8 +47,8 @@ function MarketPage() {
                             <h1 className="text-xl">Market Browser</h1>
                         </CardTitle>
                         <CardDescription>
-                            A wholesome market browser for EVE Online, will be created in the
-                            future.
+                            A wholesome market browser for EVE Online, will be
+                            created in the future.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="border-t pt-4">

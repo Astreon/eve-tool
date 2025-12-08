@@ -12,4 +12,6 @@ const FALLBACK_BUILD = 'local'
 
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? FALLBACK_VERSION
 export const APP_BUILD =
-    import.meta.env.VERCEL_GIT_PULL_REQUEST_ID ?? import.meta.env.VITE_APP_BUILD ?? FALLBACK_BUILD
+    import.meta.env.VERCEL_GIT_PULL_REQUEST_ID ??
+    import.meta.env.VITE_APP_BUILD ??
+    FALLBACK_BUILD

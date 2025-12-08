@@ -54,7 +54,14 @@ export default function Logo({ size = 30, className }: LogoProps) {
                 opacity=".12"
                 stroke="#1f2937"
             />
-            <circle cx="64" cy="64" r="42" fill="url(#b)" opacity=".45" filter="url(#c)" />
+            <circle
+                cx="64"
+                cy="64"
+                r="42"
+                fill="url(#b)"
+                opacity=".45"
+                filter="url(#c)"
+            />
             <path
                 fill="#020617"
                 stroke="url(#b)"
@@ -73,7 +80,15 @@ export default function Logo({ size = 30, className }: LogoProps) {
                 <rect x="-11" y="-2" width="22" height="4.5" rx="2" />
                 <rect x="-16" y="8" width="32" height="4.5" rx="2" />
             </g>
-            <rect x="8.5" y="8.5" width="111" height="111" rx="24" fill="none" stroke="#0b1120" />
+            <rect
+                x="8.5"
+                y="8.5"
+                width="111"
+                height="111"
+                rx="24"
+                fill="none"
+                stroke="#0b1120"
+            />
         </svg>
     )
 }

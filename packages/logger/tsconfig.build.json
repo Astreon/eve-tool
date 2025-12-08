@@ -1,0 +1,21 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "lib": [
+            "ES2024",
+            "ESNext.Array",
+            "ESNext.Collection",
+            "ESNext.Iterator"
+        ],
+        "noEmit": false,
+        "declaration": true,
+        "sourceMap": true,
+        "paths": {
+            "@eve-toolkit/logger": ["../logger/dist/index.d.ts"]
+        }
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["dist", "node_modules"]
+}

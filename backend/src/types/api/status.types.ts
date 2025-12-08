@@ -3,9 +3,8 @@
  * Copyright (C) 2025 Astreon
  */
 
-type ServiceStatus = 'Up' | 'Degraded' | 'Down' | 'Unknown'
-export type ApiStatus = 'Up' | 'Maintenance' | 'Down' | 'Unknown'
-
+export type ServiceStatus = 'Up' | 'Degraded' | 'Down' | 'Unknown'
+export type ApiStatus = 'Up' | 'Degraded' | 'Maintenance' | 'Down' | 'Unknown'
 export type EsiRouteHealth =
     | 'Unknown'
     | 'OK'
@@ -29,9 +28,27 @@ export interface EsiRouteStatus {
 }
 
 export interface EsiStatusRaw {
+    [key: string]: unknown
     players?: number
     server_version?: string
     start_time?: string
+}
+
+export interface WorkerTaskStatus {
+    id: string
+    lastSuccessAt?: string
+    lastErrorAt?: string
+    lastErrorMessage?: string
+    lastDurationMs?: number
+    runCount: number
+    errorCount: number
+    status: ServiceStatus
+    isStale: boolean
+}
+
+export interface WorkerStatus {
+    overallStatus: ServiceStatus
+    tasks: WorkerTaskStatus[]
 }
 
 export interface StatusApiResponse {
@@ -44,6 +61,7 @@ export interface StatusApiResponse {
         global: EsiGlobalStatus
         routes: EsiRouteStatus[]
     }
+    worker?: WorkerStatus
     maintenance?: {
         isOn: boolean
         reason?: string

@@ -6,7 +6,13 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Edge as FlowEdge, Node as FlowNode } from '@xyflow/react'
-import { Background, Handle, NodeProps, Position, ReactFlow } from '@xyflow/react'
+import {
+    Background,
+    Handle,
+    NodeProps,
+    Position,
+    ReactFlow,
+} from '@xyflow/react'
 import { API_BASE } from '@/lib/env'
 import '@xyflow/react/dist/style.css'
 
@@ -208,7 +214,9 @@ function useRegionNodes() {
             const y = (p.y2d - minY) * scale
 
             const isNeutral = !p.factionName
-            const color = isNeutral ? '#ffffff' : FACTION_COLORS[p.factionName!] || '#888888'
+            const color = isNeutral
+                ? '#ffffff'
+                : FACTION_COLORS[p.factionName!] || '#888888'
 
             return {
                 id: p.id.toString(),
@@ -283,7 +291,9 @@ function RegionNodeComponent({ data }: NodeProps) {
                 {label}
             </div>
             {factionShort && (
-                <div className="mt-[1px] text-center text-[9px] opacity-80">{factionShort}</div>
+                <div className="mt-[1px] text-center text-[9px] opacity-80">
+                    {factionShort}
+                </div>
             )}
         </div>
     )

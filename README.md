@@ -1,4 +1,8 @@
 # EVE Tool
+
+[![Frontend CI](https://github.com/Astreon/eve-tool/actions/workflows/frontend.yml/badge.svg?branch=main)](https://github.com/Astreon/eve-tool/actions/workflows/frontend.yml)
+[![Backend CI](https://github.com/Astreon/eve-tool/actions/workflows/backend.yml/badge.svg)](https://github.com/Astreon/eve-tool/actions/workflows/backend.yml)
+
 ## Overview
 
 EVE Tool is split into two workspaces:
@@ -13,6 +17,7 @@ The backend exposes an Express server and a CLI for downloading, importing, and 
 ## Tech stack
 
 Backend
+
 - Language: TypeScript (ES modules)
 - Runtime: Node.js
 - Web: Express
@@ -22,13 +27,15 @@ Backend
 - Linting/Type checking: ESLint, TypeScript
 
 Frontend
+
 - Language: TypeScript
 - Framework/tooling: React, Vite
 - Routing/Data‑fetching: TanStack Router + TanStack Query
 - UI: Tailwind CSS, shadcn/ui, Radix UI
 
 Package manager
-- NPM is used in this repo 
+
+- NPM is used in this repo
 
 ---
 
@@ -47,56 +54,60 @@ Package manager
 Clone the repo and install dependencies for both workspaces.
 
 Backend
+
 1. Copy environment file and adjust values:
-   ```bash
-   cd backend
-   cp .env.example .env
-   # edit .env with your settings
-   ```
+    ```bash
+    cd backend
+    cp .env.example .env
+    # edit .env with your settings
+    ```
 2. Install packages:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 3. Push Prisma schema to your database (creates tables):
-   ```bash
-   npm run db:push
-   ```
+    ```bash
+    npm run db:push
+    ```
 4. (Optional but recommended) Preload SDE data:
-   ```bash
-   # Quick path: download, import core datasets, run calculations
-   npm run sde:install
-   # or run steps individually
-   npm run sde:download
-   npm run sde:import
-   npm run sde:calculate
-   ```
+    ```bash
+    # Quick path: download, import core datasets, run calculations
+    npm run sde:install
+    # or run steps individually
+    npm run sde:download
+    npm run sde:import
+    npm run sde:calculate
+    ```
 
 Frontend
+
 1. Install packages:
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+    ```bash
+    cd ../frontend
+    npm install
+    ```
 
 ---
 
 ## Running
 
 Development
+
 - Start backend (loads `.env`, watches TS):
-  ```bash
-  cd backend
-  npm run dev
-  # Server: http://localhost:3000 (configurable via PORT)
-  ```
+    ```bash
+    cd backend
+    npm run dev
+    # Server: http://localhost:3000 (configurable via PORT)
+    ```
 - Start frontend dev server:
-  ```bash
-  cd frontend
-  npm run dev
-  # Vite dev server: http://localhost:3005
-  ```
+    ```bash
+    cd frontend
+    npm run dev
+    # Vite dev server: http://localhost:3005
+    ```
 
 Production (local)
+
 ```bash
 cd backend
 npm run build
@@ -112,6 +123,7 @@ npm run build
 ## Scripts
 
 Backend (`backend/package.json`)
+
 - `dev` — Run Express server with tsx in watch mode loading `.env`.
 - `start` — Run compiled server: `node --env-file .env dist/server.js`.
 - `build` — TypeScript compile to `dist/`.
@@ -128,13 +140,15 @@ Backend (`backend/package.json`)
 - `sde:download` — Download the latest SDE archive only.
 
 SDE CLI usage (from `backend/sde/installer.ts`)
+
 - Commands: `install`, `import`, `calculate`, `update`, `download`, `help`
 - Global options: `--dry-run`, `--force`, `--datasets=<csv>`
 - Notes:
-  - `calculate` optionally accepts a subcommand for a specific calculation.
-  - Use `npm run sde:cli -- --help` for the latest usage and the list of dataset/calculation IDs.
+    - `calculate` optionally accepts a subcommand for a specific calculation.
+    - Use `npm run sde:cli -- --help` for the latest usage and the list of dataset/calculation IDs.
 
 Frontend (`frontend/package.json`)
+
 - `dev` — Start Vite dev server on port 3005.
 - `build` — Build production bundle.
 
@@ -143,35 +157,37 @@ Frontend (`frontend/package.json`)
 ## Environment variables
 
 Backend (`backend/.env`)
+
 - Server/runtime
-  - `PORT` — API port (default 3000)
-  - `NODE_ENV` — `development` | `production`
+    - `PORT` — API port (default 3000)
+    - `NODE_ENV` — `development` | `production`
 - ESI API
-  - `ESI_BASE_URL` — base URL, default `https://esi.evetech.net`
-  - `ESI_COMPATIBILITY_DATE` — default `2025-11-06`
-  - `ESI_ACCEPT_LANGUAGE` — IETF language tag, default `en`
-  - `ESI_FALLBACK_TTL_SECONDS` — default `86400`
+    - `ESI_BASE_URL` — base URL, default `https://esi.evetech.net`
+    - `ESI_COMPATIBILITY_DATE` — default `2025-11-06`
+    - `ESI_ACCEPT_LANGUAGE` — IETF language tag, default `en`
+    - `ESI_FALLBACK_TTL_SECONDS` — default `86400`
 - ESI SSO (required for OAuth flows)
-  - `ESI_SSO_CLIENT_ID` — REQUIRED
-  - `ESI_SSO_CLIENT_SECRET` — REQUIRED
-  - `ESI_SSO_REDIRECT_URI` — REQUIRED (must match EVE SSO app config)
-  - `ESI_SSO_SCOPES` — space/comma‑separated list (e.g. `publicData`)
+    - `ESI_SSO_CLIENT_ID` — REQUIRED
+    - `ESI_SSO_CLIENT_SECRET` — REQUIRED
+    - `ESI_SSO_REDIRECT_URI` — REQUIRED (must match EVE SSO app config)
+    - `ESI_SSO_SCOPES` — space/comma‑separated list (e.g. `publicData`)
 - ESI backoff & coordination
-  - `ESI_BACKOFF_SHARE_REDIS` — default `true`
-  - `ESI_BACKOFF_SOFT_REMAIN` — default `5`
-  - `ESI_BACKOFF_HARD_REMAIN` — default `1`
-  - `ESI_BACKOFF_KEY` — default `esi:cooldown-until`
-  - `ESI_BACKOFF_JITTER` — default `150`
-  - `ESI_BACKOFF_SKEW` — default `250`
+    - `ESI_BACKOFF_SHARE_REDIS` — default `true`
+    - `ESI_BACKOFF_SOFT_REMAIN` — default `5`
+    - `ESI_BACKOFF_HARD_REMAIN` — default `1`
+    - `ESI_BACKOFF_KEY` — default `esi:cooldown-until`
+    - `ESI_BACKOFF_JITTER` — default `150`
+    - `ESI_BACKOFF_SKEW` — default `250`
 - Redis
-  - `REDIS_HOST` — default `localhost`
-  - `REDIS_PORT` — default `6379`
-  - `REDIS_PASSWORD` — optional
-  - `CACHE_VERSION` — cache key version, default `v1`
+    - `REDIS_HOST` — default `localhost`
+    - `REDIS_PORT` — default `6379`
+    - `REDIS_PASSWORD` — optional
+    - `CACHE_VERSION` — cache key version, default `v1`
 - Database (Prisma)
-  - `DATABASE_URL` — REQUIRED, e.g. `postgres://user:pass@host:5432/db?schema=public`
+    - `DATABASE_URL` — REQUIRED, e.g. `postgres://user:pass@host:5432/db?schema=public`
 
 Frontend
+
 - TODO: Document any required environment variables once introduced.
 
 ---
@@ -179,17 +195,19 @@ Frontend
 ## Tests
 
 Backend
+
 - Run once:
-  ```bash
-  cd backend
-  npm test
-  ```
+    ```bash
+    cd backend
+    npm test
+    ```
 - Watch/UI mode:
-  ```bash
-  npm run test:watch
-  ```
+    ```bash
+    npm run test:watch
+    ```
 
 Frontend
+
 - TODO: Add and document frontend tests.
 
 ---

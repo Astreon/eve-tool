@@ -100,7 +100,9 @@ type ApiError = {
 
 type ApiResponse<T> = ApiSuccess<T> | ApiError
 
-async function fetchSystemOverview(systemId: number): Promise<SystemOverviewApiResponse> {
+async function fetchSystemOverview(
+    systemId: number,
+): Promise<SystemOverviewApiResponse> {
     const res = await fetch(`${API_BASE}/systems/${systemId}/overview`)
 
     if (!res.ok) {
@@ -119,8 +121,12 @@ async function fetchSystemOverview(systemId: number): Promise<SystemOverviewApiR
 export function UniverseTool() {
     const [mode, setMode] = useState<ViewMode>('universe')
     const [activeRegionId, setActiveRegionId] = useState<number | null>(null)
-    const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null)
-    const [selectedSystem, setSelectedSystem] = useState<SelectedSystem | null>(null)
+    const [selectedRegionId, setSelectedRegionId] = useState<number | null>(
+        null,
+    )
+    const [selectedSystem, setSelectedSystem] = useState<SelectedSystem | null>(
+        null,
+    )
 
     const systemOverviewQuery = useQuery({
         queryKey: ['system-overview', selectedSystem?.id],
@@ -223,7 +229,9 @@ export function UniverseTool() {
             <div className="border-border flex flex-col gap-3 rounded-lg border p-3 text-sm lg:max-h-full lg:overflow-y-auto">
                 <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                        {mode === 'universe' ? 'Universe overview' : 'Region details'}
+                        {mode === 'universe'
+                            ? 'Universe overview'
+                            : 'Region details'}
                     </div>
                 </div>
 
@@ -231,7 +239,8 @@ export function UniverseTool() {
                     <div className="space-y-2 text-xs">
                         {!selectedRegionId && (
                             <p className="text-muted-foreground">
-                                Click a region in the universe to highlight it in the info panel.
+                                Click a region in the universe to highlight it
+                                in the info panel.
                                 <br />
                                 Double-click to open the region map.
                             </p>
@@ -240,12 +249,16 @@ export function UniverseTool() {
                         {selectedRegionId && (
                             <div className="space-y-1">
                                 <div>
-                                    <span className="font-medium">Selected region:</span>{' '}
-                                    <span className="font-mono">{selectedRegionId}</span>
+                                    <span className="font-medium">
+                                        Selected region:
+                                    </span>{' '}
+                                    <span className="font-mono">
+                                        {selectedRegionId}
+                                    </span>
                                 </div>
                                 <p className="text-muted-foreground">
-                                    Double-click the region in the canvas to switch to the system
-                                    view.
+                                    Double-click the region in the canvas to
+                                    switch to the system view.
                                 </p>
                             </div>
                         )}
@@ -256,7 +269,10 @@ export function UniverseTool() {
                     <div className="space-y-3 text-xs">
                         <div>
                             <div className="font-medium">
-                                Region <span className="font-mono">{activeRegionId}</span>
+                                Region{' '}
+                                <span className="font-mono">
+                                    {activeRegionId}
+                                </span>
                             </div>
                             <p className="text-muted-foreground">
                                 You are in the system view of this region.
@@ -267,13 +283,20 @@ export function UniverseTool() {
                             <div className="space-y-3">
                                 {/* Selection header */}
                                 <div className="space-y-1">
-                                    <div className="font-medium">Selected system</div>
-                                    <div>
-                                        Name:{' '}
-                                        <span className="font-mono">{selectedSystem.name}</span>
+                                    <div className="font-medium">
+                                        Selected system
                                     </div>
                                     <div>
-                                        ID: <span className="font-mono">{selectedSystem.id}</span>
+                                        Name:{' '}
+                                        <span className="font-mono">
+                                            {selectedSystem.name}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        ID:{' '}
+                                        <span className="font-mono">
+                                            {selectedSystem.id}
+                                        </span>
                                     </div>
                                     <div>
                                         Constellation:{' '}
@@ -300,36 +323,50 @@ export function UniverseTool() {
                                     <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                                         {/* General */}
                                         <div className="bg-muted/40 space-y-1 rounded-md p-2">
-                                            <div className="font-medium">General</div>
+                                            <div className="font-medium">
+                                                General
+                                            </div>
                                             <div>
                                                 Region:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.system.region.name} (
-                                                    {systemOverviewQuery.data.system.region.id})
+                                                    {
+                                                        systemOverviewQuery.data
+                                                            .system.region.name
+                                                    }{' '}
+                                                    (
+                                                    {
+                                                        systemOverviewQuery.data
+                                                            .system.region.id
+                                                    }
+                                                    )
                                                 </span>
                                             </div>
                                             <div>
                                                 Constellation:{' '}
                                                 <span className="font-mono">
                                                     {
-                                                        systemOverviewQuery.data.system
+                                                        systemOverviewQuery.data
+                                                            .system
                                                             .constellation.name
                                                     }{' '}
                                                     (
                                                     {
-                                                        systemOverviewQuery.data.system
+                                                        systemOverviewQuery.data
+                                                            .system
                                                             .constellation.id
                                                     }
                                                     )
                                                 </span>
                                             </div>
-                                            {systemOverviewQuery.data.system.faction && (
+                                            {systemOverviewQuery.data.system
+                                                .faction && (
                                                 <div>
                                                     Faction:{' '}
                                                     <span className="font-mono">
                                                         {
-                                                            systemOverviewQuery.data.system.faction
-                                                                .name
+                                                            systemOverviewQuery
+                                                                .data.system
+                                                                .faction.name
                                                         }
                                                     </span>
                                                 </div>
@@ -340,22 +377,26 @@ export function UniverseTool() {
                                                     className={cn(
                                                         'eve-security-badge',
                                                         getSecurityClassName(
-                                                            systemOverviewQuery.data.system
+                                                            systemOverviewQuery
+                                                                .data.system
                                                                 .securityStatus,
                                                         ),
                                                     )}
                                                 >
                                                     {formatSecurity(
-                                                        systemOverviewQuery.data.system
+                                                        systemOverviewQuery.data
+                                                            .system
                                                             .securityStatus,
                                                     )}
                                                 </span>
-                                                {systemOverviewQuery.data.system.securityClass && (
+                                                {systemOverviewQuery.data.system
+                                                    .securityClass && (
                                                     <span className="font-mono">
                                                         {' '}
                                                         (
                                                         {
-                                                            systemOverviewQuery.data.system
+                                                            systemOverviewQuery
+                                                                .data.system
                                                                 .securityClass
                                                         }
                                                         )
@@ -365,31 +406,40 @@ export function UniverseTool() {
                                             <div>
                                                 Planets:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.system.planetsCount}
+                                                    {
+                                                        systemOverviewQuery.data
+                                                            .system.planetsCount
+                                                    }
                                                 </span>
                                             </div>
                                             <div>
                                                 Moons:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.system.moonsCount}
+                                                    {
+                                                        systemOverviewQuery.data
+                                                            .system.moonsCount
+                                                    }
                                                 </span>
                                             </div>
                                         </div>
 
                                         {/* Structs and star */}
                                         <div className="bg-muted/40 space-y-1 rounded-md p-2">
-                                            <div className="font-medium">Structure &amp; star</div>
+                                            <div className="font-medium">
+                                                Structure &amp; star
+                                            </div>
                                             <div>
                                                 Asteroid belts:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.system.beltsCount ??
-                                                        0}
+                                                    {systemOverviewQuery.data
+                                                        .system.beltsCount ?? 0}
                                                 </span>
                                             </div>
                                             <div>
                                                 NPC stations:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.system
+                                                    {systemOverviewQuery.data
+                                                        .system
                                                         .npcStationsCount ?? 0}
                                                 </span>
                                             </div>
@@ -397,7 +447,8 @@ export function UniverseTool() {
                                                 Star:{' '}
                                                 <span className="font-mono">
                                                     {
-                                                        systemOverviewQuery.data.system.star
+                                                        systemOverviewQuery.data
+                                                            .system.star
                                                             .spectralClass
                                                     }
                                                 </span>
@@ -406,7 +457,8 @@ export function UniverseTool() {
                                                 Temp.:{' '}
                                                 <span className="font-mono">
                                                     {
-                                                        systemOverviewQuery.data.system.star
+                                                        systemOverviewQuery.data
+                                                            .system.star
                                                             .temperature
                                                     }
                                                     K
@@ -415,16 +467,21 @@ export function UniverseTool() {
                                             <div>
                                                 Radius:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.system.star.radius}
+                                                    {
+                                                        systemOverviewQuery.data
+                                                            .system.star.radius
+                                                    }
                                                 </span>
                                             </div>
-                                            {systemOverviewQuery.data.system.star.typeName && (
+                                            {systemOverviewQuery.data.system
+                                                .star.typeName && (
                                                 <div>
                                                     Type:{' '}
                                                     <span className="font-mono">
                                                         {
-                                                            systemOverviewQuery.data.system.star
-                                                                .typeName
+                                                            systemOverviewQuery
+                                                                .data.system
+                                                                .star.typeName
                                                         }
                                                     </span>
                                                 </div>
@@ -433,36 +490,43 @@ export function UniverseTool() {
 
                                         {/* Activity (last hour / 24h) */}
                                         <div className="bg-muted/40 space-y-1 rounded-md p-2">
-                                            <div className="font-medium">Activity (last hour)</div>
+                                            <div className="font-medium">
+                                                Activity (last hour)
+                                            </div>
                                             <div>
                                                 Jumps:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.activity.jumps ?? '0'}
+                                                    {systemOverviewQuery.data
+                                                        .activity.jumps ?? '0'}
                                                 </span>
                                             </div>
                                             <div>
                                                 NPC Kills:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.activity.npcKills ??
+                                                    {systemOverviewQuery.data
+                                                        .activity.npcKills ??
                                                         '0'}
                                                 </span>
                                             </div>
                                             <div>
                                                 Ship Kills:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.activity.shipKills ??
+                                                    {systemOverviewQuery.data
+                                                        .activity.shipKills ??
                                                         '0'}
                                                 </span>
                                             </div>
                                             <div>
                                                 Pod Kills:{' '}
                                                 <span className="font-mono">
-                                                    {systemOverviewQuery.data.activity.podKills ??
+                                                    {systemOverviewQuery.data
+                                                        .activity.podKills ??
                                                         '0'}
                                                 </span>
                                             </div>
 
-                                            {systemOverviewQuery.data.activity.last24h && (
+                                            {systemOverviewQuery.data.activity
+                                                .last24h && (
                                                 <div className="mt-3 space-y-1">
                                                     <div className="font-medium">
                                                         Activity (last 24h)
@@ -471,8 +535,11 @@ export function UniverseTool() {
                                                         Jumps:{' '}
                                                         <span className="font-mono">
                                                             {
-                                                                systemOverviewQuery.data.activity
-                                                                    .last24h!.jumps
+                                                                systemOverviewQuery
+                                                                    .data
+                                                                    .activity
+                                                                    .last24h!
+                                                                    .jumps
                                                             }
                                                         </span>
                                                     </div>
@@ -480,8 +547,11 @@ export function UniverseTool() {
                                                         NPC Kills:{' '}
                                                         <span className="font-mono">
                                                             {
-                                                                systemOverviewQuery.data.activity
-                                                                    .last24h!.npcKills
+                                                                systemOverviewQuery
+                                                                    .data
+                                                                    .activity
+                                                                    .last24h!
+                                                                    .npcKills
                                                             }
                                                         </span>
                                                     </div>
@@ -489,8 +559,11 @@ export function UniverseTool() {
                                                         Ship Kills:{' '}
                                                         <span className="font-mono">
                                                             {
-                                                                systemOverviewQuery.data.activity
-                                                                    .last24h!.shipKills
+                                                                systemOverviewQuery
+                                                                    .data
+                                                                    .activity
+                                                                    .last24h!
+                                                                    .shipKills
                                                             }
                                                         </span>
                                                     </div>
@@ -498,8 +571,11 @@ export function UniverseTool() {
                                                         Pod Kills:{' '}
                                                         <span className="font-mono">
                                                             {
-                                                                systemOverviewQuery.data.activity
-                                                                    .last24h!.podKills
+                                                                systemOverviewQuery
+                                                                    .data
+                                                                    .activity
+                                                                    .last24h!
+                                                                    .podKills
                                                             }
                                                         </span>
                                                     </div>
@@ -520,24 +596,35 @@ export function UniverseTool() {
                                                     <LineChart
                                                         accessibilityLayer
                                                         data={chartData}
-                                                        margin={{ left: 12, right: 12 }}
+                                                        margin={{
+                                                            left: 12,
+                                                            right: 12,
+                                                        }}
                                                     >
-                                                        <CartesianGrid vertical={false} />
+                                                        <CartesianGrid
+                                                            vertical={false}
+                                                        />
                                                         <YAxis
                                                             orientation="right"
                                                             width={30}
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={6}
-                                                            tickFormatter={(v) => v.toString()}
+                                                            tickFormatter={(
+                                                                v,
+                                                            ) => v.toString()}
                                                         />
                                                         <XAxis
                                                             dataKey="hour"
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={8}
-                                                            tickFormatter={(value: number) =>
-                                                                value % 6 === 0 ? `${value}h` : ''
+                                                            tickFormatter={(
+                                                                value: number,
+                                                            ) =>
+                                                                value % 6 === 0
+                                                                    ? `${value}h`
+                                                                    : ''
                                                             }
                                                         />
                                                         <ChartTooltip
@@ -555,7 +642,9 @@ export function UniverseTool() {
                                                             stroke="var(--color-npcKills)"
                                                             strokeWidth={1}
                                                             dot={false}
-                                                            style={{ opacity: 0.6 }}
+                                                            style={{
+                                                                opacity: 0.6,
+                                                            }}
                                                         />
                                                         <Line
                                                             dataKey="shipKills"
@@ -568,7 +657,9 @@ export function UniverseTool() {
                                                             stroke="var(--color-podKills)"
                                                             strokeWidth={1}
                                                             dot={false}
-                                                            style={{ opacity: 0.6 }}
+                                                            style={{
+                                                                opacity: 0.6,
+                                                            }}
                                                         />
                                                     </LineChart>
                                                 </ChartContainer>
@@ -588,24 +679,35 @@ export function UniverseTool() {
                                                     <LineChart
                                                         accessibilityLayer
                                                         data={chartData}
-                                                        margin={{ left: 12, right: 12 }}
+                                                        margin={{
+                                                            left: 12,
+                                                            right: 12,
+                                                        }}
                                                     >
-                                                        <CartesianGrid vertical={false} />
+                                                        <CartesianGrid
+                                                            vertical={false}
+                                                        />
                                                         <YAxis
                                                             orientation="right"
                                                             width={30}
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={6}
-                                                            tickFormatter={(v) => v.toString()}
+                                                            tickFormatter={(
+                                                                v,
+                                                            ) => v.toString()}
                                                         />
                                                         <XAxis
                                                             dataKey="hour"
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={8}
-                                                            tickFormatter={(value: number) =>
-                                                                value % 6 === 0 ? `${value}h` : ''
+                                                            tickFormatter={(
+                                                                value: number,
+                                                            ) =>
+                                                                value % 6 === 0
+                                                                    ? `${value}h`
+                                                                    : ''
                                                             }
                                                         />
                                                         <ChartTooltip
@@ -623,7 +725,9 @@ export function UniverseTool() {
                                                             stroke="var(--color-jumps)"
                                                             strokeWidth={1.5}
                                                             dot={false}
-                                                            style={{ opacity: 0.8 }}
+                                                            style={{
+                                                                opacity: 0.8,
+                                                            }}
                                                         />
                                                     </LineChart>
                                                 </ChartContainer>
@@ -635,12 +739,22 @@ export function UniverseTool() {
                         ) : (
                             <div>
                                 <p className="text-muted-foreground">
-                                    Click a system in the canvas to show its details here.
+                                    Click a system in the canvas to show its
+                                    details here.
                                 </p>
                                 <ul>
-                                    <li>Black/white: connection within the same constellation</li>
-                                    <li>Red: connection to a system in another constellation</li>
-                                    <li>Purple: connection to a system in another region</li>
+                                    <li>
+                                        Black/white: connection within the same
+                                        constellation
+                                    </li>
+                                    <li>
+                                        Red: connection to a system in another
+                                        constellation
+                                    </li>
+                                    <li>
+                                        Purple: connection to a system in
+                                        another region
+                                    </li>
                                 </ul>
                             </div>
                         )}

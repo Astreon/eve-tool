@@ -34,11 +34,19 @@ const Notifications = () => {
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align={isMobile ? 'center' : 'end'} className="ms-4 w-80 p-0">
+            <DropdownMenuContent
+                align={isMobile ? 'center' : 'end'}
+                className="ms-4 w-80 p-0"
+            >
                 <DropdownMenuLabel className="bg-background dark:bg-muted sticky top-0 z-10 p-0">
                     <div className="flex justify-between border-b px-6 py-4">
                         <div className="font-medium">Notifications</div>
-                        <Button variant="link" className="h-auto p-0 text-xs" size="sm" asChild>
+                        <Button
+                            variant="link"
+                            className="h-auto p-0 text-xs"
+                            size="sm"
+                            asChild
+                        >
                             <Link to=".">View all</Link>
                         </Button>
                     </div>
@@ -54,7 +62,10 @@ const Notifications = () => {
                                 <div className="flex-none">
                                     <Avatar className="size-8">
                                         <AvatarImage src={``} />
-                                        <AvatarFallback> {item.title.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback>
+                                            {' '}
+                                            {item.title.charAt(0)}
+                                        </AvatarFallback>
                                     </Avatar>
                                 </div>
                                 <div className="flex flex-1 flex-col gap-1">
@@ -69,7 +80,10 @@ const Notifications = () => {
                                             <Button size="sm" variant="outline">
                                                 Accept
                                             </Button>
-                                            <Button size="sm" variant="destructive">
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                            >
                                                 Decline
                                             </Button>
                                         </div>

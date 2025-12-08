@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "target": "ES2023",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "lib": ["ES2023"],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "paths": {
+            "@eve-toolkit/sde": ["packages/sde/src/index.ts"],
+            "@eve-toolkit/collector": ["packages/collector/src/index.ts"],
+            "@eve-toolkit/logger": ["packages/logger/src/index.ts"]
+        }
+    }
+}
