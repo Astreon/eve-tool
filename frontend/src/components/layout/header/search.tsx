@@ -104,7 +104,7 @@ export default function Search() {
                     regions,
                     solar_systems: solarSystems,
                 })
-            } catch (err) {
+            } catch {
                 if (controller.signal.aborted) return
                 setUniverseResults(null)
             } finally {
