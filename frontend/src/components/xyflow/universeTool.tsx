@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/chart'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { cn } from '@/lib/utils.ts'
-import { getSecurityClassName, formatSecurity } from '@/lib/security.ts'
+import { formatSecurity, getSecurityClassName } from '@/lib/security.ts'
 
 type ViewMode = 'universe' | 'region'
 
@@ -137,15 +137,54 @@ export function UniverseTool() {
 
     const activity = systemOverviewQuery.data?.activity
 
-    const chartData =
-        activity?.timeline48h?.map((point, index) => ({
-            hour: index,
-            jumps: point.jumps,
-            npcKills: point.npcKills,
-            shipKills: point.shipKills,
-            podKills: point.podKills,
-            timestamp: point.timestamp,
-        })) ?? []
+    const MAX_POINTS = 48
+    const rawTimeline = activity?.timeline48h ?? []
+
+    const paddedTimeline =
+        rawTimeline.length >= MAX_POINTS
+            ? rawTimeline.slice(rawTimeline.length - MAX_POINTS)
+            : [
+                  ...Array.from(
+                      { length: MAX_POINTS - rawTimeline.length },
+                      () => ({
+                          jumps: 0,
+                          npcKills: 0,
+                          shipKills: 0,
+                          podKills: 0,
+                          timestamp: null as string | null,
+                      }),
+                  ),
+                  ...rawTimeline,
+              ]
+
+    const chartData = paddedTimeline.map((point, index) => ({
+        hour: index,
+        jumps: point.jumps ?? 0,
+        npcKills: point.npcKills ?? 0,
+        shipKills: point.shipKills ?? 0,
+        podKills: point.podKills ?? 0,
+        timestamp: point.timestamp ?? null,
+    }))
+
+    const maxHourIndex = chartData.length > 0 ? chartData.length - 1 : 0
+
+    const formatXAxisTick = (value: number) => {
+        const hoursAgo = maxHourIndex - value
+        if (hoursAgo < 0) return ''
+        return hoursAgo % 6 === 0 ? `${hoursAgo}h` : ''
+    }
+
+    const formatYAxisTick = (value: number) => {
+        const abs = Math.abs(value)
+        if (abs >= 1000) {
+            const v = value / 1000
+            const rounded = Math.round(v * 10) / 10
+            return Number.isInteger(rounded)
+                ? `${rounded.toFixed(0)}k`
+                : `${rounded.toFixed(1)}k`
+        }
+        return value.toString()
+    }
 
     const chartConfig = {
         jumps: {
@@ -610,21 +649,17 @@ export function UniverseTool() {
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={6}
-                                                            tickFormatter={(
-                                                                v,
-                                                            ) => v.toString()}
+                                                            tickFormatter={
+                                                                formatYAxisTick
+                                                            }
                                                         />
                                                         <XAxis
                                                             dataKey="hour"
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={8}
-                                                            tickFormatter={(
-                                                                value: number,
-                                                            ) =>
-                                                                value % 6 === 0
-                                                                    ? `${value}h`
-                                                                    : ''
+                                                            tickFormatter={
+                                                                formatXAxisTick
                                                             }
                                                         />
                                                         <ChartTooltip
@@ -693,21 +728,17 @@ export function UniverseTool() {
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={6}
-                                                            tickFormatter={(
-                                                                v,
-                                                            ) => v.toString()}
+                                                            tickFormatter={
+                                                                formatYAxisTick
+                                                            }
                                                         />
                                                         <XAxis
                                                             dataKey="hour"
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={8}
-                                                            tickFormatter={(
-                                                                value: number,
-                                                            ) =>
-                                                                value % 6 === 0
-                                                                    ? `${value}h`
-                                                                    : ''
+                                                            tickFormatter={
+                                                                formatXAxisTick
                                                             }
                                                         />
                                                         <ChartTooltip
