@@ -56,6 +56,16 @@ vi.mock('../src/lib/maintenance.js', () => ({
     getMaintenanceInfo: vi.fn(),
 }))
 
+vi.mock('../src/lib/redis.js', () => ({
+    redis: {
+        hgetall: vi.fn().mockResolvedValue({}),
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue('OK'),
+        del: vi.fn().mockResolvedValue(1),
+        ttl: vi.fn().mockResolvedValue(-1),
+    },
+}))
+
 import { getStatus } from '../src/controllers/status.controller.js'
 import { esiApi } from '../src/lib/axios.js'
 import { getMaintenanceInfo } from '../src/lib/maintenance.js'
