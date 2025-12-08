@@ -39,12 +39,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
 
       - name: Generate Prisma client for db package
         run: npm run prisma:generate --workspace @eve-toolkit/db
         env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
 
       - name: Type check backend
         run: npm run type-check:backend && npm run type-check:packages
