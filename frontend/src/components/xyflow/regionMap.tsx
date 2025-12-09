@@ -24,6 +24,8 @@ import '@xyflow/react/dist/style.css'
 
 const GRID = 25
 const SNAP_STEP = GRID
+const DEFAULT_LAYOUT_X = -100
+const DEFAULT_LAYOUT_Y = 50
 
 // --- API Types (from Backend)
 type RegionFactionApi = {
@@ -230,6 +232,11 @@ const systemNodeTypes = {
     system: SystemNodeComponent,
 }
 
+const snapPosition = (pos: { x: number; y: number }) => ({
+    x: Math.round(pos.x / SNAP_STEP) * SNAP_STEP,
+    y: Math.round(pos.y / SNAP_STEP) * SNAP_STEP,
+})
+
 // --- Main component
 export function RegionMap({
     regionId,
@@ -245,7 +252,6 @@ export function RegionMap({
     const canEditLayout = ADMIN_ID != null && session?.characterId === ADMIN_ID
 
     const [editMode, setEditMode] = useState(false)
-    //const queryClient = useQueryClient()
 
     useEffect(() => {
         if (!canEditLayout && editMode) {
@@ -257,11 +263,6 @@ export function RegionMap({
         mutationFn: (vars: UpdateRegionLayoutPayload) =>
             updateRegionLayoutApi(regionId, vars),
         retry: false,
-        /*onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['region-universe', regionId],
-            })
-        },*/
     })
 
     const [rfNodes, setRfNodes] = useState<SystemNode[]>([])
@@ -273,16 +274,24 @@ export function RegionMap({
         y: number
     } | null>(null)
 
-    const DEFAULT_LAYOUT_X = -100
-    const DEFAULT_LAYOUT_Y = 50
+    const systemsById = useMemo(() => {
+        const map = new Map<number, RegionSystemNodeApi>()
+        if (data) {
+            for (const s of data.systems) {
+                map.set(s.id, s)
+            }
+        }
+        return map
+    }, [data])
 
     const buildNodesFromData = useCallback(
         (d: RegionMapApiResponse | undefined): SystemNode[] => {
             if (!d || d.systems.length === 0) return []
 
             return d.systems.map((s) => {
-                const x = s.layoutX ?? DEFAULT_LAYOUT_X
-                const y = s.layoutY ?? DEFAULT_LAYOUT_Y
+                const rawX = s.layoutX ?? DEFAULT_LAYOUT_X
+                const rawY = s.layoutY ?? DEFAULT_LAYOUT_Y
+                const snapped = snapPosition({ x: rawX, y: rawY })
 
                 const subLabel = s.isForeign
                     ? s.regionName
@@ -290,8 +299,8 @@ export function RegionMap({
 
                 return {
                     id: s.id.toString(),
-                    position: { x, y },
-                    basePosition: { x, y },
+                    position: { x: snapped.x, y: snapped.y },
+                    basePosition: { x: snapped.x, y: snapped.y },
                     type: 'system',
                     data: {
                         label: s.name,
@@ -352,46 +361,11 @@ export function RegionMap({
             }))
     }, [data])
 
-    const snapPosition = (pos: { x: number; y: number }) => ({
-        x: Math.round(pos.x / SNAP_STEP) * SNAP_STEP,
-        y: Math.round(pos.y / SNAP_STEP) * SNAP_STEP,
-    })
-
-    const handleNodesChange = useCallback(
-        (changes: NodeChange[]) => {
-            setRfNodes((prevNodes) => {
-                const effectiveChanges =
-                    editMode && canEditLayout
-                        ? changes.map((c) =>
-                              c.type === 'position' && (c as any).position
-                                  ? {
-                                        ...c,
-                                        position: snapPosition(
-                                            (c as any).position,
-                                        ),
-                                    }
-                                  : c,
-                          )
-                        : changes
-
-                return applyNodeChanges(
-                    effectiveChanges,
-                    prevNodes,
-                ) as SystemNode[]
-            })
-        },
-        [editMode, canEditLayout],
-    )
-
-    const systemsById = useMemo(() => {
-        const map = new Map<number, RegionSystemNodeApi>()
-        if (data) {
-            for (const s of data.systems) {
-                map.set(s.id, s)
-            }
-        }
-        return map
-    }, [data])
+    const handleNodesChange = useCallback((changes: NodeChange[]) => {
+        setRfNodes(
+            (prevNodes) => applyNodeChanges(changes, prevNodes) as SystemNode[],
+        )
+    }, [])
 
     const handleNodeDrag = useCallback(
         (_: unknown, node: FlowNode) => {
@@ -399,14 +373,24 @@ export function RegionMap({
             if (!node.id) return
 
             const idNum = Number(node.id)
-            const snapped = snapPosition(node.position)
             const sys = systemsById.get(idNum)
+            const snapped = snapPosition(node.position)
 
-            setDragInfo({
-                id: idNum,
-                name: sys?.name ?? String(node.id),
-                x: snapped.x,
-                y: snapped.y,
+            setDragInfo((prev) => {
+                if (
+                    !prev ||
+                    prev.id !== idNum ||
+                    prev.x !== snapped.x ||
+                    prev.y !== snapped.y
+                ) {
+                    return {
+                        id: idNum,
+                        name: sys?.name ?? String(node.id),
+                        x: snapped.x,
+                        y: snapped.y,
+                    }
+                }
+                return prev
             })
         },
         [editMode, canEditLayout, systemsById],
@@ -417,10 +401,12 @@ export function RegionMap({
             if (!editMode || !canEditLayout) return
             if (!node.id) return
 
+            const snapped = snapPosition(node.position)
+
             layoutMutation.mutate({
                 systemId: Number(node.id),
-                x: node.position.x,
-                y: node.position.y,
+                x: snapped.x,
+                y: snapped.y,
             })
 
             setDragInfo(null)
@@ -527,7 +513,7 @@ export function RegionMap({
                     <Background gap={GRID} size={1} />
 
                     {editMode && dragInfo && (
-                        <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded-sm bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
+                        <div className="pointer-events-none absolute top-2 left-2 z-50 rounded-sm bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
                             <div className="font-medium">Position</div>
                             <div className="mt-[1px] tabular-nums">
                                 x: {dragInfo.x} · y: {dragInfo.y}
