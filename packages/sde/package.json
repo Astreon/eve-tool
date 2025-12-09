@@ -17,7 +17,9 @@
         "sde:update": "npx tsx --env-file ../../backend/.env src/cli/sde.ts update",
         "sde:download": "npx tsx --env-file ../../backend/.env src/cli/sde.ts download",
         "layout:export": "tsx --env-file ../../backend/.env src/cli/layout.ts export",
-        "layout:import": "tsx --env-file ../../backend/.env src/cli/layout.ts import"
+        "layout:import": "tsx --env-file ../../backend/.env src/cli/layout.ts import",
+        "sde:update:runtime": "npx tsx src/cli/sde.ts update",
+        "sde:layout:import:runtime": "npx tsx src/cli/sde.ts layout-import"
     },
     "dependencies": {
         "@eve-toolkit/db": "0.0.1",
