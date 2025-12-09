@@ -140,6 +140,6 @@ jobs:
             echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u astreon --password-stdin
             cd ~/server
             docker compose pull backend worker
-            docker compose run --rm backend npx prisma migrate deploy
-            docker compose run --rm backend sh -lc 'cd /app && npm run sde:update && npm run sde:layout:import'
+            docker compose run --rm backend sh -lc 'cd /app/backend && npx prisma migrate deploy'
+            docker compose run --rm backend sh -lc 'cd /app && npm run sde:update:runtime --workspace @eve-toolkit/sde && npm run sde:layout:import:runtime --workspace @eve-toolkit/sde'
             docker compose up -d backend worker

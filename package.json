@@ -35,7 +35,9 @@
         "sde:update": "npm run sde:update --workspace @eve-toolkit/sde",
         "sde:download": "npm run sde:download --workspace @eve-toolkit/sde",
         "sde:layout:export": "npm run layout:export --workspace @eve-toolkit/sde",
-        "sde:layout:import": "npm run layout:import --workspace @eve-toolkit/sde"
+        "sde:layout:import": "npm run layout:import --workspace @eve-toolkit/sde",
+        "sde:update:runtime": "npx tsx src/cli/sde.ts update",
+        "sde:layout:import:runtime": "npx tsx src/cli/sde.ts layout-import"
     },
     "devDependencies": {
         "@types/node-cron": "^3.0.11",
