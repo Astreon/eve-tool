@@ -460,97 +460,92 @@ export function RegionMap({
     const edges: FlowEdge[] = useMemo(() => {
         if (!data) return []
 
-        const nodeIdSet = new Set(rfNodes.map((n) => n.id))
-
-        return (
-            data.edges
-                .filter((e) => {
-                    const s = e.fromSystemId.toString()
-                    const t = e.toSystemId.toString()
-                    return nodeIdSet.has(s) && nodeIdSet.has(t)
-                })
-                .map((e) => ({
-                    id: `${e.fromSystemId}-${e.toSystemId}`,
-                    source: e.fromSystemId.toString(),
-                    target: e.toSystemId.toString(),
-                    type: 'straight',
-                    selectable: false,
-                    focused: false,
-                    interactionWidth: 0,
-                    animated: false,
-                    style: {
-                        stroke: getEdgeColor(e.borderType),
-                        strokeWidth: 1.2,
-                        opacity: 0.7,
-                        pointerEvents: 'none',
-                    },
-                })) ?? []
+        const nodeIdSet = new Set(
+            (data.systems ?? []).map((s) => s.id.toString()),
         )
-    }, [data, rfNodes])
+
+        return data.edges
+            .filter((e) => {
+                const s = e.fromSystemId.toString()
+                const t = e.toSystemId.toString()
+                return nodeIdSet.has(s) && nodeIdSet.has(t)
+            })
+            .map((e) => ({
+                id: `${e.fromSystemId}-${e.toSystemId}`,
+                source: e.fromSystemId.toString(),
+                target: e.toSystemId.toString(),
+                type: 'straight',
+                selectable: false,
+                focused: false,
+                interactionWidth: 0,
+                animated: false,
+                style: {
+                    stroke: getEdgeColor(e.borderType),
+                    strokeWidth: 1.2,
+                    opacity: 0.7,
+                    pointerEvents: 'none',
+                },
+            }))
+    }, [data])
+
+    const snapPosition = (pos: { x: number; y: number }) => ({
+        x: Math.round(pos.x / SNAP_STEP) * SNAP_STEP,
+        y: Math.round(pos.y / SNAP_STEP) * SNAP_STEP,
+    })
 
     const handleNodesChange = useCallback(
         (changes: NodeChange[]) => {
             setRfNodes((prevNodes) => {
-                let next = applyNodeChanges(changes, prevNodes) as SystemNode[]
+                const effectiveChanges =
+                    editMode && canEditLayout
+                        ? changes.map((c) =>
+                              c.type === 'position' && (c as any).position
+                                  ? {
+                                        ...c,
+                                        position: snapPosition(
+                                            (c as any).position,
+                                        ),
+                                    }
+                                  : c,
+                          )
+                        : changes
 
-                if (!editMode || !canEditLayout) return next
-
-                const movedIds = new Set(
-                    changes
-                        .filter((c) => c.type === 'position')
-                        .map((c) => c.id),
-                )
-
-                if (movedIds.size === 0) return next
-
-                next = next.map((n) => {
-                    if (!movedIds.has(n.id)) return n
-
-                    const snappedX =
-                        Math.round(n.position.x / SNAP_STEP) * SNAP_STEP
-                    const snappedY =
-                        Math.round(n.position.y / SNAP_STEP) * SNAP_STEP
-
-                    if (
-                        snappedX === n.position.x &&
-                        snappedY === n.position.y
-                    ) {
-                        return n
-                    }
-
-                    return {
-                        ...n,
-                        position: { x: snappedX, y: snappedY },
-                    }
-                })
-
-                return next
+                return applyNodeChanges(
+                    effectiveChanges,
+                    prevNodes,
+                ) as SystemNode[]
             })
         },
         [editMode, canEditLayout],
     )
+
+    const systemsById = useMemo(() => {
+        const map = new Map<number, RegionSystemNodeApi>()
+        if (data) {
+            for (const s of data.systems) {
+                map.set(s.id, s)
+            }
+        }
+        return map
+    }, [data])
 
     const handleNodeDrag = useCallback(
         (_: unknown, node: FlowNode) => {
             if (!editMode || !canEditLayout) return
             if (!node.id) return
 
-            const GRID = 25
-            const snap = (v: number) => Math.round(v / GRID) * GRID
-
-            const snappedX = snap(node.position.x)
-            const snappedY = snap(node.position.y)
-
-            const sys = data?.systems.find((s) => s.id === Number(node.id))
+            const idNum = Number(node.id)
+            const snapped = snapPosition(node.position)
+            const sys = systemsById.get(idNum)
 
             setDragInfo({
-                id: Number(node.id),
+                id: idNum,
                 name: sys?.name ?? String(node.id),
-                x: snappedX,
-                y: snappedY,
+                x: snapped.x,
+                y: snapped.y,
             })
         },
-        [editMode, canEditLayout, data],
+        [editMode, canEditLayout, systemsById],
     )
 
     const handleNodeDragStop = useCallback(
@@ -667,7 +662,7 @@ export function RegionMap({
                 >
                     <Background gap={GRID} size={1} />
 
-                    {editMode && editMode && dragInfo && (
+                    {editMode && dragInfo && (
                         <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded-sm bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
                             <div className="font-medium">Position</div>
                             <div className="mt-[1px] tabular-nums">
