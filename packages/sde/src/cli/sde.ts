@@ -13,6 +13,7 @@ import {
     type InstallerCommand,
 } from '../installer.js'
 import { logger } from '../lib/logger.js'
+import { prisma } from '../lib/prisma.js'
 
 interface ParsedArgs {
     command: InstallerCommand
@@ -112,26 +113,30 @@ function printHelp() {
         switch (command) {
             case 'install':
                 await runInstall(options)
-                return
+                break
             case 'import':
                 await runImport(options)
-                return
+                break
             case 'calculate':
                 await runCalculate(subcommand, options)
-                return
+                break
             case 'update':
                 await runUpdate(options)
-                return
+                break
             case 'download':
                 await runDownload(options)
-                return
+                break
             case 'help':
             default:
                 printHelp()
-                return
+                break
         }
     } catch (err) {
         logger.error(err, '❌ SDE installer failed.')
         process.exitCode = 1
+    } finally {
+        await prisma.$disconnect().catch(() => {})
+
+        process.exit(process.exitCode ?? 0)
     }
 })()
