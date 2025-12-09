@@ -5,6 +5,7 @@
 
 import { exportMapLayouts, importMapLayouts } from '../layout/index.js'
 import { logger } from '../lib/logger.js'
+import { prisma } from '../lib/prisma.js'
 
 type LayoutCommand = 'export' | 'import'
 
@@ -63,10 +64,7 @@ void (async () => {
             )
             await exportMapLayouts({ regionId, layoutMode })
             logger.info('Layout export finished')
-            return
-        }
-
-        if (command === 'import') {
+        } else if (command === 'import') {
             logger.info(
                 {
                     regionId: regionId ?? 'ALL',
@@ -77,16 +75,19 @@ void (async () => {
             )
             await importMapLayouts({ regionId, layoutMode, truncateExisting })
             logger.info('Layout import finished')
-            return
+        } else {
+            logger.error(
+                { command },
+                'Unknown layout command. Use: export | import',
+            )
+            process.exitCode = 1
         }
-
-        logger.error(
-            { command },
-            'Unknown layout command. Use: export | import',
-        )
-        process.exitCode = 1
     } catch (err) {
         logger.error({ err }, 'Layout CLI command failed')
         process.exitCode = 1
+    } finally {
+        await prisma.$disconnect().catch(() => {})
+
+        process.exit(process.exitCode ?? 0)
     }
 })()
