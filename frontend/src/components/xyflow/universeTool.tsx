@@ -18,92 +18,13 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { cn } from '@/lib/utils.ts'
 import { formatSecurity, getSecurityClassName } from '@/lib/security.ts'
 import { useRouter } from '@tanstack/react-router'
-
-type ViewMode = 'universe' | 'region'
-
-type SelectedSystem = {
-    id: number
-    name: string
-    constellationId: number
-}
-
-type SystemOverviewStar = {
-    spectralClass: string
-    temperature: number
-    radius: number
-    typeName: string | null
-}
-
-type SystemOverviewIndex = {
-    id: number
-    name: string
-    securityStatus: number
-    securityClass: string | null
-    region: {
-        id: number
-        name: string
-    }
-    constellation: {
-        id: number
-        name: string
-    }
-    faction: {
-        id: number
-        name: string
-    } | null
-    planetsCount: number
-    moonsCount: number
-    beltsCount?: number
-    npcStationsCount?: number
-    star: SystemOverviewStar
-}
-
-type SystemOverviewActivityWindow = {
-    jumps: number
-    npcKills: number
-    shipKills: number
-    podKills: number
-}
-
-type SystemOverviewActivity = {
-    window: 'last_hour'
-    jumps: number | null
-    npcKills: number | null
-    shipKills: number | null
-    podKills: number | null
-    last24h?: SystemOverviewActivityWindow
-    timeline48h?: SystemActivityPoint[]
-}
-
-type SystemActivityPoint = {
-    timestamp: string
-    jumps: number
-    npcKills: number
-    shipKills: number
-    podKills: number
-}
-
-type SystemOverviewApiResponse = {
-    system: SystemOverviewIndex
-    activity: SystemOverviewActivity
-}
-
-type ApiSuccess<T> = {
-    success: true
-    data: T
-}
-
-type ApiError = {
-    success: false
-    message: string
-    code?: string
-}
-
-type ApiResponse<T> = ApiSuccess<T> | ApiError
-
-type UniverseToolProps = {
-    initialRegionId?: number
-}
+import type {
+    ApiResponse,
+    SelectedSystem,
+    SystemOverviewApiResponse,
+    UniverseToolProps,
+    ViewMode,
+} from '@/types/universe.ts'
 
 async function fetchSystemOverview(
     systemId: number,
@@ -153,41 +74,43 @@ export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
 
     const activity = systemOverviewQuery.data?.activity
 
-    const MAX_POINTS = 48
+    const HOURS = 48
     const rawTimeline = activity?.timeline48h ?? []
 
-    const paddedTimeline =
-        rawTimeline.length >= MAX_POINTS
-            ? rawTimeline.slice(rawTimeline.length - MAX_POINTS)
-            : [
-                  ...Array.from(
-                      { length: MAX_POINTS - rawTimeline.length },
-                      () => ({
-                          jumps: 0,
-                          npcKills: 0,
-                          shipKills: 0,
-                          podKills: 0,
-                          timestamp: null as string | null,
-                      }),
-                  ),
-                  ...rawTimeline,
-              ]
+    const samplesByTs = new Map(
+        rawTimeline.filter((p) => !!p.timestamp).map((p) => [p.timestamp!, p]),
+    )
 
-    const chartData = paddedTimeline.map((point, index) => ({
-        hour: index,
-        jumps: point.jumps ?? 0,
-        npcKills: point.npcKills ?? 0,
-        shipKills: point.shipKills ?? 0,
-        podKills: point.podKills ?? 0,
-        timestamp: point.timestamp ?? null,
-    }))
+    const now = new Date()
+    now.setMinutes(0, 0, 0)
 
-    const maxHourIndex = chartData.length > 0 ? chartData.length - 1 : 0
+    const chartData = Array.from({ length: HOURS }, (_, index) => {
+        const hoursAgo = HOURS - index
+        const ts = new Date(
+            now.getTime() - hoursAgo * 60 * 60 * 1000,
+        ).toISOString()
+
+        const point = samplesByTs.get(ts)
+
+        return {
+            bucket: index,
+            hoursAgo,
+            jumps: point?.jumps ?? 0,
+            npcKills: point?.npcKills ?? 0,
+            shipKills: point?.shipKills ?? 0,
+            podKills: point?.podKills ?? 0,
+            timestamp: ts,
+        }
+    })
+
+    const xTicks = chartData
+        .filter((p) => p.hoursAgo % 6 === 0)
+        .map((p) => p.bucket)
 
     const formatXAxisTick = (value: number) => {
-        const hoursAgo = maxHourIndex - value
-        if (hoursAgo < 0) return ''
-        return hoursAgo % 6 === 0 ? `${hoursAgo}h` : ''
+        const point = chartData[value]
+        if (!point) return ''
+        return `${point.hoursAgo}h`
     }
 
     const formatYAxisTick = (value: number) => {
@@ -246,7 +169,7 @@ export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
     return (
         <div className="grid gap-4 lg:h-full lg:grid-cols-[minmax(0,5fr)_minmax(0,1.4fr)]">
             {/* Left: Canvas */}
-            <div className="border-border h-[60vh] min-h-[320px] overflow-hidden rounded-lg border lg:h-full">
+            <div className="border-border h-[60vh] min-h-80 overflow-hidden rounded-lg border lg:h-full">
                 {mode === 'universe' && (
                     <UniverseMap
                         onRegionClick={(id) => {
@@ -583,7 +506,7 @@ export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
                                                     Activity (last 48h): Kills
                                                 </div>
                                                 <ChartContainer
-                                                    className="h-40 w-full"
+                                                    className="h-42 w-full"
                                                     config={chartConfig}
                                                 >
                                                     <LineChart
@@ -612,10 +535,11 @@ export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
                                                             tickCount={5}
                                                         />
                                                         <XAxis
-                                                            dataKey="hour"
+                                                            dataKey="bucket"
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={8}
+                                                            ticks={xTicks}
                                                             tickFormatter={
                                                                 formatXAxisTick
                                                             }
@@ -666,7 +590,7 @@ export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
                                                     Activity (last 48h): Jumps
                                                 </div>
                                                 <ChartContainer
-                                                    className="h-40 w-full"
+                                                    className="h-42 w-full"
                                                     config={chartConfig}
                                                 >
                                                     <LineChart
@@ -695,10 +619,11 @@ export function UniverseTool({ initialRegionId }: UniverseToolProps = {}) {
                                                             tickCount={5}
                                                         />
                                                         <XAxis
-                                                            dataKey="hour"
+                                                            dataKey="bucket"
                                                             tickLine={false}
                                                             axisLine={false}
                                                             tickMargin={8}
+                                                            ticks={xTicks}
                                                             tickFormatter={
                                                                 formatXAxisTick
                                                             }
