@@ -22,8 +22,6 @@ import { ADMIN_ID, API_BASE } from '@/lib/env'
 import { useAuth } from '@/components/auth/auth-provider'
 import '@xyflow/react/dist/style.css'
 
-const REGION_WIDTH = 1600
-const REGION_HEIGHT = 900
 const GRID = 25
 const SNAP_STEP = GRID
 
@@ -166,58 +164,6 @@ type SystemNode = FlowNode<SystemNodeData> & {
     basePosition: { x: number; y: number }
 }
 
-function relaxLayout(baseNodes: SystemNode[]): SystemNode[] {
-    const nodes: SystemNode[] = baseNodes.map((n) => ({
-        ...n,
-        position: { ...n.position },
-        basePosition: { ...n.basePosition },
-    }))
-
-    const ITERATIONS = 80
-    const MIN_DIST = 60
-    const MIN_DIST_SQ = MIN_DIST * MIN_DIST
-    const SPRING = 0.03
-
-    for (let iter = 0; iter < ITERATIONS; iter++) {
-        for (let i = 0; i < nodes.length; i++) {
-            for (let j = i + 1; j < nodes.length; j++) {
-                const a = nodes[i]
-                const b = nodes[j]
-
-                let dx = a.position.x - b.position.x
-                let dy = a.position.y - b.position.y
-                let distSq = dx * dx + dy * dy
-
-                if (distSq === 0) {
-                    dx = Math.random() - 0.5
-                    dy = Math.random() - 0.5
-                    distSq = dx * dx + dy * dy
-                }
-
-                if (distSq < MIN_DIST_SQ) {
-                    const dist = Math.sqrt(distSq)
-                    const overlap = (MIN_DIST - dist) / 2
-                    const ux = dx / dist
-                    const uy = dy / dist
-
-                    a.position.x += ux * overlap
-                    a.position.y += uy * overlap
-                    b.position.x -= ux * overlap
-                    b.position.y -= uy * overlap
-                }
-            }
-        }
-
-        for (const node of nodes) {
-            const base = node.basePosition
-            node.position.x += (base.x - node.position.x) * SPRING
-            node.position.y += (base.y - node.position.y) * SPRING
-        }
-    }
-
-    return nodes
-}
-
 function getEdgeColor(borderType: SystemBorderType): string {
     switch (borderType) {
         case 'INTERNAL':
@@ -327,98 +273,16 @@ export function RegionMap({
         y: number
     } | null>(null)
 
-    function computeRegionProjection(systems: RegionSystemNodeApi[]) {
-        const xs: number[] = []
-        const zs: number[] = []
-
-        for (const s of systems) {
-            xs.push(s.x)
-            zs.push(s.z)
-        }
-
-        const minX = Math.min(...xs)
-        const maxX = Math.max(...xs)
-        const minZ = Math.min(...zs)
-        const maxZ = Math.max(...zs)
-
-        const spanX = maxX - minX || 1
-        const spanZ = maxZ - minZ || 1
-
-        const scale = Math.min(REGION_WIDTH / spanX, REGION_HEIGHT / spanZ)
-
-        const marginX = (REGION_WIDTH - spanX * scale) / 2
-        const marginY = (REGION_HEIGHT - spanZ * scale) / 2
-
-        const coords = new Map<number, { x: number; y: number }>()
-
-        for (const s of systems) {
-            const x2d = (s.x - minX) * scale + marginX
-            const y2d = -(s.z - minZ) * scale + marginY
-
-            coords.set(s.id, { x: x2d, y: y2d })
-        }
-
-        return coords
-    }
+    const DEFAULT_LAYOUT_X = -100
+    const DEFAULT_LAYOUT_Y = 50
 
     const buildNodesFromData = useCallback(
         (d: RegionMapApiResponse | undefined): SystemNode[] => {
             if (!d || d.systems.length === 0) return []
 
-            const systemsWithLayout = d.systems.filter(
-                (s) => s.layoutX != null && s.layoutY != null,
-            )
-            const hasAnyLayout = systemsWithLayout.length > 0
-
-            if (hasAnyLayout) {
-                let fallbackIndex = 0
-                const fallbackGapX = 120
-                const fallbackGapY = 80
-
-                return d.systems.map((s) => {
-                    let x = s.layoutX ?? null
-                    let y = s.layoutY ?? null
-
-                    if (x == null || y == null) {
-                        const col = fallbackIndex % 10
-                        const row = Math.floor(fallbackIndex / 10)
-                        x = col * fallbackGapX
-                        y = row * fallbackGapY
-                        fallbackIndex++
-                    }
-
-                    const subLabel = s.isForeign
-                        ? s.regionName
-                        : `C${s.constellationId}`
-
-                    return {
-                        id: s.id.toString(),
-                        position: { x, y },
-                        basePosition: { x, y },
-                        type: 'system',
-                        data: {
-                            label: s.name,
-                            subLabel,
-                            isForeign: s.isForeign,
-                        },
-                        style: {
-                            width: 75,
-                            height: 30,
-                            borderRadius: '0.25rem',
-                            border: '1px solid rgba(0,0,0,0.2)',
-                            padding: 0,
-                            backgroundColor: 'var(--background)',
-                        },
-                    }
-                })
-            }
-
-            const projected = computeRegionProjection(d.systems)
-
-            const baseNodes: SystemNode[] = d.systems.map((s) => {
-                const proj = projected.get(s.id)!
-                const x = proj.x
-                const y = proj.y
+            return d.systems.map((s) => {
+                const x = s.layoutX ?? DEFAULT_LAYOUT_X
+                const y = s.layoutY ?? DEFAULT_LAYOUT_Y
 
                 const subLabel = s.isForeign
                     ? s.regionName
@@ -435,6 +299,8 @@ export function RegionMap({
                         isForeign: s.isForeign,
                     },
                     style: {
+                        width: 75,
+                        height: 30,
                         borderRadius: '0.25rem',
                         border: '1px solid rgba(0,0,0,0.2)',
                         padding: 0,
@@ -442,8 +308,6 @@ export function RegionMap({
                     },
                 }
             })
-
-            return relaxLayout(baseNodes)
         },
         [],
     )
