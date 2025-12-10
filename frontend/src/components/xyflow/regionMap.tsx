@@ -18,14 +18,13 @@ import {
     ReactFlow,
     applyNodeChanges,
 } from '@xyflow/react'
-import { ADMIN_ID, API_BASE } from '@/lib/env'
-import { useAuth } from '@/components/auth/auth-provider'
+import { API_BASE } from '@/lib/env'
 import '@xyflow/react/dist/style.css'
 
-const REGION_WIDTH = 1600
-const REGION_HEIGHT = 900
 const GRID = 25
 const SNAP_STEP = GRID
+const DEFAULT_LAYOUT_X = -100
+const DEFAULT_LAYOUT_Y = 50
 
 // --- API Types (from Backend)
 type RegionFactionApi = {
@@ -166,58 +165,6 @@ type SystemNode = FlowNode<SystemNodeData> & {
     basePosition: { x: number; y: number }
 }
 
-function relaxLayout(baseNodes: SystemNode[]): SystemNode[] {
-    const nodes: SystemNode[] = baseNodes.map((n) => ({
-        ...n,
-        position: { ...n.position },
-        basePosition: { ...n.basePosition },
-    }))
-
-    const ITERATIONS = 80
-    const MIN_DIST = 60
-    const MIN_DIST_SQ = MIN_DIST * MIN_DIST
-    const SPRING = 0.03
-
-    for (let iter = 0; iter < ITERATIONS; iter++) {
-        for (let i = 0; i < nodes.length; i++) {
-            for (let j = i + 1; j < nodes.length; j++) {
-                const a = nodes[i]
-                const b = nodes[j]
-
-                let dx = a.position.x - b.position.x
-                let dy = a.position.y - b.position.y
-                let distSq = dx * dx + dy * dy
-
-                if (distSq === 0) {
-                    dx = Math.random() - 0.5
-                    dy = Math.random() - 0.5
-                    distSq = dx * dx + dy * dy
-                }
-
-                if (distSq < MIN_DIST_SQ) {
-                    const dist = Math.sqrt(distSq)
-                    const overlap = (MIN_DIST - dist) / 2
-                    const ux = dx / dist
-                    const uy = dy / dist
-
-                    a.position.x += ux * overlap
-                    a.position.y += uy * overlap
-                    b.position.x -= ux * overlap
-                    b.position.y -= uy * overlap
-                }
-            }
-        }
-
-        for (const node of nodes) {
-            const base = node.basePosition
-            node.position.x += (base.x - node.position.x) * SPRING
-            node.position.y += (base.y - node.position.y) * SPRING
-        }
-    }
-
-    return nodes
-}
-
 function getEdgeColor(borderType: SystemBorderType): string {
     switch (borderType) {
         case 'INTERNAL':
@@ -284,6 +231,11 @@ const systemNodeTypes = {
     system: SystemNodeComponent,
 }
 
+const snapPosition = (pos: { x: number; y: number }) => ({
+    x: Math.round(pos.x / SNAP_STEP) * SNAP_STEP,
+    y: Math.round(pos.y / SNAP_STEP) * SNAP_STEP,
+})
+
 // --- Main component
 export function RegionMap({
     regionId,
@@ -295,11 +247,12 @@ export function RegionMap({
     onSystemSelect?: (system: RegionSystemNodeApi) => void
 }) {
     const { data, isLoading, isError, error } = useRegionMap(regionId)
-    const { session } = useAuth()
-    const canEditLayout = ADMIN_ID != null && session?.characterId === ADMIN_ID
+    const canEditLayout =
+        import.meta.env.DEV ||
+        import.meta.env.MODE === 'development' ||
+        process.env.NODE_ENV === 'development'
 
     const [editMode, setEditMode] = useState(false)
-    //const queryClient = useQueryClient()
 
     useEffect(() => {
         if (!canEditLayout && editMode) {
@@ -311,11 +264,6 @@ export function RegionMap({
         mutationFn: (vars: UpdateRegionLayoutPayload) =>
             updateRegionLayoutApi(regionId, vars),
         retry: false,
-        /*onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['region-universe', regionId],
-            })
-        },*/
     })
 
     const [rfNodes, setRfNodes] = useState<SystemNode[]>([])
@@ -327,98 +275,24 @@ export function RegionMap({
         y: number
     } | null>(null)
 
-    function computeRegionProjection(systems: RegionSystemNodeApi[]) {
-        const xs: number[] = []
-        const zs: number[] = []
-
-        for (const s of systems) {
-            xs.push(s.x)
-            zs.push(s.z)
+    const systemsById = useMemo(() => {
+        const map = new Map<number, RegionSystemNodeApi>()
+        if (data) {
+            for (const s of data.systems) {
+                map.set(s.id, s)
+            }
         }
-
-        const minX = Math.min(...xs)
-        const maxX = Math.max(...xs)
-        const minZ = Math.min(...zs)
-        const maxZ = Math.max(...zs)
-
-        const spanX = maxX - minX || 1
-        const spanZ = maxZ - minZ || 1
-
-        const scale = Math.min(REGION_WIDTH / spanX, REGION_HEIGHT / spanZ)
-
-        const marginX = (REGION_WIDTH - spanX * scale) / 2
-        const marginY = (REGION_HEIGHT - spanZ * scale) / 2
-
-        const coords = new Map<number, { x: number; y: number }>()
-
-        for (const s of systems) {
-            const x2d = (s.x - minX) * scale + marginX
-            const y2d = -(s.z - minZ) * scale + marginY
-
-            coords.set(s.id, { x: x2d, y: y2d })
-        }
-
-        return coords
-    }
+        return map
+    }, [data])
 
     const buildNodesFromData = useCallback(
         (d: RegionMapApiResponse | undefined): SystemNode[] => {
             if (!d || d.systems.length === 0) return []
 
-            const systemsWithLayout = d.systems.filter(
-                (s) => s.layoutX != null && s.layoutY != null,
-            )
-            const hasAnyLayout = systemsWithLayout.length > 0
-
-            if (hasAnyLayout) {
-                let fallbackIndex = 0
-                const fallbackGapX = 120
-                const fallbackGapY = 80
-
-                return d.systems.map((s) => {
-                    let x = s.layoutX ?? null
-                    let y = s.layoutY ?? null
-
-                    if (x == null || y == null) {
-                        const col = fallbackIndex % 10
-                        const row = Math.floor(fallbackIndex / 10)
-                        x = col * fallbackGapX
-                        y = row * fallbackGapY
-                        fallbackIndex++
-                    }
-
-                    const subLabel = s.isForeign
-                        ? s.regionName
-                        : `C${s.constellationId}`
-
-                    return {
-                        id: s.id.toString(),
-                        position: { x, y },
-                        basePosition: { x, y },
-                        type: 'system',
-                        data: {
-                            label: s.name,
-                            subLabel,
-                            isForeign: s.isForeign,
-                        },
-                        style: {
-                            width: 75,
-                            height: 30,
-                            borderRadius: '0.25rem',
-                            border: '1px solid rgba(0,0,0,0.2)',
-                            padding: 0,
-                            backgroundColor: 'var(--background)',
-                        },
-                    }
-                })
-            }
-
-            const projected = computeRegionProjection(d.systems)
-
-            const baseNodes: SystemNode[] = d.systems.map((s) => {
-                const proj = projected.get(s.id)!
-                const x = proj.x
-                const y = proj.y
+            return d.systems.map((s) => {
+                const rawX = s.layoutX ?? DEFAULT_LAYOUT_X
+                const rawY = s.layoutY ?? DEFAULT_LAYOUT_Y
+                const snapped = snapPosition({ x: rawX, y: rawY })
 
                 const subLabel = s.isForeign
                     ? s.regionName
@@ -426,8 +300,8 @@ export function RegionMap({
 
                 return {
                     id: s.id.toString(),
-                    position: { x, y },
-                    basePosition: { x, y },
+                    position: { x: snapped.x, y: snapped.y },
+                    basePosition: { x: snapped.x, y: snapped.y },
                     type: 'system',
                     data: {
                         label: s.name,
@@ -435,6 +309,8 @@ export function RegionMap({
                         isForeign: s.isForeign,
                     },
                     style: {
+                        width: 75,
+                        height: 30,
                         borderRadius: '0.25rem',
                         border: '1px solid rgba(0,0,0,0.2)',
                         padding: 0,
@@ -442,8 +318,6 @@ export function RegionMap({
                     },
                 }
             })
-
-            return relaxLayout(baseNodes)
         },
         [],
     )
@@ -460,97 +334,67 @@ export function RegionMap({
     const edges: FlowEdge[] = useMemo(() => {
         if (!data) return []
 
-        const nodeIdSet = new Set(rfNodes.map((n) => n.id))
-
-        return (
-            data.edges
-                .filter((e) => {
-                    const s = e.fromSystemId.toString()
-                    const t = e.toSystemId.toString()
-                    return nodeIdSet.has(s) && nodeIdSet.has(t)
-                })
-                .map((e) => ({
-                    id: `${e.fromSystemId}-${e.toSystemId}`,
-                    source: e.fromSystemId.toString(),
-                    target: e.toSystemId.toString(),
-                    type: 'straight',
-                    selectable: false,
-                    focused: false,
-                    interactionWidth: 0,
-                    animated: false,
-                    style: {
-                        stroke: getEdgeColor(e.borderType),
-                        strokeWidth: 1.2,
-                        opacity: 0.7,
-                        pointerEvents: 'none',
-                    },
-                })) ?? []
+        const nodeIdSet = new Set(
+            (data.systems ?? []).map((s) => s.id.toString()),
         )
-    }, [data, rfNodes])
 
-    const handleNodesChange = useCallback(
-        (changes: NodeChange[]) => {
-            setRfNodes((prevNodes) => {
-                let next = applyNodeChanges(changes, prevNodes) as SystemNode[]
-
-                if (!editMode || !canEditLayout) return next
-
-                const movedIds = new Set(
-                    changes
-                        .filter((c) => c.type === 'position')
-                        .map((c) => c.id),
-                )
-
-                if (movedIds.size === 0) return next
-
-                next = next.map((n) => {
-                    if (!movedIds.has(n.id)) return n
-
-                    const snappedX =
-                        Math.round(n.position.x / SNAP_STEP) * SNAP_STEP
-                    const snappedY =
-                        Math.round(n.position.y / SNAP_STEP) * SNAP_STEP
-
-                    if (
-                        snappedX === n.position.x &&
-                        snappedY === n.position.y
-                    ) {
-                        return n
-                    }
-
-                    return {
-                        ...n,
-                        position: { x: snappedX, y: snappedY },
-                    }
-                })
-
-                return next
+        return data.edges
+            .filter((e) => {
+                const s = e.fromSystemId.toString()
+                const t = e.toSystemId.toString()
+                return nodeIdSet.has(s) && nodeIdSet.has(t)
             })
-        },
-        [editMode, canEditLayout],
-    )
+            .map((e) => ({
+                id: `${e.fromSystemId}-${e.toSystemId}`,
+                source: e.fromSystemId.toString(),
+                target: e.toSystemId.toString(),
+                type: 'straight',
+                selectable: false,
+                focused: false,
+                interactionWidth: 0,
+                animated: false,
+                style: {
+                    stroke: getEdgeColor(e.borderType),
+                    strokeWidth: 1.2,
+                    opacity: 0.7,
+                    pointerEvents: 'none',
+                },
+            }))
+    }, [data])
+
+    const handleNodesChange = useCallback((changes: NodeChange[]) => {
+        setRfNodes(
+            (prevNodes) => applyNodeChanges(changes, prevNodes) as SystemNode[],
+        )
+    }, [])
 
     const handleNodeDrag = useCallback(
         (_: unknown, node: FlowNode) => {
             if (!editMode || !canEditLayout) return
             if (!node.id) return
 
-            const GRID = 25
-            const snap = (v: number) => Math.round(v / GRID) * GRID
+            const idNum = Number(node.id)
+            const sys = systemsById.get(idNum)
+            const snapped = snapPosition(node.position)
 
-            const snappedX = snap(node.position.x)
-            const snappedY = snap(node.position.y)
-
-            const sys = data?.systems.find((s) => s.id === Number(node.id))
-
-            setDragInfo({
-                id: Number(node.id),
-                name: sys?.name ?? String(node.id),
-                x: snappedX,
-                y: snappedY,
+            setDragInfo((prev) => {
+                if (
+                    !prev ||
+                    prev.id !== idNum ||
+                    prev.x !== snapped.x ||
+                    prev.y !== snapped.y
+                ) {
+                    return {
+                        id: idNum,
+                        name: sys?.name ?? String(node.id),
+                        x: snapped.x,
+                        y: snapped.y,
+                    }
+                }
+                return prev
             })
         },
-        [editMode, canEditLayout, data],
+        [editMode, canEditLayout, systemsById],
     )
 
     const handleNodeDragStop = useCallback(
@@ -558,10 +402,12 @@ export function RegionMap({
             if (!editMode || !canEditLayout) return
             if (!node.id) return
 
+            const snapped = snapPosition(node.position)
+
             layoutMutation.mutate({
                 systemId: Number(node.id),
-                x: node.position.x,
-                y: node.position.y,
+                x: snapped.x,
+                y: snapped.y,
             })
 
             setDragInfo(null)
@@ -667,8 +513,8 @@ export function RegionMap({
                 >
                     <Background gap={GRID} size={1} />
 
-                    {editMode && editMode && dragInfo && (
-                        <div className="pointer-events-none absolute top-2 left-2 z-100000 rounded-sm bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
+                    {editMode && dragInfo && (
+                        <div className="pointer-events-none absolute top-2 left-2 z-50 rounded-sm bg-neutral-900/80 px-2 py-1 text-[10px] text-neutral-100 shadow-sm">
                             <div className="font-medium">Position</div>
                             <div className="mt-[1px] tabular-nums">
                                 x: {dragInfo.x} · y: {dragInfo.y}
