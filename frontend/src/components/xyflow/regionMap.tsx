@@ -18,8 +18,7 @@ import {
     ReactFlow,
     applyNodeChanges,
 } from '@xyflow/react'
-import { ADMIN_ID, API_BASE } from '@/lib/env'
-import { useAuth } from '@/components/auth/auth-provider'
+import { API_BASE } from '@/lib/env'
 import '@xyflow/react/dist/style.css'
 
 const GRID = 25
@@ -248,8 +247,11 @@ export function RegionMap({
     onSystemSelect?: (system: RegionSystemNodeApi) => void
 }) {
     const { data, isLoading, isError, error } = useRegionMap(regionId)
-    const { session } = useAuth()
-    const canEditLayout = ADMIN_ID != null && session?.characterId === ADMIN_ID
+    const isDevEnv =
+        import.meta.env.DEV ||
+        import.meta.env.MODE === 'development' ||
+        process.env.NODE_ENV === 'development'
+    const canEditLayout = isDevEnv
 
     const [editMode, setEditMode] = useState(false)
 
