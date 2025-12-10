@@ -4,603 +4,603 @@
   "systems": [
     {
       "systemId": 30003600,
-      "x": 1350,
-      "y": -775,
+      "x": 1075,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30003941,
-      "x": 300,
-      "y": -225,
+      "x": 0,
+      "y": 0,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004230,
-      "x": 1550,
-      "y": -775,
+      "x": 1275,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004231,
-      "x": 1550,
-      "y": -700,
+      "x": 1275,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004232,
-      "x": 1450,
-      "y": -775,
+      "x": 1175,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004233,
-      "x": 1350,
-      "y": -725,
+      "x": 1075,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004234,
-      "x": 1500,
-      "y": -625,
+      "x": 1225,
+      "y": -450,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004235,
-      "x": 1450,
-      "y": -700,
+      "x": 1175,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004236,
-      "x": 1300,
-      "y": -675,
+      "x": 1025,
+      "y": -450,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004237,
-      "x": 1200,
-      "y": -675,
+      "x": 925,
+      "y": -450,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004238,
-      "x": 1250,
-      "y": -625,
+      "x": 975,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004239,
-      "x": 1200,
-      "y": -575,
+      "x": 925,
+      "y": -350,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004240,
-      "x": 1200,
-      "y": -425,
+      "x": 925,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004241,
-      "x": 1150,
-      "y": -625,
+      "x": 875,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004242,
-      "x": 1300,
-      "y": -425,
+      "x": 1025,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004243,
-      "x": 1300,
-      "y": -475,
+      "x": 1025,
+      "y": -250,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004244,
-      "x": 1300,
-      "y": -375,
+      "x": 1025,
+      "y": -150,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004245,
-      "x": 1300,
-      "y": -325,
+      "x": 1025,
+      "y": -100,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004246,
-      "x": 1300,
-      "y": -275,
+      "x": 1025,
+      "y": -50,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004247,
-      "x": 1300,
-      "y": -525,
+      "x": 1025,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004248,
-      "x": 1075,
-      "y": -675,
+      "x": 825,
+      "y": -450,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004249,
-      "x": 1200,
-      "y": -725,
+      "x": 925,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004250,
-      "x": 1100,
-      "y": -725,
+      "x": 825,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004251,
-      "x": 1250,
-      "y": -775,
+      "x": 975,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004252,
-      "x": 1000,
-      "y": -725,
+      "x": 725,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004253,
-      "x": 1150,
-      "y": -775,
+      "x": 875,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004254,
-      "x": 800,
-      "y": -575,
+      "x": 525,
+      "y": -350,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004255,
-      "x": 600,
-      "y": -575,
+      "x": 325,
+      "y": -350,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004256,
-      "x": 800,
-      "y": -625,
+      "x": 525,
+      "y": -425,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004257,
-      "x": 600,
-      "y": -625,
+      "x": 325,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004258,
-      "x": 600,
-      "y": -725,
+      "x": 325,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004259,
-      "x": 600,
-      "y": -775,
+      "x": 325,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004260,
-      "x": 800,
-      "y": -725,
+      "x": 525,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004261,
-      "x": 800,
-      "y": -775,
+      "x": 525,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004262,
-      "x": 700,
-      "y": -700,
+      "x": 425,
+      "y": -475,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004263,
-      "x": 700,
-      "y": -750,
+      "x": 425,
+      "y": -525,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004264,
-      "x": 900,
-      "y": -775,
+      "x": 625,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004265,
-      "x": 700,
-      "y": -650,
+      "x": 425,
+      "y": -425,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004266,
-      "x": 900,
-      "y": -625,
+      "x": 625,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004267,
-      "x": 1100,
-      "y": -425,
+      "x": 825,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004268,
-      "x": 1000,
-      "y": -425,
+      "x": 725,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004269,
-      "x": 950,
-      "y": -500,
+      "x": 675,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004270,
-      "x": 900,
-      "y": -425,
+      "x": 625,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004271,
-      "x": 1100,
-      "y": -375,
+      "x": 825,
+      "y": -150,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004272,
-      "x": 1100,
-      "y": -500,
+      "x": 825,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004273,
-      "x": 1100,
-      "y": -325,
+      "x": 825,
+      "y": -100,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004274,
-      "x": 1000,
-      "y": -325,
+      "x": 725,
+      "y": -100,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004275,
-      "x": 1000,
-      "y": -275,
+      "x": 725,
+      "y": -50,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004276,
-      "x": 1200,
-      "y": -325,
+      "x": 925,
+      "y": -100,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004277,
-      "x": 1200,
-      "y": -275,
+      "x": 925,
+      "y": -50,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004278,
-      "x": 1100,
-      "y": -225,
+      "x": 825,
+      "y": 0,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004279,
-      "x": 1100,
-      "y": -275,
+      "x": 825,
+      "y": -50,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004280,
-      "x": 800,
-      "y": -425,
+      "x": 525,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004281,
-      "x": 800,
-      "y": -525,
+      "x": 525,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004282,
-      "x": 700,
-      "y": -475,
+      "x": 425,
+      "y": -250,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004283,
-      "x": 600,
-      "y": -425,
+      "x": 325,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004284,
-      "x": 500,
-      "y": -425,
+      "x": 175,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004285,
-      "x": 600,
-      "y": -475,
+      "x": 325,
+      "y": -250,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004286,
-      "x": 600,
-      "y": -525,
+      "x": 325,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004287,
-      "x": 500,
-      "y": -525,
+      "x": 225,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004288,
-      "x": 400,
-      "y": -525,
+      "x": 125,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004289,
-      "x": 300,
-      "y": -525,
+      "x": 25,
+      "y": -300,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004290,
-      "x": 450,
-      "y": -575,
+      "x": 175,
+      "y": -350,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004291,
-      "x": 300,
-      "y": -475,
+      "x": 25,
+      "y": -250,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004292,
-      "x": 400,
-      "y": -475,
+      "x": 125,
+      "y": -250,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004293,
-      "x": 350,
-      "y": -575,
+      "x": 75,
+      "y": -350,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004294,
-      "x": 350,
-      "y": -425,
+      "x": 75,
+      "y": -200,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004295,
-      "x": 400,
-      "y": -625,
+      "x": 125,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004296,
-      "x": 300,
-      "y": -625,
+      "x": 25,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004297,
-      "x": 500,
-      "y": -375,
+      "x": 175,
+      "y": -150,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004298,
-      "x": 500,
-      "y": -325,
+      "x": 150,
+      "y": -100,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004299,
-      "x": 500,
-      "y": -275,
+      "x": 150,
+      "y": -50,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004300,
-      "x": 300,
-      "y": -325,
+      "x": 0,
+      "y": -100,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004301,
-      "x": 300,
-      "y": -275,
+      "x": 0,
+      "y": -50,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004302,
-      "x": 400,
-      "y": -375,
+      "x": 75,
+      "y": -150,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004303,
-      "x": 300,
-      "y": -675,
+      "x": 25,
+      "y": -450,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004304,
-      "x": 300,
-      "y": -725,
+      "x": 25,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004305,
-      "x": 200,
-      "y": -675,
+      "x": -75,
+      "y": -450,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004306,
-      "x": 200,
-      "y": -725,
+      "x": -75,
+      "y": -500,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004307,
-      "x": 200,
-      "y": -625,
+      "x": -75,
+      "y": -400,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004308,
-      "x": 200,
-      "y": -575,
+      "x": -75,
+      "y": -350,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004309,
-      "x": 200,
-      "y": -775,
+      "x": -75,
+      "y": -550,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004626,
-      "x": 200,
-      "y": -825,
+      "x": -75,
+      "y": -600,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30004738,
-      "x": 500,
-      "y": -225,
+      "x": 150,
+      "y": 0,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30005055,
-      "x": 1300,
-      "y": -225,
+      "x": 1025,
+      "y": 0,
       "isLocked": true,
       "layoutMode": "optimized"
     },
     {
       "systemId": 30005274,
-      "x": 1550,
-      "y": -825,
+      "x": 1275,
+      "y": -600,
       "isLocked": true,
       "layoutMode": "optimized"
     }
