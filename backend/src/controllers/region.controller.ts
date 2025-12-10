@@ -331,7 +331,7 @@ export async function getRegionMap(
             }
         }
 
-        // 6) Nodes (lokal + foreign) inkl. Layout-Feldern
+        // 6) Nodes (lokal + foreign) incl. Layout-Fields
         const localNodes: RegionSystemNode[] = systems.map((s) => {
             const layout = layoutBySystemId.get(s.id)
             return {
@@ -417,6 +417,18 @@ export async function updateRegionLayout(
     next: NextFunction,
 ) {
     try {
+        const isDevEnv = process.env.NODE_ENV === 'development'
+
+        if (!isDevEnv) {
+            return res.status(403).json({
+                success: false,
+                error: {
+                    code: 'LAYOUT_EDITING_DISABLED',
+                    message: 'Layout editing is disabled in this environment',
+                },
+            })
+        }
+
         const regionId = parseRegionId(req)
 
         const body = req.body as Partial<UpdateRegionSystemLayoutRequest>

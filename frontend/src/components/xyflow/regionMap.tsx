@@ -247,11 +247,10 @@ export function RegionMap({
     onSystemSelect?: (system: RegionSystemNodeApi) => void
 }) {
     const { data, isLoading, isError, error } = useRegionMap(regionId)
-    const isDevEnv =
+    const canEditLayout =
         import.meta.env.DEV ||
         import.meta.env.MODE === 'development' ||
         process.env.NODE_ENV === 'development'
-    const canEditLayout = isDevEnv
 
     const [editMode, setEditMode] = useState(false)
 
